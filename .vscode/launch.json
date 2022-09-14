@@ -7,9 +7,15 @@
 			"name": "Depuração do idioma TOTVS",
 			"program": "${command:AskForProgramName}",
 			"cwb": "${workspaceFolder}",
-			"smartclientBin": "../totvs/bin/smartclient/smartclient.exe",
-			"isMultiSession": true,
+			"smartclientBin": "C:/SMS/SMS/ademilar/smartclient/smartclient/smartclient.exe",
+			"isMultiSession": false,
 			"enableTableSync": true
 		}
-	]
+	],
+	"lastPrograms": [
+		{
+			"label": "sigamdi"
+		}
+	],
+	"lastProgramExecuted": "sigamdi"
 }
