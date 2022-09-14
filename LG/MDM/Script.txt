@@ -1,0 +1,9 @@
+Copiar parâmetro LG_QTDFUN
+Compilar:
+	GPE10MENU
+	CadZR1
+	GeraXML
+SX3 - RA_X
+SIX - ZR1
+SX2 - ZR1
+SBX - MDMX
