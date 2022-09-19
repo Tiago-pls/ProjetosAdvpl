@@ -33,8 +33,8 @@ Local Sair
 Local nTamFonte := 200
 
 Local nCustoMedio := posicione("SB2",1,xFilial("SB2") + GDFIELDGET("UB_PRODUTO",N),"B2_CM1")
-Local nMarkup := u_RetMarkup() 
-Local nSomaAliq := u_RetTotAliq()
+Local nMarkup     := u_RetMarkup() 
+Local nSomaAliq   := u_RetTotAliq()
 Local nPrecoVenda := Round((nCustoMedio + (nCustoMedio * nMarkup /100))  / (1- (nSomaAliq / 100)),2)
 Static oDlg
 

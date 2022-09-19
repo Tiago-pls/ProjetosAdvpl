@@ -100,7 +100,7 @@ cQry +=  " Inner join " + RetSqlName("SA2") + " SA2 on 	SA2.A2_COD = SE2.E2_FORN
 cQry += " where SE2.D_E_L_E_T_ =' ' and SUBSTRING(SE2.E2_EMISSAO,1,6) = '"+SUBSTR(DTOS(MV_PAR01),1,6)+"'"
 cQry += " And E2_TIPO ='NF' and E2_FILIAL ='"+ xFilial("SE2")+"' "
 cQry += " AND (SE2.E2_PREFIXO LIKE 'CJ%' OR SE2.E2_PREFIXO LIKE 'CF%' )"
-cQry += " Order by A2_CGC"
+cQry += " Order by E2_VALOR"
 
 TcQuery cQry New Alias "QRY"  
 cHeader := RetHeader()
@@ -111,8 +111,21 @@ nValor := 0
 
 While QRY->(! EOF())
 	nCOnt += 1
-	nValor += QRY->E2_VALOR
+	nValor += QRY->E2_VALOR + QRY->E2_IRRF
 	FWrite(nHandle, LoteR())
+	QRY->(DbSkip())
+enddo
+If Select("QRY")>0         
+	QRY->(dbCloseArea())
+Endif
+
+// Fiscal
+cQry := LanFIS()
+TcQuery cQry New Alias "QRY"  
+While QRY->(! EOF())
+	nCOnt += 1
+	nValor += QRY->F3_VALCONT
+	FWrite(nHandle, LoteFis())
 	QRY->(DbSkip())
 enddo
 If Select("QRY")>0         
@@ -120,6 +133,7 @@ If Select("QRY")>0
 Endif
 cQry := LanFOL()
 
+// RH
 TcQuery cQry New Alias "QRY"  
 
 While QRY->(! EOF())
@@ -170,7 +184,8 @@ cLoteR += Iif(QRY->A2_RECISS $"1S","S","N")//30
 cLoteR += Iif("CURITIBA"$QRY->A2_MUN,"D","F")//31
 cLoteR += Space(2)//32
 cLoteR += Space(2)//34
-cLoteR += StrZero(Val(StrTran(cValtoChar(QRY->E2_VALOR * 100),'.','')),15)//36
+//cLoteR += StrZero(Val(StrTran(cValtoChar(QRY->E2_VALOR * 100),'.','')),15)//36
+cLoteR += StrZero(Val(StrTran(cValtoChar((QRY->E2_VALOR + QRY->E2_IRRF) * 100),'.','')),15)//36
 cLoteR += Replicate("0",15)//51
 cLoteR += strzero(Iif("CURITIBA"$QRY->A2_MUN,VAL(QRY->A2_INSCRM),0),10) //66 tam 10
 cLoteR += Iif(QRY->A2_TIPO$"J",Iif(Empty(QRY->A2_CGC),Replicate("0",14),QRY->A2_CGC),Replicate("0",14))//76
@@ -243,9 +258,6 @@ Return cRet
 */
 Static Function LanFOL()
 Local cSql :=  ''
-Local cRet := ''
-Local nPos
-Local nValCont := 0
 
 // lancamentos da folha
 cSql +=  " SELECT RA_MAT, RA_ALIQISS, RA_BAIRRO, RA_CEP, RA_CIC, RA_CODISS, RA_LOGRNUM, "
@@ -256,11 +268,66 @@ cSql +=  " FROM " + RetSqlName("SRA")+" SRA INNER JOIN "
 cSql +=             RetSqlName("SRD")+" SRD ON "
 cSql +=  "       SRD.RD_FILIAL = '"+xFilial("SRD")+"' AND "
 cSql +=  "       SRD.RD_MAT = SRA.RA_MAT AND "
-//cSql +=  "       (SRD.RD_PD = '489' OR "
 cSql +=  "       SRD.RD_PD IN ("+cVerbaIss+")  AND "
 cSql +=  "       SUBSTRING(SRD.RD_DATPGT,1,6) = '"+SUBSTR(DTOS(MV_PAR01),1,6)+"' AND"
 cSql +=  "       SRD.D_E_L_E_T_ = ' ' "
 cSql +=  " WHERE SRA.RA_FILIAL = '"+xFilial("SRA")+"' "
 cSql += "      AND SRA.D_E_L_E_T_ = ' ' "
-cSql += "      Order by RA_CIC "
 return cSql
+
+
+Static Function LanFIS
+Local cSql :=  ''
+
+
+//lancamentos do fiscal
+cSql := ""
+cSql += " SELECT A2_BAIRRO, A2_CEP, A2_CGC, A2_CODSIAF, A2_COMPLEM, A2_DDD, A2_INSCRM,"
+cSql += "        A2_END, A2_NR_END, A2_EST, A2_FAX, A2_MUN, A2_NOME, A2_RECISS, A2_SIMPNAC, "
+cSql += "        A2_TEL, A2_TIPO,"//, B1_ALIQISS, B1_CODISS, B1_DESC, D1_BASEISS, D1_VALISS, D1_ALIQISS, "
+cSql += "        F3_EMISSAO, F3_ESPECIE, F3_NFISCAL, F3_VALCONT, F3_RECISS, A2_CSTISS "
+cSql +=  " FROM " + RetSqlName("SA2")+" SA2 INNER JOIN "
+cSql +=             RetSqlName("SF3")+" SF3 ON "
+cSql +=  "       SF3.F3_FILIAL  = '"+xFilial("SF3")+"' AND "
+cSql +=  "       SF3.F3_CLIEFOR = SA2.A2_COD AND "
+cSql +=  "       SF3.F3_LOJA    = SA2.A2_LOJA AND "
+
+cSql +=  "       SUBSTRING(SF3.F3_CFO,1,1) < '5' AND "
+cSql +=  "       SF3.F3_TIPO    = 'S' AND "
+cSql +=  "       SUBSTRING(SF3.F3_EMISSAO,1,6) = '"+SUBSTR(DTOS(MV_PAR01),1,6)+"' AND "
+cSql +=  "       SF3.D_E_L_E_T_ = ' ' "
+
+cSql +=  " WHERE SA2.A2_FILIAL = '"+xFilial("SA2")+"' "
+cSql += "      AND SA2.D_E_L_E_T_ = ' ' -- and F3_CODISS <> ' '"
+cSql := changequery(cSql)
+Return cSql
+
+Static function LoteFis()
+Local cLoteR :="R"//1
+cLoteR += SubStr(QRY->F3_EMISSAO,7,2) + SubStr(QRY->F3_EMISSAO,5,2) + SubStr(QRY->F3_EMISSAO,1,4)//2
+cLoteR += right(QRY->F3_NFISCAL,8) // 10
+cLoteR += Replicate ("0", 8)//18
+cLoteR += '1' // 26
+cLoteR += Replicate ("0", 3) //27
+cLoteR += Iif(QRY->A2_RECISS $"1S","S","N")//30
+cLoteR += Iif("CURITIBA"$QRY->A2_MUN,"D","F")//31
+cLoteR += Space(2)//32
+cLoteR += Space(2)//34
+cLoteR += StrZero(Val(StrTran(cValtoChar(QRY->F3_VALCONT * 100),'.','')),15)//36
+cLoteR += Replicate("0",15)//51
+cLoteR += strzero(Iif("CURITIBA"$QRY->A2_MUN,VAL(QRY->A2_INSCRM),0),10) //66 tam 10
+cLoteR += Iif(QRY->A2_TIPO$"J",Iif(Empty(QRY->A2_CGC),Replicate("0",14),QRY->A2_CGC),Replicate("0",14))//76
+cLoteR += Iif(QRY->A2_TIPO$"F",Iif(Empty(QRY->A2_CGC),Replicate("0",11),QRY->A2_CGC),Replicate("0",11))//90
+cLoteR += QRY->A2_NOME +Space(60) //101
+cLoteR += 'RUA  ' //201
+cLoteR += iif(Alltrim(Substr(QRY->A2_END, 1, At(" ", QRY->A2_END))) == 'RUA',Substr(QRY->A2_END, At(" ", QRY->A2_END), len(QRY->A2_END) )+Space(3), QRY->A2_END)+ space(10)//206
+cLoteR += QRY->A2_NR_END //256
+cLoteR += Space(20)//262
+cLoteR += QRY->A2_BAIRRO + Space(30)//282
+cLoteR += QRY->A2_MUN + Space(14) //332
+cLoteR += QRY->A2_EST //349
+cLoteR += Iif (Empty(QRY->A2_CEP),Replicate("0",8),QRY->A2_CEP)//378
+cLoteR += Replicate("0",6)//386
+cLoteR += Replicate("0",4)//392
+cLoteR += "." + chr(13) + chr(10)
+Return  cLoteR
