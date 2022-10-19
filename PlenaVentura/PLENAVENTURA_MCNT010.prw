@@ -129,11 +129,11 @@ User Function MCnt010Print(cAlias,nReg,nOpc)
 		FreeObj(oNota)
 		oNota := Nil
 
-		if cEmpAnt <> '04'
+		//if cEmpAnt <> '04'
 			//assina o arquivo
 			MSGRun("Assinando arquivo PDF de Nota de Débito","Processando...", {|| ;
 				Sign(cArquivo) })
-		Endif
+		//Endif
 
 	EndIF
 
@@ -296,15 +296,16 @@ Static Function Layout(oNota)
 		oNota:SayAlign( A4ToRow(60), A4ToCol(8), SF4->F4_FINALID, oArial14,200,,,0)
 		oNota:SayAlign( A4ToRow(60), A4ToCol(87), SD2->D2_CF, oArial14,200,,,0)
 	
-		//inscrição municipal
-		oNota:Box( A4ToRow(54), A4ToCol(111), A4ToRow(66), A4ToCol(167) ,"01")
-		oNota:SayAlign( A4ToRow(54.5), A4ToCol(112), "INSCRIÇÃO MUNICIPAL", oArial09N,200,,,0)
-		oNota:SayAlign( A4ToRow(59), A4ToCol(116), SM0->M0_INSCM, oArial18N,200,,,0)
+
 	else
 		//oNota:Box( A4ToRow(31), A4ToCol(170), A4ToRow(54), A4ToCol(204) ,"01")
 		oNota:Box( A4ToRow(31), A4ToCol(170), A4ToRow(40), A4ToCol(204) ,"01")
 		oNota:SayAlign( A4ToRow(34), A4ToCol(170), "SERIE: " + SF2->F2_SERIE, oArial12N,95,,,2)		
 	Endif
+		//inscrição municipal
+	oNota:Box( A4ToRow(54), A4ToCol(111), A4ToRow(66), A4ToCol(167) ,"01")
+	oNota:SayAlign( A4ToRow(54.5), A4ToCol(112), "INSCRIÇÃO MUNICIPAL", oArial09N,200,,,0)
+	oNota:SayAlign( A4ToRow(59), A4ToCol(116), SM0->M0_INSCM, oArial18N,200,,,0)
 
 	//BLOCO DESTINATARIO
 	oNota:SayAlign( A4ToRow(66), A4ToCol(6), "DESTINATÁRIO", oArial14NI,200,,,0)

@@ -62,7 +62,7 @@ Endif
 if SB1->( DbSeek(aDados[1]+ aDados[2] ))
     Begin transaction 
         if RecLock("SB1",.F.)
-            SB1->B1_XXXXXX   := alltrim( aDados[3])
+            SB1->B1_DESC_I    := alltrim( aDados[3])
             MsUnLock("SB1")
         endif      
     END TRANSACTION
