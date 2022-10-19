@@ -31,6 +31,6 @@ if cTurno == SRA->RA_TNOTRAB
     NEXT nPosicao
 endif
 
-aEventos := aClone( __aResult )            
+aEventos := aClone( __aResult )
 RestArea(aArea)
 Return
