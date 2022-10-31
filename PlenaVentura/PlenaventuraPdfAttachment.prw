@@ -272,10 +272,8 @@ method drop() class PdfAttachment
         Reclock("SE2",.F.)
           SE2->E2_XANEXO:= '2'
         SE2->(msUnlock())  
-        u_LogAnexo(SE2->E2_FILIAL ,SE2->E2_NUM, 'E', 'SE2', SE2->E2_PARCELA)
-      Endif
-      
-      
+        //u_LogAnexo(SE2->E2_FILIAL ,SE2->E2_NUM, 'E', 'SE2', SE2->E2_PARCELA)
+      Endif      
     endif
 
     ::message(result, 'Arquivo excluído com sucesso.', 'Não foi possivel excluir o arquivo.' + CRLF + CRLF + "Error: " + cValToChar(FError()))

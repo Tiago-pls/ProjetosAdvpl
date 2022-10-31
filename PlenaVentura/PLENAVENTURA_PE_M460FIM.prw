@@ -119,7 +119,9 @@ While !SD2->(EOF()) .AND. SD2->D2_DOC == _cNota
 	Endif
 	SD2->(dbSkip())
 EndDo
-if !Empty(SC5->C5_MDNUMED).and.  FWCodEmp() =='09'
+cEalt := SUPERGETMV("FS_EmpCP", .T., "26,09")
+
+if !Empty(SC5->C5_MDNUMED).and.  FWCodEmp() $ cEalt
  
 	//Filtra títulos dessa nota
 	cSql := "SELECT R_E_C_N_O_ AS REC FROM "+RetSqlName("SE1")

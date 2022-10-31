@@ -260,7 +260,7 @@ Static Function Layout(oNota)
 
 	//titulo
 	if lLocacao
-		cTipo  := "FATURA DE DÉBITO DE"
+		cTipo  := "FATURA DE"
 		ctipo2 :="LOCAÇÃO DE BENS MÓVEIS"
 	else
 		cTipo := "FATURA DE DÉBITO"
@@ -405,9 +405,13 @@ Static Function Layout(oNota)
 	IF ! Empty(SC5->C5_MDCONTR)
 		oNota:SayAlign( A4ToRow(179+60), A4ToCol(6), "CONTRATO: " + SC5->C5_MDCONTR, oArial09N,200,,,0)
 	EndIF
-
+	cTelefone := SUPERGETMV("FS_TELND", .T., "(41) 3094-2213") // padrao
+	/*
+Braslift que é (41) 3015-3822
+Novafrota que é "(41) 3033-2929
+*/
 	oNota:SayAlign( A4ToRow(191+60), A4ToCol(8), "CASO NÃO RECEBA O BOLETO, FAVOR ENTRAR EM CONTATO", oArial09,250,,,0)
-	oNota:SayAlign( A4ToRow(195+60), A4ToCol(6), "COM O DEPARTAMENTO FINANCEIRO NO FONE " + GetMV("PV_NLOCFON",,"(41) 3094-2213"), oArial09,250,,,0)
+	oNota:SayAlign( A4ToRow(195+60), A4ToCol(6), "COM O DEPARTAMENTO FINANCEIRO NO FONE " + GetMV("PV_NLOCFON",,+cTelefone), oArial09,250,,,0)
 
 	oNota:Box( A4ToRow(168+60), A4ToCol(95), A4ToRow(199+60), A4ToCol(204) ,"01")
 	oNota:SayAlign( A4ToRow(168.5+60), A4ToCol(96), "ASSINATURA DIGITAL", oArial09N,200,,,0)
@@ -430,7 +434,7 @@ Static Function Layout(oNota)
 		oNota:Line( A4ToRow(214+60), A4ToCol(47), A4ToRow(225+60), A4ToCol(47) ,,"01") //vertical
 		oNota:SayAlign( A4ToRow(214.5+60), A4ToCol(48), "ASSINATURA", oArial09N,200,,,0)
 		oNota:Line( A4ToRow(214+60), A4ToCol(147), A4ToRow(225+60), A4ToCol(147) ,,"01") //vertical
-		oNota:SayAlign( A4ToRow(214.5+60), A4ToCol(148), "FATURA DE BEBITO DE LOCAÇÃO DE BENS MOVEIS." , oArial06N,500,,,0)
+		oNota:SayAlign( A4ToRow(214.5+60), A4ToCol(148), "FATURA DE LOCAÇÃO DE BENS MOVEIS." , oArial06N,500,,,0)
 		oNota:SayAlign( A4ToRow(219+60), A4ToCol(160), "Nº", oArial12N,200,,,0)
 		oNota:SayAlign( A4ToRow(219+60), A4ToCol(175), SF2->F2_DOC, oArial12,200,,,0)
 		oNota:Line( A4ToRow(225+60), A4ToCol(5), A4ToRow(225+60), A4ToCol(204) ,,"01") //horizontal
@@ -544,6 +548,9 @@ Static Function Sign(cArquivo)
 		ShellExecute("open", cFileLocation + cSignedFile, "", "", 1)
 	EndIF
 	//exclui o log
+
+	enviaPDF(cFileLocation, cSignedFile)
+
 	fErase(cRemoteLocation + cLogFile)
 
 Return
@@ -594,3 +601,24 @@ Static Function First(cString,cSeparador)
 	EndIF
 
 Return cRetorno
+
+Static Function enviaPDF(_cCaminho,_cPDFNFDEB)
+	Local _cAssunto		:= 'Fatura de Locação de Bens Móveis: ' + SF2->F2_DOC
+	Local  cMsg 	    := "Segue em anexo a fatura de débito de locação de bens móveis.<BR />";
+                        +"Numero: "+Alltrim(SF2->F2_DOC)+"/"+SF2->F2_SERIE+"<BR />";
+                     	+"Emissão: "+DTOC(SF2->F2_EMISSAO)+"<BR />";
+                     	+"Valor da locação: R$ "+AllTrim(TransForm(SF2->F2_VALBRUT,PesqPict("SF2","F2_VALBRUT")))+"<BR />"
+	
+	Local  cLoNew	:= "\temp\imp\"
+	Local  cArqNew	:= ''
+
+	if file(_cCaminho+_cPDFNFDEB) .AND. !Empty(AllTrim(SA1->A1_EMAIL))
+		cArqNew := cLoNew+_cPDFNFDEB
+		__copyfile(_cCaminho+_cPDFNFDEB,cArqNew) // Copia o arquivo para o servidor, pois não funcinou o envio pela maquina local
+		if file(cArqNew) // Conseguiu copiar?
+			U_Mail033("Fatura",Lower(SA1->A1_EMAIL),_cAssunto,cMsg,cArqNew,Alltrim(SA1->A1_NOME))	
+			MsgInfo("Fatura de Débito envida para: " + ALLTRIM(SA1->A1_EMAIL), "E-Mail Nota Débito")
+		Endif
+	EndIF
+
+Return 
