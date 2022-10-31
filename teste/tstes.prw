@@ -4994,7 +4994,7 @@ Retorna o Código do registro para um ID passado por parâmetro.
 
 @Param		cID			- ID a ser pesquisado
 			cAlias		- Alias para a busca
-			nIndice	- Índice para busca
+			nIndice	- Ýndice para busca
 
 @Return	cCodigo	- Código do cadastro relacionado ao ID
 
@@ -9073,7 +9073,7 @@ Return (cXmlIdent)
 
 Normaliza o nome do Tag quando a mesma possui atributos
 
-@param	 nX - Índice do Laço (For)
+@param	 nX - Ýndice do Laço (For)
 @param  cPosAtu - Posição do atual da leitura do arquivo (Handle)
 @param  cXml - Arquivo XML
 @param  NmTag - Nome da Tag
@@ -11003,7 +11003,7 @@ Return()
 /*/{Protheus.doc} FAcessPer
 Realiza a validação de permissão de acesso ao registro selecioando no browse.
 
-@Param	cAliasTrb	->	Área de trabalho
+@Param	cAliasTrb	->	Ýrea de trabalho
 @Param	cEvento		->	Evento que o acesso será validado
 @Param	cMsg		->	Controle das mensagens a serem exibidas
 @Param	nMark		->	Controle dos itens marcados no browse
@@ -11950,10 +11950,10 @@ Funcao para rodar uma Query e retornar como Array.
 @author Roberto Souza
 @since 16/02/2018
 @version 1
-@Parametros  ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»
+@Parametros  ÉÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝ»
 			 ºcQuery : Query SQL a ser executado                           º
              ºcTipo  : A=Array (Default) / V=Variavel (Par.N.Obrigat.)     º
-             ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+             ÈÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝÝ¼
 @Retorno   aRet   - Array com o conteudo da Query
 /*/
 //--------------------------------------------------------------------
