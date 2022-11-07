@@ -1,0 +1,278 @@
+#include 'protheus.ch'
+#INCLUDE 'APWEBEX.CH'
+#INCLUDE "TBICONN.CH"
+#INCLUDE "TOPCONN.CH"
+#include "fileio.ch"
+
+User function msh01
+
+	Local cHTML := ""
+	//Local cTitle := OemToAnsi("Cota&ccedil;&atilde;o de Compra")
+	Local cId := httpGet->id
+	Local cObser := httpGet->Observ
+	Local cF := httpGet->cf
+	Local cDesc := ""
+	//Local nHandle
+	Local cFornece
+	//Local nVPassa
+	LOCAL cFileini := GetSrvProfString ("ROOTPATH","")+GetSrvProfString ("STARTPATH","")+"TEXTOSCOTACAOOLINE.INI"
+	//**** variaveis para envio para o fonte 'U_confcot' via http!!
+	local serverhttp := GetPvProfString("CONFHTTP", "SERVERHTTP","",cFileini,,)
+	local portahttp := GetPvProfString("CONFHTTP", "PORTAHTTP","",cFileini,,)
+	conout(cObser)
+	RpcSetType(3)
+	//PREPARE ENVIRONMENT EMPRESA "01" FILIAL "0101"
+	PREPARE ENVIRONMENT EMPRESA "01" FILIAL cF
+
+	Conout("Entrou no 2msh01.apw")
+
+	cHTML += " <html>                                                                                                                    "
+	cHTML += " <head>                                                                                                                              "
+	//cHTML += " <meta charset='utf-8'>                                                                                                              "
+	//cHTML += " <meta http-equiv='X-UA-Compatible' content='IE=edge'>                                                                               "
+	cHTML += "<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>"
+	cHTML += "<meta name='viewport' content='width=device-width, initial-scale=1.0'> "                                                           "
+	cHTML += " <title>Cotação De Compras</title>                                                                                                   "
+	cHTML += " <link rel='stylesheet' href='css/bootstrap.min.css'>                                "
+	cHTML += " <script src='js/jquery.min.js'></script>                                            "
+	cHTML += " <script src='js/bootstrap-datepicker.js'></script>                "
+	cHTML += " <script src='js/jquery.maskMoney.min.js' type='text/javascript'></script> "
+	cHTML += " <script src='js/bootstrap.min.js'></script>                                         "
+	cHTML += " <script src='js/funcoes.js' type='text/javascript'></script> "
+	cHTML += " </head>                                                                                         "
+	cHTML += " <body>                                                                                          "
+
+	Conout(cF)
+	Conout(cId)
+
+	dbSelectArea("SC8")
+	SC8->(DbOrderNickName("MD5"))
+	If SC8->(dbSeek(xFilial("SC8")+cId))
+		If SC8->C8_TOTAL =  0
+		cNumCot := SC8->C8_NUM
+		dbSelectArea("SA2")
+		SA2->(dbSetOrder(1))
+		SA2->(dbSeek(xFilial("SA2")+SC8->C8_fornece+SC8->C8_loja))
+		cFornece := SC8->C8_fornece+SC8->C8_loja
+
+	    cHTML += " <form >                                                                                         "
+		cHTML += "     <div class='container'>                                                                     "
+		cHTML += "         <br>                                                                                    "
+		cHTML += "         <div class='jumbotron' >                                                                "
+		cHTML += "             <div class='row'>                                                                   "
+		cHTML += "                 <div class='col-sm-12'>                                                         "
+		cHTML += "                     <center><h3><strong>Cotação de compra número:  "+cNumCot+" </strong></h3></center> "
+		cHTML += "                  </div>                                                                         "
+		cHTML += "             </div>                                                                              "
+		cHTML += "				<div class='row'>                                                               "
+		cHTML += "					<div class='col-sm-12'>                                                     "
+		cHTML += "						<center><label><strong>" + SM0->M0_NOMECOM +"</strong></label></center>           "
+		cHTML += "					 </div>                                                                     "
+		cHTML += "				</div>                                                                          "
+		cHTML += "				<div class='row'>                                                               "
+		cHTML += "					<div class='col-sm-12'>                                                     "
+		cHTML += "						<center><label><strong>"+ SM0->M0_ENDENT+" </strong></label></center> "
+		cHTML += "					 </div>                                                                     "
+		cHTML += "				</div>                                                                          "
+		cHTML += "				<div class='row'>                                                               "
+		cHTML += "					<div class='col-sm-12'>                                                     "
+		cHTML += "						<center><label><strong>"+ Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+" </strong></label></center>        "
+		cHTML += "					 </div>                                                                     "
+		cHTML += "				</div>                                                                          "
+		cHTML += "				<div class='row'>                                                               "
+		cHTML += "					<div class='col-sm-12'>                                                     "
+		cHTML += "						<center><label><strong>" + SM0->M0_TEL+" </strong></label></center>               "
+		cHTML += "					 </div>                                                                     "
+		cHTML += "				</div>																	        "
+		cHTML += "             <hr>                                                                                "
+		cHTML += "             <p></p>                                                                      "
+		cHTML += "             <p></p>                                                                     "
+		cHTML += "             <p>                                                                                 "
+		cHTML += "             <h4>Fornecedor: "+SA2->A2_COD+"/"+SA2->A2_LOJA+" - "+ALLTRIM(SA2->A2_NOME)+"</h4>                                     "
+		cHTML += "             </p>                                                                                "
+		cHTML += "             <p>                                                                                 "
+		cHTML += "             <h5>CNPJ: "+Transform(SA2->A2_CGC, "@R 99.999.999/9999-99" )+"</h5>                                                   "
+		cHTML += "             </p>                                                                                "
+		cHTML += "             <hr>                                                                                "
+		cHTML += "             <div class='table-responsive'>                                                      "
+		cHTML += "                 <table class='table' border='0'>                                  "
+		cHTML += "                     <thead>                                                                     "
+		cHTML += "                        <tr>                                                                     "
+		cHTML += "                           <th>Item</th>                                                         "
+		cHTML += "                           <th>Produto</th>                                                      "
+		cHTML += "                           <th>                                                                  "
+		cHTML += "                              <div align='right'>Quantidade</div>                                "
+		cHTML += "                           </th>                                                                 "
+		cHTML += "                           <th>                                                                  "
+		cHTML += "                              <div align='center'>Vlr. Unit.</div>                               "
+		cHTML += "                           </th>                                                                 "
+		cHTML += "                           <th>                                                                  "
+		cHTML += "                              <div align='center'>ICMS&nbsp;&nbsp;</div>                         "
+		cHTML += "                           </th>                                                                 "
+		cHTML += "                           <th>                                                                  "
+		cHTML += "                              <div align='center'>IPI&nbsp;&nbsp;</div>                          "
+		cHTML += "                           </th>                                                                 "
+		cHTML += "                            <th>                                                                 "
+		cHTML += "                              <div align='center'>NCM</div>                                      "
+		cHTML += "                           </th>                                                                 "
+		cHTML += "                           <th>                                                                  "
+		cHTML += "                              <div align='center'>Data Entrega</div>                             "
+		cHTML += "                           </th>                                                                 "
+		cHTML += "                           <th>                                                                  "
+		cHTML += "                              <div align='center'>Data Necessidade</div>                           "
+		cHTML += "                           </th>                                                                 "
+		cHTML += "                        </tr>                                                                    "
+		cHTML += "                     </thead>                                                                    "
+		cHTML += "<tbody>"
+
+		While !SC8->(Eof()) .and. cNumCot == SC8->C8_NUM .and. SC8->C8_fornece+SC8->C8_loja == cFornece
+
+			cDesc := Posicione("SB1",1,xFilial("SB1")+SC8->C8_PRODUTO,"B1_DESC")
+
+
+			cHTML += "<tr>"
+			cHTML += "<td><font size='2'>"+Alltrim(SC8->C8_ITEM)+"</font></td>"
+			cHTML += "<td style='width: 250px;'><font size='2'>"+Alltrim(SC8->C8_PRODUTO)+" - "+Alltrim(cDesc)+"<br>"+alltrim(SC8->C8_OBS)+"</font></td>"
+			cHTML += "<td><div align='right'><font size='2'>"+Transform(SC8->C8_QUANT,"@E 999,999,999.99")+"</font></div></td>"
+			cHTML += "                           <td style='width: 150px;'>                                            "
+			cHTML += "                             <div class='input-group'>                                           "
+			cHTML += "                               <div class='input-group-addon'>R$</div>                           "
+			cHTML += "                               <input class='form-control money input-sm' type='text' required min='0.01' step='0.01' lang='br' name='valunit"+SC8->C8_ITEM+"' id='valunit' value='' align='right' >"
+			cHTML += "                             </div>                                                                                                                                                     "
+			cHTML += "                                                                                                                                                                                        "
+			cHTML += "                           </td>                                                                                                                                                        "
+			cHTML += "                           <td style='width: 110px;'>                                                                                                                                   "
+			cHTML += "                             <div class='input-group'>                                                                                                                                  "
+			cHTML += "                                <input class='form-control input-sm' type='number' required max='25' min='0' step='1' lang='br' name='picm"+SC8->C8_ITEM+"' id='picm' value='0'>                    "
+			cHTML += "                                <div class='input-group-addon'>%</div>                                                                                                                  "
+			cHTML += "                             </div>                                                                                                                                                     "
+			cHTML += "                           </td>                                                                                                                                                        "
+			cHTML += "                           <td style='width: 110px;' >                                                                                                                                  "
+			cHTML += "                             <div class='input-group'>                                                                                                                                  "
+			cHTML += "                                 <input class='form-control input-sm' type='number' required max='50' min='0' step='1' lang='br' name='pipi"+SC8->C8_ITEM+"' id='pipi' value='0'>                   "
+			cHTML += "                                 <div class='input-group-addon'>%</div>                                                                                                                 "
+			cHTML += "                             </div>                                                                                                                                                     "
+			cHTML += "                           </td>                                                                                                                                                        "
+			cHTML += "                           <td style='width: 80px;' >                                                                                                                                   "
+			cHTML += "                                                                                                                                                                                        "
+			cHTML += "                                 <input class='form-control  input-sm' type='text' required max='50' min='0' step='1' lang='br' name='pincm"+SC8->C8_ITEM+"' id='pincm'>                 "
+			cHTML += "                                                                                                                                                                                        "
+			cHTML += "                           </td>                                                                                                                                                        "
+			cHTML += "                           <td style='width: 150px;'>                                                                                                                                   "
+			cHTML += "                              <div class='input-group'>                                                                                                                                 "
+			cHTML += "                                  <input class='form-control input-sm dataaa' type='text' name='prz"+SC8->C8_ITEM+"' required >                                                         "
+			cHTML += "                                  <div class='input-group-addon'>  <span class='glyphicon glyphicon-calendar'></span> </div>                                                            "
+			cHTML += "                             </div>                                                                                                                                                     "
+			cHTML += "                           </td>                                                                                                                                                        "
+			cHTML += "                           <td align='center'  style='width: 100px;'><font size='2'>"+DTOC(SC8->C8_DATPRF)+"</font></td>                                                                "
+			cHTML += "</tr>                                                                                                                                                                                   "
+
+			SC8->(dbSkip())
+		EndDo
+
+		cHTML += "                        </tr>                                                                                                                                                           "
+		cHTML += "                     </tbody>                                                                                                                                                           "
+		cHTML += "                 </table>                                                                                                                                                               "
+		cHTML += "             </div>                                                                                                                                                                     "
+		cHTML += "             <br>                                                                                                                                                                       "
+		cHTML += "             <br>                                                                                                                                                                       "
+		cHTML += "                                                                                                                                                                                        "
+
+
+
+		cHTML += "             <div class='row'>                                                                                                                                                          "
+		cHTML += "                 <div class='col-md-4 col-md-offset-4 '>                                                                                                                                "
+		cHTML += "                     <label for='select'>Condição de Pagamento</label>                                                                                                                  "
+		cHTML += "                     <select name='condpag' id='condpag' class='form-control'>                                                                                                          "
+		dbSelectArea("SE4")
+		SE4->(dbSetOrder(1))
+		SE4->(dbGoTop())
+		While !SE4->(Eof())
+			cHTML += "						<option value='"+SE4->E4_CODIGO+"'>"+Alltrim(SE4->E4_DESCRI)+"</option>"
+  			SE4->(dbSkip())
+		EndDo
+	  	cHTML += "                     </select>                                                                                                                                                          "
+		cHTML += "                 </div>                                                                                                                                                                 "
+		cHTML += "             </div>                                                                                                                                                                     "
+		cHTML += "             <br>                                                                                                                                                                       "
+		cHTML += "             <div class='row'>                                                                                                                                                          "
+		cHTML += "                 <div class='col-md-4 col-md-offset-4 '>                                                                                                                                "
+		cHTML += "                     <label for='select' >Tipo de Frete</label>                                                                                                                         "
+		cHTML += "                      <select name='tpfrete' id='tpfrete' class='form-control'>                                                                                                         "
+		cHTML += "                         <option value='CIF'>CIF</option>                                                                                                                               "
+		cHTML += "                         <option value='FOB'>FOB</option>                                                                                                                               "
+		cHTML += "                      </select>                                                                                                                                                         "
+		cHTML += "                 </div>                                                                                                                                                                 "
+		cHTML += "             </div> <br>                                                                                                                                                                       "                                                                                                                        "
+		cHTML += "             <div class='row'>                                                                                                                                                          "
+		cHTML += "                 <div class='col-md-4 col-md-offset-4 '>                                                                                                                                "
+		cHTML += "                     <label for='number'>Valor de Frete</label>                                                                                                                         "
+		cHTML += "                     <div class='input-group'>                                                                                                                                          "
+		cHTML += "                         <div class='input-group-addon'>R$</div>                                                                                                                        "
+		cHTML += "                         <input class='form-control' type='text' name='vfrete' id='vfrete'>                                                                                             "
+		cHTML += "                     </div>                                                                                                                                                             "
+		cHTML += "                 </div>                                                                                                                                                                 "
+		cHTML += "             </div>                                                                                                                                                                     "
+		cHTML += "             <br>                                                                                                                                                                       "
+		cHTML += "             <div class='row'>                                                                                                                                                          "
+		cHTML += "                 <div class='col-md-4 col-md-offset-4 '>                                                                                                                                "
+		cHTML += "                     <label for='number'>Observação</label>                                                                                                                             "
+		cHTML += "                     <div class='input-group'>                                                                                                                                          "
+		cHTML += "                         <input class='form-control input-sm' required max='200' min='0' step='1' lang='br' type='text' name='Observ' id='Observ'>                                      "
+		cHTML += "                     </div>                                                                                                                                                             "
+		cHTML += "                 </div>                                                                                                                                                                 "
+		cHTML += "             </div>  		                                                                                                                                                              "	
+		cHTML += "             <br>                                                                                                                                                                       "
+		cHTML += "             <div class='alert alert-info' role='alert'>                                                                                                                                "
+		cHTML += "                <label class='text-center'>" + GetPvProfString("TEXTODETERNOSDECOTACAO", "LINHA1","",cFileini,,) + "</label>"
+		cHTML += "                <label class='text-center'>" + GetPvProfString("TEXTODETERNOSDECOTACAO", "LINHA2","",cFileini,,) + "</label>"
+		cHTML += "                <div class='checkbox' align='center'>                                                                                                                                                     "
+		cHTML += "                   <label ><input  type='checkbox' value='teste' onclick='teste()' id='check' >Aceito as condições, confome descrito a cima.</label>                                                      "
+		cHTML += "                 </div>                                                                                                                                                                                   "
+		cHTML += "             </div>                                                                                                                                                                                       "
+		cHTML += "             <div class='row'>                                                                                                                                                                            "
+		cHTML += "                 <div class='col-md-1 col-md-offset-11'>                                                                                                                                                  "
+		cHTML += "                    <button name='Enviar' type='submit' class='btn btn-primary btn-lg fs-full-width' id='Enviar' formaction='http://"+ serverhttp +":"+ portahttp +"/u_confcot.apw?Observ=teste&id="+cId+"' formmethod='POST'  disabled='true'>Enviar <span class='glyphicon glyphicon-saved' ></span></button>"
+		cHTML += "                 </div>                                                                                         "
+		cHTML += "             </div>                                                                                             "
+		cHTML += "                                                                                                                "
+		cHTML += "         </div>                                                                                                 "
+		cHTML += "         <hr>                                                                                                   "
+		cHTML += "         <div class='row'>                                                                                      "
+		cHTML += "             <div class='col-sm-12'>                                                                            "
+		cHTML += "                 <footer>                                                                                       "
+		cHTML += "                     <p>                                                                                        "
+		cHTML += "                     <div align='center'><small>ID Rastreamento: "+cId+"</small></div> "
+		cHTML += "                     </p>                                                                                       "
+		cHTML += "                 </footer>                                                                                      "
+		cHTML += "             </div>                                                                                             "
+		cHTML += "         </div>                                                                                                 "
+		cHTML += "     </div>                                                                                                     "
+		cHTML += " </form>                                                                                                        "
+		cHTML += " </body>                                                                                                        "
+		cHTML += " </html>                                                                                                        "
+
+	Else
+
+		cHTML+="</hr>"
+		cHTML += "<div class='alert alert-warning' role='alert'> "
+		cHTML += "<p class='text-center'>Desculpe mas sua proposta já está gravada em nosso banco de dados, não podendo ser revista ou alterada. Se necessário entrar em contato com a equipe de compras.</p>"
+		cHTML += "</div> "
+		cHTML+="</hr>"
+		cHTML+="<body>"
+		cHTML+="</body>"
+		cHTML+="</html>"
+
+	Endif
+	Else
+		cHTML+="</hr>"
+		cHTML += "<div class='alert alert-warning' role='alert'> "
+		cHTML += "<p class='text-center'>Cotação não encontrada, favor verificar. - Paramentro passado pelo navegador - MD5: "+cId+"</p>"
+		cHTML += "</div> "
+		cHTML+="</hr>"
+		cHTML+="<body>"
+		cHTML+="</body>"
+		cHTML+="</html>"
+	Endif
+	RpcClearEnv()
+Return cHTML

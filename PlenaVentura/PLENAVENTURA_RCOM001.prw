@@ -40,8 +40,8 @@ Static Function ReportPrint(oReport,cAlias)
 
 	BEGINSQL ALIAS cAlias
 
-	SELECT F1_FILIAL, F1_DTDIGIT, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_VALBRUT,F1_TIPO, F1_P1VENC, F1_PREFIXO
-	FROM %Table:SF1% SF1
+	SELECT F1_FILIAL, F1_DTDIGIT, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_VALBRUT,F1_TIPO, F1_P1VENC, F1_PREFIXO, F1_IRRF, F1_VALPIS, F1_VALCOFI, F1_VALCSLL
+	FROM %Table:SF1% SF
 	     WHERE F1_FILIAL = %xFilial:SF1% 
 		     AND F1_DOC >= %exp:MV_PAR01%
 		     AND F1_DOC <= %exp:MV_PAR02%
@@ -51,7 +51,7 @@ Static Function ReportPrint(oReport,cAlias)
 		     AND F1_FORNECE	<= %Exp:MV_PAR06%
 		     AND F1_P1VENC	>= %Exp:MV_PAR07%
 		     AND F1_P1VENC	<= %Exp:MV_PAR08%
-		     AND SF1.D_E_L_E_T_ = ' '
+		     AND %NotDel%
 	ENDSQL
 
 	oSecao1:EndQuery()
@@ -63,7 +63,7 @@ Static Function ReportPrint(oReport,cAlias)
 	Count to nQtdReg
 	(cAlias)->(dbGoTop())
 	oReport:SetMeter(nQtdReg)
-
+	//TCSetField("QRY","F1_DTDIGIT","D",8,0) 
 	oSecao1:init()
 	While !(cAlias)->(Eof())
 
@@ -90,14 +90,35 @@ Static Function ReportPrint(oReport,cAlias)
 
 			cComprador := SY1->Y1_NOME
 		EndIf
-		nValorLiq := posicione('SE2',1, (cAlias)->(F1_FILIAL + F1_PREFIXO + F1_DOC +'NF' + F1_FORNECE + F1_LOJA ),E2_VALOR) 
+		nValorLiq :=(cAlias)->( F1_VALBRUT - F1_IRRF - F1_VALPIS - F1_VALCOFI - F1_VALCSLL)
 		oSecao1:Cell("NOME"):SetValue(cForCli)
 		oSecao1:Cell("F1_VALBRUT"):SetValue((cAlias)->F1_VALBRUT)
 		oSecao1:Cell("LIQUIDO"):SetValue(nValorLiq)
-		oSecao1:Cell("F1_P1VENC"):SetValue((cAlias)->F1_P1VENC)
+		//oSecao1:Cell("F1_P1VENC"):SetValue((cAlias)->F1_P1VENC)
+
+		cQuery := " select E2_VENCREA, E2_VALOR from " + RetSqlName("SE2") + " SE2"
+		cQuery += " Where D_E_L_E_T_ =' ' and  E2_FILIAL = '"+(cAlias)->F1_FILIAL+"' and E2_NUM =  '" +(cAlias)->F1_DOC+"' "
+		cQuery += " and E2_TIPO ='NF' and E2_FORNECE = '" + (cAlias)->F1_FORNECE +"' and E2_LOJA ='" +(cAlias)->F1_LOJA+ "'"
+		if select("QRY") <> 0
+			DbCloseArea("QRY")
+		Endif
+		TcQuery cQuery New Alias "QRY" 
+		if alltrim((cAlias)->F1_DOC) ='23394'
+			cTst :=""
+		Endif
+		nCont :=1
+		//TcSetField("QRY","E2_VENCREA","D",8,0)
+		While QRY->(!EOF())	.and. nCont<=10
+			cVenc  := "P"+cValtoChar(nCont)+"VENC"
+			cData  :=SubStr(QRY->E2_VENCREA,7,2)+'/'+SubStr(QRY->E2_VENCREA,5,2)+'/'+SubStr(QRY->E2_VENCREA,1,4)
+			oSecao1:Cell(cVenc):SetValue(cData)
+			cValor  := "V"+cValtoChar(nCont)+"VENC"
+			oSecao1:Cell(cValor):SetValue(QRY->E2_VALOR)
+			nCont +=1
+			QRY->( dbSkip())
+		Enddo
 
 		oSecao1:PrintLine()
-
 		(cAlias)->(dbSkip())
 		oReport:IncMeter()
 
@@ -136,8 +157,27 @@ Static Function ReportDef(cAlias,cPerg)
 	TRCell():New(oSection1,"F1_VALBRUT" , "SF1", "Valor Bruto")
 	TRCell():New(oSection1,"LIQUIDO"    , "SE2", "Valor Liquido")
 	TRCell():New(oSection1,"Y1_NOME"    , "SY1", "Comprador")
-	TRCell():New(oSection1,"F1_P1VENC"  , "SF1", "1º Vencimento")
-
+		TRCell():New(oSection1,"P1VENC"     , "SF1", "1º Vencimento")
+	TRCell():New(oSection1,"V1VENC"     , "SF1", "Valor")
+	TRCell():New(oSection1,"P2VENC"     , "QRY", "2º Vencimento")
+	TRCell():New(oSection1,"V2VENC"     , "QRY", "Valor")
+	TRCell():New(oSection1,"P3VENC"     , "SF1", "3º Vencimento")
+	TRCell():New(oSection1,"V3VENC"     , "SF1", "Valor")
+	TRCell():New(oSection1,"P4VENC"     , "SF1", "4º Vencimento")
+	TRCell():New(oSection1,"V4VENC"     , "SF1", "Valor")
+	TRCell():New(oSection1,"P5VENC"     , "SF1", "5º Vencimento")
+	TRCell():New(oSection1,"V5VENC"     , "SF1", "Valor")
+	TRCell():New(oSection1,"P6VENC"     , "SF1", "6º Vencimento")
+	TRCell():New(oSection1,"V6VENC"     , "SF1", "Valor")
+	TRCell():New(oSection1,"P7VENC"     , "SF1", "7º Vencimento")
+	TRCell():New(oSection1,"V7VENC"     , "SF1", "Valor")
+	TRCell():New(oSection1,"P8VENC"     , "SF1", "8º Vencimento")
+	TRCell():New(oSection1,"V8VENC"     , "SF1", "Valor")
+	TRCell():New(oSection1,"P9VENC"     , "SF1", "9º Vencimento")
+	TRCell():New(oSection1,"V9VENC"     , "SF1", "Valor")
+	TRCell():New(oSection1,"P10VENC"    , "SF1","10º Vencimento")
+	TRCell():New(oSection1,"V10VENC"    , "SF1", "Valor")
+	
 	TRFunction():New(oSection1:Cell("F1_DOC"),,"COUNT",,"QUANTIDADE",,,.F.,.T.,.F.,oSection1)
 	TRFunction():New(oSection1:Cell("F1_VALBRUT"),,"SUM",,"VALOR TOTAL",,,.F.,.T.,.F.,oSection1)
 
