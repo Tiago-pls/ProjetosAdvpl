@@ -27,13 +27,15 @@ Return
 Static Function ReportDef()
 Local oReport
 Local oSection1
-Local oSection2
-Local aOrdem	:= { "Filial+Matricula","Filial+Nome","Filial+Centro de Custo","Filial+Contrato"}
+//Local oSection2
+Local aOrdem	:= { "Filial+Matricula","Filial+Nome","Filial+Centro de Custo","Filial+Contrato"} 
 
 oReport := TReport():New("FTGPERRF","Relatório de funcionários","FTGPERRF",{|oReport| PrintReport(oReport)},"Relatório de funcionários")
 
 oSection1 := TRSection():New(oReport,"FUNCIONARIOS",{"SRA"},aOrdem)
 
+
+oSection1:SetHeaderBreak()
 TRCell():New(oSection1,"RA_FILIAL"	,"SRA"	,"Filial")
 TRCell():New(oSection1,"RA_MAT"		,"SRA"	,"Matrícula")
 TRCell():New(oSection1,"RA_NOME"	,"SRA"	,"Nome")
@@ -84,7 +86,7 @@ EndIf
 			SELECT DISTINCT RA_FILIAL, RA_MAT, RA_NOME, RA_SEXO, RA_ADMISSA, RA_DTVCCNH, RA_CC, CTT_DESC01,RA_ITEM,  CTD_DESC01,RA_CHAPA, RA_EXAMEDI, RA_CODFUNC, RJ_DESC, RA_SALARIO, RA_DTVCRIP
 			, (SELECT COUNT(*) FROM SRB010 WHERE D_E_L_E_T_ = '' AND RA_FILIAL = RB_FILIAL AND RA_MAT = RB_MAT AND RB_GRAUPAR = 'F') AS FILHOS, RA_CIC
 			FROM %table:SRA% SRA
-			INNER JOIN %table:SRJ% SRJ ON RA_CODFUNC = RJ_FUNCAO
+			INNER JOIN %table:SRJ% SRJ ON RA_CODFUNC = RJ_FUNCAO and RJ_FILIAL = SUBSTRING(RA_FILIAL, 1, 2) 
 			INNER JOIN %table:CTT% CTT ON RA_CC      = CTT_CUSTO
 			INNER JOIN %table:CTD% CTD ON RA_ITEM    = CTD_ITEM
 			WHERE SRA.%notDel% AND SRJ.%notDel%
@@ -114,7 +116,7 @@ TRFunction():New(oSection1:Cell("RA_FILIAL"),"Total Empresa","COUNT",,,"@E 99999
 If mv_par07 == 1
 	oBreakFil:SetPageBreak(.T.)
 EndIf
-
+oSection1:SetHeaderSection(.F.)   
 oSection1:Print()
 
 

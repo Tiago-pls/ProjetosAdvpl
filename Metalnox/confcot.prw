@@ -23,18 +23,31 @@ User Function confcot()
 	Local nReg := 0
 	local difdata := 0
 	local nValFrete := 0
-	Local cObsevacao := httpGet->Observ
-	conout(cObsevacao)
+	Local cObser := httpPost->Observ
+	Local aInfo :={}
+	Local nI :=0
+
+
 	RpcSetType(3)
 	PREPARE ENVIRONMENT EMPRESA "01" FILIAL "0101" MODULO "COM" TABLES "SA1,SA4,SB1,SE4,SF4,SA2,SC8,SC1,SCY"
 
 	cStartPath	:= GetSrvProfString("Startpath","")
 
+	/* ----   Imprimir variaveis Get*/
+    conOut(Procname()+"("+ltrim(str(procline()))+") *** Portal ")
+    aInfo := HttpGet->aGets
+    For nI := 1 to len(aInfo)
+       conout('GET '+str(nI,3)+' = '+aInfo[nI]+' -> '+&("HTTPGET->"+aInfo[nI]))
+    Next
+    aInfo := HttpPost->aPost
+    For nI := 1 to len(aInfo)
+       conout('POST '+str(nI,3)+' = '+aInfo[nI]+' -> '+&("HTTPPOST->"+aInfo[nI]))
+    Next
+
 	dbSelectArea("SC8")
 	SC8->(DbOrderNickName("MD5"))
 	If SC8->(dbSeek(xFilial("SC8")+cIDconf))
-		If SC8->C8_TOTAL == 0
-		
+		If SC8->C8_TOTAL == 0		
 	
 			cFornece := SC8->C8_FORNECE
 			cLoja := SC8->C8_LOJA
@@ -42,8 +55,7 @@ User Function confcot()
 			nReg := SC8->(Recno())
 		
 			conout(SC8->C8_NUM)
-			conout(cIDconf)
-		
+			conout(cIDconf)		
 		
 			aCab := {	{"C8_NUM"		,cNum			,NIL},;
 				{"C8_EMISSAO"	,SC8->C8_EMISSAO				,NIL},;
@@ -56,15 +68,19 @@ User Function confcot()
 
 			While !SC8->(Eof()) .and. cNum == SC8->C8_NUM .and. SC8->C8_fornece+SC8->C8_loja == cFornece+cLoja
 
-				nVunit := Val(&("httpPost->valunit"+SC8->C8_ITEM))
+				nVunit := val(strtran(strtran(&("httpPost->valunit"+SC8->C8_ITEM),".",""),",","."))
 				nVTot := SC8->C8_QUANT * nVunit
 				dbSelectArea("SB1")
 				SB1->(dbSetOrder(1))
 				SB1->(dbSeek(xFilial("SB1")+SC8->C8_PRODUTO))
-				nValFrete := Val(&("httpPost->vfrete"))
+				nValFrete := Val(strtran(strtran(&("httpPost->vfrete"),".",""),",","."))
+				conout("variaviavel Frete  Antes" + &("httpPost->vfrete"))
+				conout("variaviavel Frete  depois" + cValtoChar(nValFrete))
+
 				difdata := DateDiffDa(DATE(),Ctod(&("httpPost->prz"+SC8->C8_ITEM)))
-			
-			
+
+						
+
 				IF (httpPost->vfrete) != ""  .or. nValFrete == 0
 					aadd(aItem,   {{"C8_ITEM",SC8->C8_ITEM ,NIL},;
 						{"C8_NUMPRO"	,SC8->C8_NUMPRO,NIL},;
@@ -76,11 +92,16 @@ User Function confcot()
 						{"C8_PRAZO",difdata ,NIL},;
 						{"C8_FORNECE",cFornece ,NIL},;
 						{"C8_LOJA",cLoja ,NIL},;
-						{"C8_ALIIPI",Val(&("httpPost->pipi"+SC8->C8_ITEM)) ,NIL},;
+						{"C8_ALIIPI",Val(strtran(strtran(&("httpPost->pipi"+SC8->C8_ITEM),".",""),",",".")) ,NIL},;
 						{"C8_TES",SB1->B1_TE ,NIL},;
+						{"C8_TPFRETE",left(&("httpPost->Tpfrete"),1) ,NIL},;
+						{"C8_VALFRE",Round(nValFrete,2) ,NIL},;						
+						{"C8_TOTFRE",Round(nValFrete,2) ,NIL},;						
 						{"C8_MOEDA",1 ,NIL},;
 						{"C8_MD5",SC8->C8_MD5 ,NIL},;
-						{"C8_PICM",Val(&("httpPost->picm"+SC8->C8_ITEM)) ,NIL}})
+						{"C8_OBS",cObser ,NIL},;
+						{"C8_PICM",Val(strtran(strtran(&("httpPost->picm"+SC8->C8_ITEM),".",""),",",".")) ,NIL}})
+
 				ELSE 
 					aadd(aItem,   {{"C8_ITEM",SC8->C8_ITEM ,NIL},;
 						{"C8_NUMPRO"	,SC8->C8_NUMPRO,NIL},;
@@ -92,18 +113,17 @@ User Function confcot()
 						{"C8_PRAZO",difdata ,NIL},;
 						{"C8_FORNECE",cFornece ,NIL},;
 						{"C8_LOJA",cLoja ,NIL},;
-						{"C8_ALIIPI",Val(&("httpPost->pipi"+SC8->C8_ITEM)) ,NIL},;
+						{"C8_ALIIPI",Val(strtran(strtran(&("httpPost->pipi"+SC8->C8_ITEM),".",""),",",".")) ,NIL},;
 						{"C8_TES",SB1->B1_TE ,NIL},;
 						{"C8_MOEDA",1 ,NIL},;
 						{"C8_MD5",SC8->C8_MD5 ,NIL},;
-						{"C8_VALFRE",Round(nValFrete,2) ,NIL},;
-						{"C8_PICM",Val(&("httpPost->picm"+SC8->C8_ITEM)) ,NIL}})
-				ENDIF
-				
+						{"C8_OBS",cObser ,NIL},;
+						{"C8_PICM",Val(strtran(strtran(&("httpPost->picm"+SC8->C8_ITEM),".",""),",",".")) ,NIL}})
+						
+				ENDIF				
 
 				SC8->(dbSkip())
 			EndDo
-
 
 
 			lMsErroAuto := .F.

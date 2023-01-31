@@ -215,7 +215,7 @@ Return
 Static Function ReportPrint(oRel)
 
 Local oDados  	:= oRel:Section(1)
-Local nOrdem  	:= oDados:GetOrder()
+//Local nOrdem  	:= oDados:GetOrder()
 
 oDados:Init()
 
@@ -238,7 +238,7 @@ If QRY->(!Eof())
 		If oRel:Cancel()
 			Exit
 		EndIf   		
-  		oRel:IncMeter(10)
+  		oRel:IncMeter(10)    		  		
   		oDados:PrintLine()
         oDados:SetHeaderSection(.F.)   	
 	QRY->(dbSkip())						
@@ -413,7 +413,7 @@ cQuery += " RA_ADMISSA , CTD_DESC01 " +cLFRC
 cQuery += " FROM dbo."+RetSqlName(cTab)+" "+ cTab +cLFRC
 cQuery += " Inner join dbo."+RetSqlName("SRA")+" SRA on " + cPre+"_FILIAL = RA_FILIAL and " + cPre+"_MAT = RA_MAT" +cLFRC
 cQuery += " Inner join dbo."+RetSqlName("SRJ")+" SRJ on SubString(" + cPre+"_FILIAL,1,2) = RJ_FILIAL and RA_CODFUNC = RJ_FUNCAO" +cLFRC
-cQuery += " Inner join dbo."+RetSqlName("CTT")+" CTT on " + cPre+"_CC = CTT_CUSTO" +cLFRC
+cQuery += " Inner join dbo."+RetSqlName("CTT")+" CTT on " + cPre+"_CC = CTT_CUSTO and SubString("+cPre+"_FILIAL,1,2) = CTT_FILIAL" +cLFRC
 cQuery += " Inner join dbo."+RetSqlName("CTD")+" CTD on " + cPre+"_ITEM = CTD_ITEM" +cLFRC
 cQuery += " where "+cTab+".D_E_L_E_T_ =' ' and " + cPre+"_ROTEIR ='FOL' and " +cLFRC
 cQuery +=  + cPre+"_FILIAL >= '"+MV_PAR01+"' and " + cPre+"_FILIAL <= '"+ MV_PAR02+"' and " +cLFRC

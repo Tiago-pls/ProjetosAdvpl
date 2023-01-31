@@ -19,7 +19,7 @@ User function msh01
 	//**** variaveis para envio para o fonte 'U_confcot' via http!!
 	local serverhttp := GetPvProfString("CONFHTTP", "SERVERHTTP","",cFileini,,)
 	local portahttp := GetPvProfString("CONFHTTP", "PORTAHTTP","",cFileini,,)
-	conout(cObser)
+	conout("variaviavel cObser" + alltrim(cObser))
 	RpcSetType(3)
 	//PREPARE ENVIRONMENT EMPRESA "01" FILIAL "0101"
 	PREPARE ENVIRONMENT EMPRESA "01" FILIAL cF
@@ -143,7 +143,7 @@ User function msh01
 			cHTML += "                           </td>                                                                                                                                                        "
 			cHTML += "                           <td style='width: 110px;'>                                                                                                                                   "
 			cHTML += "                             <div class='input-group'>                                                                                                                                  "
-			cHTML += "                                <input class='form-control input-sm' type='number' required max='25' min='0' step='1' lang='br' name='picm"+SC8->C8_ITEM+"' id='picm' value='0'>                    "
+			cHTML += "                                 <input class='form-control input-sm' type='text' required lang='br' name='picm"+SC8->C8_ITEM+"' id='picm' value='0'>                    "
 			cHTML += "                                <div class='input-group-addon'>%</div>                                                                                                                  "
 			cHTML += "                             </div>                                                                                                                                                     "
 			cHTML += "                           </td>                                                                                                                                                        "
@@ -215,10 +215,10 @@ User function msh01
 		cHTML += "             </div>                                                                                                                                                                     "
 		cHTML += "             <br>                                                                                                                                                                       "
 		cHTML += "             <div class='row'>                                                                                                                                                          "
-		cHTML += "                 <div class='col-md-4 col-md-offset-4 '>                                                                                                                                "
+		cHTML += "                 <div class='col-md-12 col-md-offset-4 '>                                                                                                                               "
 		cHTML += "                     <label for='number'>Observação</label>                                                                                                                             "
 		cHTML += "                     <div class='input-group'>                                                                                                                                          "
-		cHTML += "                         <input class='form-control input-sm' required max='200' min='0' step='1' lang='br' type='text' name='Observ' id='Observ'>                                      "
+		cHTML += "                       <textarea id='Observ' name='Observ' rows='5' cols='33' style='width: 523px; height: 140px;'></textarea>                                                          "
 		cHTML += "                     </div>                                                                                                                                                             "
 		cHTML += "                 </div>                                                                                                                                                                 "
 		cHTML += "             </div>  		                                                                                                                                                              "	
@@ -232,7 +232,7 @@ User function msh01
 		cHTML += "             </div>                                                                                                                                                                                       "
 		cHTML += "             <div class='row'>                                                                                                                                                                            "
 		cHTML += "                 <div class='col-md-1 col-md-offset-11'>                                                                                                                                                  "
-		cHTML += "                    <button name='Enviar' type='submit' class='btn btn-primary btn-lg fs-full-width' id='Enviar' formaction='http://"+ serverhttp +":"+ portahttp +"/u_confcot.apw?Observ=teste&id="+cId+"' formmethod='POST'  disabled='true'>Enviar <span class='glyphicon glyphicon-saved' ></span></button>"
+		cHTML += "                    <button name='Enviar' type='submit' class='btn btn-primary btn-lg fs-full-width' id='Enviar' formaction='http://"+ serverhttp +":"+ portahttp +"/u_confcot.apw?id="+cId+"' formmethod='POST'  disabled='true'>Enviar <span class='glyphicon glyphicon-saved' ></span></button>"
 		cHTML += "                 </div>                                                                                         "
 		cHTML += "             </div>                                                                                             "
 		cHTML += "                                                                                                                "

@@ -32,7 +32,7 @@ Tirar obrigatoriedade dos campos:
 */
 //---------------------------------------------------------------------
 
-user function ApiNfe() 
+user function ApiNfe(cTipo) 
 Local cUrl			:=  Alltrim(GetMv("RB_URLNFE"))
 Local cGetParams	:= ""
 Local nTimeOut		:= 400
@@ -42,7 +42,9 @@ Local cRetWs		:= ""
 Local cApiKey       := "&apikey=" + Alltrim(GetMv("RB_APIKEY")) 
 Local cDataIniBling := SubStr(GetMv("RB_DTINIBL"),7,2)+ "/" +SubStr(GetMv("RB_DTINIBL"),5,2)+ "/" +SubStr(GetMv("RB_DTINIBL"),1,4)
 Local cDataAtual    := SubStr( Dtos( dDatabase),7,2)+ "/" +SubStr( Dtos( dDatabase),5,2)+ "/" +SubStr( Dtos( dDatabase),1,4)
-Local cFIlter       := "&filters=dataEmissao["+ cDataIniBling + " TO "+ cDataAtual+"]"
+//Local cDataAtual    := "03/08/2022"
+//Local cFIlter       := "&filters=dataEmissao["+ cDataIniBling + " TO "+ cDataAtual+"]"
+Local cFIlter       := "&filters=dataEmissao["+ cDataIniBling + " TO "+ cDataIniBling+"]"
 Local lGetWS        := .T.
 Local nPage         := 1
 Local cArea         := "SA1"
@@ -52,10 +54,18 @@ Local oXMLProd      := TXMLManager():New()
 Local cLogTxt       := ""
 Local cArquivo      := "C:\TOTVS\"
 
+Local cCFOPtran     := Alltrim(GetMv("MN_CFOPTRA")) 
+Local nItens := 0
+Local nContItens := 0
+
 Default lJob        := .T.
 private cError      :=""
 Private cWarning    :=""
 private oXMLNfe     := TXMLManager():New()
+Private aItensSD1   :={}
+Private aLinha      := {}
+Private aCabec      := {}
+
 cUrl += "/page="
 
 if select(cArea) ==0 // Clienes
@@ -85,7 +95,7 @@ While lGetWS
         MsgStop(oXml:Error(),'XML Parser Error')
         Return .F.
     Endif
-    // Determina a quantidade de notas
+    // Determina a quantidade de pessoas
     nNfe := oXml:XPATHCHILDCOUNT('/retorno/notasfiscais')
 
     For nI := 1 to nNfe
@@ -109,6 +119,7 @@ While lGetWS
             SC5->( DbOrderNickName("PVBLING"))
             SC5->( dbgotop())
             If !SC5->( DbSeek(cNfeBling))
+
                 if type("oXMLNfe:_NFEPROC:_NFE:_INFNFE:_DEST:_CNPJ") =="O"
                     cvar := "_CNPJ"
                 else
@@ -128,6 +139,7 @@ While lGetWS
                         lProcPV :=.F. 
                     Endif    
                 Endif
+  
                 if lProcPV
                     nInic:=  At( '<det ',cRetNfe )
                     nFim := RAt( '</det>',cRetNfe ) 
@@ -143,11 +155,24 @@ While lGetWS
                         nItens := oXMLProd:XPATHCHILDCOUNT('/ini')
                         nQtdErros :=0
                         aItens :={}
+                        aItensSD1 :={}                    
                         cItem := "00"
+                        cItemSD1 := "0000"
                         For nContItens := 1 to nItens
                             aLine := {}
                             cProd:= alltrim(oXmlProd:XPATHGETNODEVALUE('/ini/det['+ cValtoChar(nContItens) + ']/prod/cProd'))
                             cCFOP:= alltrim(oXmlProd:XPATHGETNODEVALUE('/ini/det['+ cValtoChar(nContItens) + ']/prod/CFOP'))
+                            /* criar um parametro que guarde as CFOPs que serão utilizadas para as transferências
+                            // 5152|6152|5409|6409 
+                            se cCFOP estiver no parâmetro, gerar pre nota de entrada a classificar
+                            deverá gerar um pedido de vendas tbm ?
+                            ver com Renato ou Biagini
+                            MN_CFOPTAR
+                            cEst $ 'RS|SP|PR|SC|RJ'
+                            SIX 3 GQ_FILIAL+GQ_TIPOPER+GQ_LOCAL+GQ_PRODUTO  
+                            010103201PRODUTO
+                            */
+
                             cDesc := val(oXmlProd:XPATHGETNODEVALUE('/ini/det['+ cValtoChar(nContItens) + ']/prod/vDesc'))
                             // ICMS
                             cICMS00:= alltrim(oXmlProd:XPATHGETNODEVALUE('/ini/det['+ cValtoChar(nContItens) + ']/imposto/ICMS/ICMS00/CST'))
@@ -182,6 +207,21 @@ While lGetWS
                             AAdd(aLine, {"C6_ITEM", cItem, NIL})
                             AAdd(aLine, {"C6_VALDESC", cDesc, NIL})
                             AAdd(aItens, aLine)
+
+                            
+                            if cCFOP $ cCFOPtran
+                                // gerar pre nota entrada
+                                Aadd(aItensSD1,{'D1_ITEM',Soma1(cItem),NIL})
+                                Aadd(aItensSD1,{'D1_COD',cProd,NIL})
+                                Aadd(aItensSD1,{'D1_UM','UN',NIL})
+                                Aadd(aItensSD1,{"D1_QUANT",nQtd,Nil})
+                                Aadd(aItensSD1,{"D1_VUNIT",nPrecoVen,Nil})
+                                Aadd(aItensSD1,{"D1_TOTAL",nQtd * nPrecoVen,Nil})
+                                aAdd(aItensSD1,{"D1_TES",'',NIL})
+                                aAdd(aItensSD1,{"D1_CONTA",'11501005',NIL})
+                                aAdd(aItensSD1,{"D1_CC",'101001',NIL})
+                            Endif
+
                         Next nContItens
                      
                     Endif
@@ -234,7 +274,34 @@ While lGetWS
                             Mostraerro()
                             MemoWrite(cArquivo + Dtos(Date())+Time()+".txt", cLogTxt)
 
-                        else                        
+                        else       
+
+                            if cCFOP $ cCFOPtran
+                                            
+                                nOpc := 3
+
+                                lMsErroAuto := .F.                             
+
+                                //PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01" MODULO "COM" TABLES "SF1","SD1","SA1","SA2","SB1","SB2","SF4"
+                                aAdd(aCabec,{'F1_TIPO','N',NIL})
+                                aAdd(aCabec,{'F1_FORMUL','S',NIL})
+                                aAdd(aCabec,{'F1_DOC',cNfe,NIL})
+                                aAdd(aCabec,{"F1_SERIE",cSerieNF,NIL})
+                                aAdd(aCabec,{"F1_EMISSAO",dEmissao,NIL})
+                                aAdd(aCabec,{'F1_FORNECE','040559836',NIL})
+                                aAdd(aCabec,{'F1_LOJA','0001',NIL})
+                                aAdd(aCabec,{"F1_ESPECIE","SPED",NIL})
+                                aAdd(aCabec,{"F1_COND",'999',NIL})
+                                aAdd(aCabec,{"F1_STATUS",'',NIL})
+                                aAdd(aLinha,aItensSD1)
+                                MSExecAuto({|x,y,z,a,b| MATA140(x,y,z,a,b)}, aCabec, aLinha, nOpc,,)
+                                If lMsErroAuto
+                                    mostraerro()
+                                Else
+                                    Alert("Execauto MATA140 executado com sucesso!")
+                                EndIf 
+
+                            Endif                
                             cSerieNF := cvaltochar(val(SubStr( cNfeBling, 1,3)))
                             cPedido := SC5->C5_NUM
                             nLibPedCli := LibPedCli(xFilial("SC5"), cPedido)
@@ -317,7 +384,7 @@ static function VerProd(cProd, oXml)
 Local aArea := GetArea()
 Local lRet := .T.
 SB1->( dbgotop())
-
+cProd := cProd + Space(TamSx3("B1_COD")[1] - len(cprod))
 if !SB1->( DbSeek( xFilial("SB1") + cProd))
     cDesc   := Upper(NoAcento(oXml:XPATHGETNODEVALUE('/ini/det['+ cValtoChar(nContItens) + ']/prod/xProd')))
     cDesc   := Left( cDesc,TamSx3("B1_DESC")[1] )

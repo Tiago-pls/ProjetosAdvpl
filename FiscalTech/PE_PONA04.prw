@@ -21,7 +21,8 @@ Local __aResult := aClone( aEventos )
 Local nPosicao  := 0
 Local cTurno    := SuperGetMV("FT_TNOHES", .T., "125")
 Local cEvento   := SuperGetMV("FT_EVEHES", .T., "300")
-
+Local lAchou    := .F.
+Local aDados    := {}
 // Tratar Sabado e Banco de Horas
 if cTurno == SRA->RA_TNOTRAB
     for nPosicao:= 1 to Len(__aResult) 

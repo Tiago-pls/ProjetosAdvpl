@@ -13,6 +13,7 @@
 +------------------+---------------------------------------------------------!
 !Data              ! 14/04/2022                                              !
 !Data              ! 19/10/2022 - Tratar somente admissão                    !
+!Data              ! 11/01/2021 - alteração do usuário padrão para 000547    !
 +------------------+--------------------------------------------------------*/
 
 User Function GP010FIMPE ()
@@ -26,7 +27,7 @@ if INCLUI // alteração 19/10/2022
 		While RD0->(!EOF()) .AND. SRA->RA_CIC == RD0->RD0_CIC
 			IF RD0->RD0_DTADMI = SRA->RA_ADMISSA
 				RecLock("RD0", .F.)	
-				RD0->RD0_PORTAL := "000001"
+				RD0->RD0_PORTAL := "000547"
 				RD0->RD0_LOGIN := cLogin
 				RD0->RD0_FILRH := M->RA_FILIAL
 				MsUnLock()
