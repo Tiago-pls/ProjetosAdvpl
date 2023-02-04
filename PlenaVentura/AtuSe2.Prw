@@ -6,7 +6,7 @@
 
 
 user function AtuSe2 ()
-cQuery :=" Select  E2_FILIAL, E2_FORNECE, E2_LOJA, E2_NUM from SE2090 where D_E_L_E_T_ =' ' and E2_XANEXO ='1'"
+cQuery :=" Select  E2_FILIAL, E2_FORNECE, E2_LOJA, E2_NUM from "+RetSqlName("SE2")+"  where D_E_L_E_T_ =' ' and E2_XANEXO ='1'"
 cQuery +=" group BY E2_FILIAL, E2_FORNECE, E2_LOJA, E2_NUM "
 
 if select("QRY") > 0
