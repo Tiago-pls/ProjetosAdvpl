@@ -411,10 +411,10 @@ cQuery += " (                                  "    + cLFRC
 cQuery += " SELECT " + cPre+"_FILIAL, " + cPre+"_MAT, RA_NOME, " + cPre+"_PERIODO, " + cPre+"_CC, CTT_DESC01, RJ_DESC, " + cPre+"_ITEM, " + cPre+"_PD, " + cPre+"_VALOR," +cLFRC
 cQuery += " RA_ADMISSA , CTD_DESC01 " +cLFRC
 cQuery += " FROM dbo."+RetSqlName(cTab)+" "+ cTab +cLFRC
-cQuery += " Inner join dbo."+RetSqlName("SRA")+" SRA on " + cPre+"_FILIAL = RA_FILIAL and " + cPre+"_MAT = RA_MAT" +cLFRC
-cQuery += " Inner join dbo."+RetSqlName("SRJ")+" SRJ on SubString(" + cPre+"_FILIAL,1,2) = RJ_FILIAL and RA_CODFUNC = RJ_FUNCAO" +cLFRC
-cQuery += " Inner join dbo."+RetSqlName("CTT")+" CTT on " + cPre+"_CC = CTT_CUSTO and SubString("+cPre+"_FILIAL,1,2) = CTT_FILIAL" +cLFRC
-cQuery += " Inner join dbo."+RetSqlName("CTD")+" CTD on " + cPre+"_ITEM = CTD_ITEM" +cLFRC
+cQuery += " Inner join dbo."+RetSqlName("SRA")+" SRA on " + cPre+"_FILIAL = RA_FILIAL and " + cPre+"_MAT = RA_MAT and SRA.D_E_L_E_T_ =' ' " +cLFRC
+cQuery += " Inner join dbo."+RetSqlName("SRJ")+" SRJ on SubString(" + cPre+"_FILIAL,1,2) = RJ_FILIAL and RA_CODFUNC = RJ_FUNCAO and SRJ.D_E_L_E_T_ =' '" +cLFRC
+cQuery += " Inner join dbo."+RetSqlName("CTT")+" CTT on " + cPre+"_CC = CTT_CUSTO and SubString("+cPre+"_FILIAL,1,2) = CTT_FILIAL and CTT.D_E_L_E_T_ =' '" +cLFRC
+cQuery += " Inner join dbo."+RetSqlName("CTD")+" CTD on " + cPre+"_ITEM = CTD_ITEM and CTD.D_E_L_E_T_ =' '" +cLFRC
 cQuery += " where "+cTab+".D_E_L_E_T_ =' ' and " + cPre+"_ROTEIR ='FOL' and " +cLFRC
 cQuery +=  + cPre+"_FILIAL >= '"+MV_PAR01+"' and " + cPre+"_FILIAL <= '"+ MV_PAR02+"' and " +cLFRC
 cQuery +=  + cPre+"_CC     >= '"+MV_PAR03+"' and " + cPre+"_CC    <= '"+ MV_PAR04+"' and "  +cLFRC

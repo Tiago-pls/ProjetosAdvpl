@@ -978,6 +978,11 @@ Default lEntrada := .F.
 Default lTLVReg1 := .F. 														// controle de validacao da regra de negocios
 Default lTLVReg2 := .F. 														// controle de validacao da regra de negocios
 
+// validação de condição de pagamento por Número de Famílias de produtos OU Estado do cliente
+If !(U_MTXXPG(.F.))
+	Return(.F.)
+EndIf
+
 If cTipo9 <> "9" .AND. cCodAnt <> cCodPagto
 	lEntrada := .F.
 	aParcelas := {}
@@ -2454,6 +2459,13 @@ Local nJuros	:= 0								// Total dos juros da condicao escolhida
 Local lTmkDados	:= FindFunction("U_TMKDADOS")		// P.E. para TLV
 Local lAuxRet	:= .T.								// Retorno auxiliar do P.E. TMKDADOS
 Local lRet		:= .T.                              // Retorno da funcao
+
+
+// validação de condição de pagamento por Número de Famílias de produtos OU Estado do cliente
+If !(U_MTXXPG(.F.))
+	MsgAlert("Condição de pagamento não válida! Não atingiu o número de famílias de produtos suficiente, ou estado(UF) do cliente não válida para esta condicão.")
+	Return(.F.)
+EndIf
 
 //????????????????????????????????????
 //?erifica se o campo condicao de pagamento foi preenchido corretamente?
@@ -4078,6 +4090,11 @@ Local cPedComp 	:= M->UA_ZPEDCOM
 Local cFilComp  := M->UA_ZFILCOM
 Local _lDes6F	:= SuperGetMV("D6FRETE",.F.,.F.)
 
+// validação de condição de pagamento por Número de Famílias de produtos OU Estado do cliente
+If !(U_MTXXPG(.F.))
+	Return(.F.)
+EndIf
+
 If _lDes6F .and. cFilAnt$"0101/0201" .and. M->UA_TPFRETE=="F"
 	Return()
 EndIf
@@ -4131,6 +4148,37 @@ If cPessoa == "F"
 			lRet := .F.
 		EndIf
 	ENDIF
+EndIf
+
+Return(lRet)
+
+// Gustavo - Gruppe Tecnologia 06/09/21
+// Função para filtrar condições de pagamento específicas Belluno para clientes Pessoa Física
+// usada na consulta padrão SE4, campo UA_CONDPG
+User Function MTXXPG(lPosic)
+Local lRet := .T.
+Local cEst := ""
+
+If IsInCallStack("TMKA271")
+	lRet := .F.
+	cEst := Posicione("SA1",1,xFilial("SA1")+M->UA_CLIENTE+M->UA_LOJA,"A1_EST")
+
+	If lPosic
+		DbSelectArea("SE4")
+		DbSetOrder(1)
+		DbSeek(xFilial("SE4")+M->UA_CONDPG)
+	EndIf
+	
+	If !Empty(SE4->E4_ZEST)
+		If SE4->E4_ZEST == cEst
+			lRet := .T.
+		EndIf
+	Else
+		If SE4->E4_ZFAMMIN <= M->UA_ZNUMFAM
+			lRet := .T.
+		EndIf
+	EndIf
+
 EndIf
 
 Return(lRet)
