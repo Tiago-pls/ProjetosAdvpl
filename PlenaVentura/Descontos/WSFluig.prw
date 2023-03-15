@@ -31,6 +31,7 @@ WSSERVICE FluigProtheus DESCRIPTION 'Fluig x Protheus - Workflow'
 	WSMETHOD AprovWFPC		DESCRIPTION 'Aprovar Workflow de Pedido de Compras/Contratos'
 	WSMETHOD LiberarPC		DESCRIPTION 'Liberar Pedido de Compras'
 	WSMETHOD LiberarCT		DESCRIPTION 'Liberar Contratos'
+	WSMETHOD LiberarOR		DESCRIPTION 'Liberar Orçamentos'
 ENDWSSERVICE
 
 // Estrutura de Aprovação
@@ -258,6 +259,54 @@ WSMETHOD LiberarCT WSRECEIVE Empresa, Filial, SCRRecno WSSEND Status WSSERVICE F
 	If lError
 		cMens := "Erro ao liberar contrato"
 		conout('[' + DToC(Date()) + " " + Time() + "] Liberar CT > " + cMens)
+		SetSoapFault("Erro", cMens)		 			
+		Return .F.
+	EndIf
+
+Return .T.
+
+/*/{Protheus.doc} LiberarOR
+Libera Contrato
+@author Tiago Santos
+@since 15/03/2023
+/*/
+
+WSMETHOD LiberarOR WSRECEIVE Empresa, Filial, SUARecno WSSEND Status WSSERVICE FluigProtheus
+	Local lError 	:= .T.
+	Local cModulo := 'TMK'
+	Local cTabs := 'SUA'
+
+	// Reset a Ambiente
+	Reset Environment
+	
+	// Abre o ambiente
+	If Select("SX2") <= 0
+		RpcSetType(3)
+		Prepare Environment EMPRESA ::Empresa FILIAL ::Filial MODULO cModulo Tables cTabs
+	EndIf
+
+	conout("Liberar Orcamentos")
+	
+	BEGIN TRANSACTION
+		
+		// Posiciona no Orçamento
+		SUA->(DbGoTo(Val(::SUARecno)))
+		
+		conout("Orçamento: "+SUA->UA_FILIAL + ' - ' + SUA->UA_NUM)
+			
+		// Altera a situação do Orçamento
+		if	RecLock("SUA", .F.)
+				SUA->UA_XBLOQOR := "N" // ou ' '
+			SUA->(MsUnlock())
+		Endif		
+		lError := .F.		
+		::Status := "OK"
+		
+	END TRANSACTION
+
+	If lError
+		cMens := "Erro ao liberar Orçamento"
+		conout('[' + DToC(Date()) + " " + Time() + "] Liberar OR > " + cMens)
 		SetSoapFault("Erro", cMens)		 			
 		Return .F.
 	EndIf

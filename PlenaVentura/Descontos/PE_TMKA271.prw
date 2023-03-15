@@ -19,58 +19,61 @@ user function TK271BOK
 Local aArea := GetArea()
 Local nCont :=1
 Local aCardData :={}
-Local aRecnoSCR 	:= {}
-//if INCLUI
+Local aRecnoSUA 	:= {}
+Local lIntFluig := .F.
+Local cBloqOrc :='N'
 
-    // verificar o limite para o operador
-    // U7_XGRUPO
-    // ZZY_DESC/
-    // SUA->UA_OPERADO
-    aAdd(aCardData,{'emailSolicitante', "marcelo.rosa@plenaventura.com.br"})
-    aAdd(aCardData,{'emailAprovador', "marcelo.rosa@plenaventura.com.br"})
-    aAdd(aCardData,{'txtAtendimento', SUA->UA_NUM})
-    aAdd(aCardData,{'txtCliente', SUA->UA_CLIENTE})
-    aAdd(aCardData,{'txtLoja', SUA->UA_LOJA})
-    aAdd(aCardData,{'txtEmpresa', '09'})
-    aAdd(aCardData,{'txtDataSolicitacao', '13/02/2023'})
-    aAdd(aCardData,{'txtContato', SUA->UA_CODCONT})
-    aAdd(aCardData,{'txtNomeContato', SUA->UA_DESCNT})
-    aAdd(aCardData,{'txtOperador', SUA->UA_OPERADO})
-    aAdd(aCardData,{'docNome', 'OC: empre + solicitacao'})
-    //aAdd(aCardData,{'txtNomeOperador', SUA->UA_DESCOPE})
-    aAdd(aCardData,{'txtNomeOperador', "Tiago Santos"})
-    aAdd(aCardData,{'txtCondicao', SUA->UA_CONDPG})
-    aAdd(aCardData,{'txtCondicaoDescricao', 'A VISTA'})
-    aAdd(aCardData,{'txtTabela', SUA->UA_TABELA})
-    aAdd(aCardData,{'txtOperacao', '2'})    
-    cUserComp := GetLogFlg(Alltrim('000034'))
-    aAdd(aCardData,{'codSolicitante', cUserComp})    // solicitante
-    aAdd(aCardData,{'codAprovador',   GetLogFlg(Alltrim('000034'))})    // aprovador
-    for nCont :=1 to len(acols)
-        //aCols[nCont,nPos]
-        if nCont == 1
-            cStatus :="V"
-        else
-            cStatus :="F"
-        endif
-        // Monta a Tracker com os aprovadores
-         
-         //nPos := aScan(aHeader,{|x| AllTrim(x[2])=="UB_DESC"}) // posição Deconto
-		
-        aAdd(aCardData,{'txtItem___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_ITEM"})]})
-		aAdd(aCardData,{'txtProduto___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_PRODUTO"})]})
-		aAdd(aCardData,{'txtQuantidade___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_QUANT"})]})
-		aAdd(aCardData,{'txtPrecoUnit___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VRUNIT"})]})
-		aAdd(aCardData,{'txtVlrItem___'+cvaltochar(nCont),acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VLRITEM"})]})
-		aAdd(aCardData,{'txtDesconto___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_DESC"})]})
-		aAdd(aCardData,{'txtVlrDesc___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VALDESC"})]})
-		aAdd(aCardData,{'txtItemTotal___'+cvaltochar(nCont), '0'})
-		aAdd(aCardData,{'txtStatus___'+cvaltochar(nCont), cStatus})
-		
-    Next nCont
-
-    //GeraFluig(aCardData, aRecnoSCR, cUserComp )
-//endif
+	nPos := aScan(aHeader, {|x| AllTrim(x[2])=="UB_DESC"})
+    For nCont := 1 to Len(aCols)
+		if acols[nCont][nPos] > SU0->U0_XLIMDES
+			// limite maior que o configurado no grupo de atendimentos
+			lIntFluig := .T.
+			cBloqOrc :="S"			
+		Endif
+	Next nCont
+	M->UA_XBLOQOR := cBloqOrc
+	if lIntFluig
+		//UsrRetMail(RetCodUsr()) testar com email do usuario
+		cData := Substr(dtos(ddatabase),7,2) + '/' + Substr(dtos(ddatabase),5,2) + '/'+ Substr(dtos(ddatabase),1,4)
+		aAdd(aCardData,{'emailSolicitante', "marcelo.rosa@plenaventura.com.br"})
+		aAdd(aCardData,{'emailAprovador', "marcelo.rosa@plenaventura.com.br"})
+		aAdd(aCardData,{'txtAtendimento', M->UA_NUM})
+		aAdd(aCardData,{'txtCliente', M->UA_CLIENTE})
+		aAdd(aCardData,{'txtLoja', M->UA_LOJA})
+		aAdd(aCardData,{'txtEmpresa', FwCodFil()})
+		aAdd(aCardData,{'txtDataSolicitacao', cData})
+		aAdd(aCardData,{'txtContato', M->UA_CODCONT})
+		aAdd(aCardData,{'txtNomeContato', M->UA_DESCNT})
+		aAdd(aCardData,{'txtOperador', M->UA_OPERADO})
+		aAdd(aCardData,{'docNome', 'OC: empre + solicitacao'})
+		aAdd(aCardData,{'txtNomeOperador', UsrFullName(RetCodUsr())})
+		aAdd(aCardData,{'txtCondicao', M->UA_CONDPG})
+		aAdd(aCardData,{'txtCondicaoDescricao', posicione("SE4",1, xFilial("SE4") + M->UA_CONDPG, 'E4_DESCRI')})
+		aAdd(aCardData,{'txtTabela', M->UA_TABELA})
+		aAdd(aCardData,{'txtOperacao', '2'})    
+		cUserComp := GetLogFlg(Alltrim('000034')) // utilizar o usuario logado
+		aAdd(aCardData,{'codSolicitante', cUserComp})    // solicitante
+		aAdd(aCardData,{'codAprovador',   GetLogFlg(Alltrim('000034'))})    // aprovador
+		for nCont :=1 to len(acols)
+			if nCont == 1
+				cStatus :="V"
+			else
+				cStatus :="F"
+			endif
+			
+			aAdd(aCardData,{'txtItem___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_ITEM"})]})
+			aAdd(aCardData,{'txtProduto___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_PRODUTO"})]})
+			aAdd(aCardData,{'txtQuantidade___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_QUANT"})]})
+			aAdd(aCardData,{'txtPrecoUnit___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VRUNIT"})]})
+			aAdd(aCardData,{'txtVlrItem___'+cvaltochar(nCont),acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VLRITEM"})]})
+			aAdd(aCardData,{'txtDesconto___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_DESC"})]})
+			aAdd(aCardData,{'txtVlrDesc___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VALDESC"})]})
+			aAdd(aCardData,{'txtItemTotal___'+cvaltochar(nCont), '0'})
+			aAdd(aCardData,{'txtStatus___'+cvaltochar(nCont), cStatus})
+			
+		Next nCont
+		//GeraFluig(aCardData, aRecnoSUA, cUserComp)
+	Endif
 RestArea(aArea)
 return
 
@@ -85,7 +88,7 @@ return
 ++-----------------------------------------------------------------------------++
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
-Static Function GeraFluig(aCardData, aRecnoSCR, cFluigMatr)
+Static Function GeraFluig(aCardData, aRecnoSUA, cFluigMatr)
 Local cFluigUsr 	:= AllTrim(GetMv("MV_FLGUSER"))
 Local cFluigPss		:= AllTrim(GetMv("MV_FLGPASS"))
 Local nCompany		:= 1
@@ -147,15 +150,15 @@ Local cIdProcess:= ""
 		Else
 			oObjRetItem := oObjRetorno:oWSitem[6]
 			cIdProcess := oObjRetItem:cValue
-			/*
-            Gravar 
-			For nI := 1 To Len(aRecnoSUB)
-				SUB->(DbGoTo(aRecnoSUB[nI]))
-				RecLock("SUB",.F.)
-					SUB->UB_FLUIG := cIdProcess
+			
+            //Gravar o ID Fluig
+			//For nI := 1 To Len(aRecnoSUB)
+				SUA->(DbGoTo(aRecnoSUA[nI]))
+				RecLock("SUA",.F.)
+					SUA->UA_FLUIG := cIdProcess
 				SUB->(MsUnlock())
-			Next
-		*/
+		//	Next
+		
 			conout("idProcess "+cIdProcess)
 		EndIf
 	Else
