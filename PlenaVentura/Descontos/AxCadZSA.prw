@@ -21,14 +21,19 @@ mBrowse(6,1,22,75,cAlias)
 Return
 
 
-user function ValidGrp
+user function ValidZSA
 Local lRet := .T.
-Local aZ25 := Z25->( GetArea())
+Local aZSA := ZSA->( GetArea())
 
-Z25->( dbgoTop())
-if Z25->( DbSeek( xFilial("Z25") + M->Z25_GRUPO))
-    MsgAlert("Grupo já cadastrado", "Atenção")
+ZSA->( dbgoTop())
+if ZSA->( DbSeek( xFilial("ZSA") + M->ZSA_CODIGO))
+    MsgAlert("Aprovador já cadastrado", "Atenção")
     lRet := .F.
 Endif
-RestArea(aZ25)
+RestArea(aZSA)
 return lRet
+
+
+user function GatZSA()
+
+return "asdadadsa"
