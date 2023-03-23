@@ -35,7 +35,11 @@ Local cBloqOrc :='N'
 	if lIntFluig
 		//UsrRetMail(RetCodUsr()) testar com email do usuario
 		cData := Substr(dtos(ddatabase),7,2) + '/' + Substr(dtos(ddatabase),5,2) + '/'+ Substr(dtos(ddatabase),1,4)
+		
+		//UsrRetMail(RetCodUsr())  - Solicitante
 		aAdd(aCardData,{'emailSolicitante', "marcelo.rosa@plenaventura.com.br"})
+
+		//UsrRetMail( SU7->U7_XAPROVA)  - Aprovador
 		aAdd(aCardData,{'emailAprovador', "marcelo.rosa@plenaventura.com.br"})
 		aAdd(aCardData,{'txtAtendimento', M->UA_NUM})
 		aAdd(aCardData,{'txtCliente', M->UA_CLIENTE})
