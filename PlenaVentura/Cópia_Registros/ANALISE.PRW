@@ -32,8 +32,31 @@ Private cPictD5      := PesqPict('SD5','D5_QUANT')
 Private cPictDB      := PesqPict('SDB','DB_QUANT')
 Private cPictB1      := PesqPict('SB1','B1_CONV')
 
-private lChSA1       := .F.
+private  lChSED  := .F.
+private  lChZM9  := .F.
+private  lChSA2  := .F.
+
+
+private lChSAH       := .F.
 private lChSB1       := .F.
+private lChSBM       := .F.
+private lChZ01       := .F.
+private lChZ02       := .F.
+private lChSE4       := .F.
+private lChCT1   := .F.
+private lChCTD   := .F.
+private lChCTH   := .F.
+private lChCVD   := .F.
+private lChSVN   := .F.
+private lChCT5   := .F.
+private lChSF4   := .F.
+private lChSF7   := .F.
+private lChFK3   := .F.
+private lChCVE   := .F.
+private lChCVF   := .F.
+private lChCTN   := .F.
+private lMarkTd   := .F.
+private aOpcoes  := {}
                                              
 Private aNumSeq      := {}
 Private _cFilOri       := Space(6)
@@ -44,6 +67,8 @@ Private _cEmpDes     := Space(2)
 Private nSldKarLocal := nSldKarLote := nSldKarEnde := 0
 Private _cEmpOri     := Space(2)
 Private _cEmpOld     := Space(2)
+Private _cEmpIni     := cEmpant
+Private _cFilIni     := cFilant
 Private cDescEmpOri  := Space(40)
 Private cDescEmpDes  := Space(40)
 Private nOpSB8       := 1
@@ -88,8 +113,9 @@ DEFINE FONT oBold2  NAME "Arial" SIZE 0, -40 BOLD
 DEFINE FONT oBold3  NAME "Arial" SIZE 0, -80 BOLD
 DBSelectArea("SB1")
 
-@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Compras","XX","XX","XX","XX","XX","XX","XX","XX","XX","XX" PIXEL SIZE 478,241
-//                                           01       02         03          04           05          06    07    08                09                 10                11                   12
+//@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Financeiro","Compras","Contabilidade","XX","XX","XX","XX","XX","XX","XX","XX" PIXEL SIZE 478,241
+@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Financeiro","Compras","Contabilidade"  PIXEL SIZE 478,241
+//                                           01                 02         03          04           05          06    07    08                09                 10                11                   12
 
 @ 005,005 TO 070, 220 PROMPT "Origem"             PIXEL OF oDlgMain 
 @ 020,010 SAY "Empresa "                                     SIZE 040,10 PIXEL OF oDlgMain FONT oBold 
@@ -110,64 +136,55 @@ DBSelectArea("SB1")
 @ 040,271 MSGET oVar   VAR _cFilDes    Picture "@!"     SIZE 030,10 PIXEL OF oDlgMain F3 "SM0"  VALID(ValEmpPa(2))
 @ 040,310 MSGET oVar   VAR cDescFilDes     Picture "@!" SIZE 150,10 PIXEL OF oDlgMain When .F.
 
-
 // opções para selecioar as tabelas para cópia
-@ 020, 006 checkbox oChFAT var lChSA1 size 100, 008 pixel of oFolder:aDialogs[1] prompt "SA1 - Clientes" pixel  
-@ 030, 006 checkbox oChFAT var lChSB1 size 100, 008 pixel of oFolder:aDialogs[1] prompt "SB1 - Produtos" pixel  
+//@ 005,005 TO 070, 220 PROMPT "*Marcar todas"        PIXEL OF oFolder:aDialogs[1] change(sfMkAll())
 
+//@ 005,005 CHECKBOX oChFAT VAR lMarkTd PROMPT "Marcar/Desmarcar Todos" When .T. SIZE 200,017 PIXEL of oFolder:aDialogs[1] ON CHANGE sfMkAll(lMarkTd,1)
+@ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[1] ACTION sfMkAll(.T., 1)
+@ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[1] ACTION sfMkAll(.F., 1)
 
-@ 080,450 BUTTON "&Processar"   SIZE 40,16 PIXEL ACTION Processa({||fProcessa()})
+@ 030, 006 checkbox oChFAT var lChSBM size 100, 008 pixel of oFolder:aDialogs[1] prompt "SBM - Grupo Produtos" pixel  
+@ 040, 006 checkbox oChFAT var lChSB1 size 100, 008 pixel of oFolder:aDialogs[1] prompt "SB1 - Produtos" pixel  
+@ 050, 006 checkbox oChFAT var lChZ01 size 100, 008 pixel of oFolder:aDialogs[1] prompt "Z01 - Sub Grupo Produtos" pixel  
+@ 060, 006 checkbox oChFAT var lChZ02 size 100, 008 pixel of oFolder:aDialogs[1] prompt "Z02 - Família" pixel  
+@ 070, 006 checkbox oChFAT var lChSAH size 100, 008 pixel of oFolder:aDialogs[1] prompt "SAH - Unidade Medidas" pixel  
+@ 080, 006 checkbox oChFAT var lChSE4 size 100, 008 pixel of oFolder:aDialogs[1] prompt "SE4 - Condição Pagamento" pixel  
+
+@ 080,450 BUTTON "&Processar"   SIZE 40,16 PIXEL ACTION Processa({||fValida()})
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FOLDER 02
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////       
-oCheck2 := TCheckBox():New(21,01,'XX2',,oFolder:aDialogs[2],054,020,,,,,,,,.T.,,,)
+@ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[2] ACTION sfMkAll(.T., 2)
+@ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[2] ACTION sfMkAll(.F., 2)
+
+@ 030, 006 checkbox oChFAT var lChSED size 100, 008 pixel of oFolder:aDialogs[2] prompt "SED - Natureza Financeira" pixel  
+@ 040, 006 checkbox oChFAT var lChZM9 size 100, 008 pixel of oFolder:aDialogs[2] prompt "ZM9 - Empresa Fluig" pixel  
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FOLDER 03
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[3] ACTION sfMkAll(.T., 3)
+@ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[3] ACTION sfMkAll(.F., 3)
 
-oCheck3 := TCheckBox():New(21,01,'XX3',,oFolder:aDialogs[3],054,020,,,,,,,,.T.,,,)
+@ 030, 006 checkbox oChFAT var lChSA2 size 100, 008 pixel of oFolder:aDialogs[3] prompt "SA2 - Fornecedores" pixel  
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FOLDER 04
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-oCheck4 := TCheckBox():New(21,01,'XX4',,oFolder:aDialogs[4],054,020,,,,,,,,.T.,,,)
+@ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[4] ACTION sfMkAll(.T., 4)
+@ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[4] ACTION sfMkAll(.F., 4)
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOLDER 05
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-oCheck5 := TCheckBox():New(21,01,'XX5',,oFolder:aDialogs[5],054,020,,,,,,,,.T.,,,)
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOLDER 06
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-oCheck6 := TCheckBox():New(21,01,'XX6',,oFolder:aDialogs[6],054,020,,,,,,,,.T.,,,)
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOLDER 07
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-oCheck7 := TCheckBox():New(21,01,'XX7',,oFolder:aDialogs[7],054,020,,,,,,,,.T.,,,)
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOLDER 08
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOLDER 09
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOLDER 10
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOLDER 11
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOLDER 12
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+@ 030, 006 checkbox oChFAT var lChCT1 size 100, 008 pixel of oFolder:aDialogs[4] prompt "CT1 - Plano de Contas" pixel  
+@ 040, 006 checkbox oChFAT var lChCTD size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTD - Item Contábil" pixel  
+@ 050, 006 checkbox oChFAT var lChCTH size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTH - Classe Valor" pixel  
+@ 060, 006 checkbox oChFAT var lChCVD size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVD - Plano Contas Referencial" pixel  
+@ 070, 006 checkbox oChFAT var lChSVN size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVN - Amarração Plano Contas referencial" pixel  
+@ 080, 006 checkbox oChFAT var lChCT5 size 100, 008 pixel of oFolder:aDialogs[4] prompt "CT5 - Lançamento Padrão" pixel  
+@ 090, 006 checkbox oChFAT var lChSF4 size 100, 008 pixel of oFolder:aDialogs[4] prompt "SF4 - TES" pixel  
+@ 100, 006 checkbox oChFAT var lChSF7 size 100, 008 pixel of oFolder:aDialogs[4] prompt "SF7 - Exceção Fiscal" pixel  
+@ 110, 006 checkbox oChFAT var lChFK3 size 100, 008 pixel of oFolder:aDialogs[4] prompt "FK3 - Produtos X Valores declaratórios" pixel  
+@ 120, 006 checkbox oChFAT var lChCVE size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVE - Visão Gerencial" pixel  
+@ 130, 006 checkbox oChFAT var lChCVF size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVF - Visão Gerencial" pixel  
+@ 140, 006 checkbox oChFAT var lChCTN size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTN - Livro Contábil" pixel  
 
 @ 080,320 BUTTON "&Sair"        SIZE 40,16 PIXEL ACTION oDlgMain:End()
 
@@ -177,12 +194,9 @@ RestArea(aArea)
 
 Return(.T.)
 
-
-
-
 //----------------------------------------------------------
-/*/{Protheus.doc} MarcaTodos
-Função MarcaTodos
+/*/{Protheus.doc} sfMkAll
+Função sfMkAll
 @param lMark Recebo o lMark
 @return Não retorna nada
 @author Reinaldo Dias
@@ -192,124 +206,146 @@ Função MarcaTodos
 04/10/2012 - Acrescimo de cabecalho Protheus.Doc
 /*/
 //----------------------------------------------------------
-Static Function MarcaTodos(lMark)
-For nI:= 1 To Len(aFolder)
-  aFolder[nI,1] := IIF(lMark,.T.,.F.)
-Next
-oBox:Refresh()
+Static Function sfMkAll(lMark, nOpc)
+
+if nOpc == 1 .or. nOpc == 0
+   lChSBM := lMark
+   lChSB1 := lMark
+   lChZ01 := lMark 
+   lChZ02 := lMark
+   lChSAH := lMark
+   lChSE4 := lMark 
+endif
+if nOpc == 2 .or. nOpc == 0
+   lChSED := lMark
+   lChZM9 := lMark
+endif
+
+if nOpc ==3 .or. nOpc == 0
+   lChSA2 := lMark
+endif
+if nOpc ==4 .or. nOpc == 0
+   lChCT1 := lMark
+   lChCTD := lMark
+   lChCTH := lMark
+   lChCVD := lMark
+   lChSVN := lMark
+   lChCT5 := lMark
+   lChSF4 := lMark
+   lChSF7 := lMark
+   lChFK3 := lMark
+   lChCVE := lMark
+   lChCVF := lMark
+   lChCTN := lMark
+Endif
+
 Return
 
+//----------------------------------------------------------
+/*/{Protheus.doc} fValida
+Função fValida
+@param Não recebe parâmetros
+@return Não retorna nada
+@author Tiago Santos
+@owner SMSTI
+@obs Função para validar os registros antes das cópias
+/*/
+//----------------------------------------------------------
+Static Function fValida()
+Local aTabelas := {}
+if _cEmpOri + _cFilOri == _cEmpDes + _cFilDes
+   MsgStop("Empresa + Filial Origem iguais a Empresa Filial Destino !!!")
+   return
+Endif
+
+// Se tabela selecionada, inclui no Array para processamento
+aTabelas := retTabelas()
+// definir a variavel de empresa e filial conforme seleção na tela
+
+if len(aTabelas) ==0
+      MsgStop("Não Foram selecionadas tabelas para Cópia !!!")
+      return
+endif
+
+oProcess := MsNewProcess():New({|| fProcessa(oProcess, aTabelas)}, "Processando...", "Aguarde...", .T.)
+oProcess:Activate()
+
+Return
 
 //----------------------------------------------------------
 /*/{Protheus.doc} fProcessa
 Função fProcessa
 @param Não recebe parâmetros
 @return Não retorna nada
-@author Reinaldo Dias
-@owner Totvs S/A
-@obs Funcao para processar a movimentacao dos saldos.
-@history
-04/10/2012 - Acrescimo de cabecalho Protheus.Doc
+@author Tiago Santos
+@owner SMSTI
+@obs Função para validar os registros antes das cópias
 /*/
 //----------------------------------------------------------
-Static Function fProcessa()
+static function fProcessa(oOBj, aTab)
+Local nAtual := 0
+Local nTotal := 0
+local nAtu2  := 0
+Local nTot2  := 90
 
+For nCont :=1 to len (aTab)
 
-/*
-montar regras para processamento das cópias
-IF Empty(_cFilDes) .OR. Empty(dDataF)
-   MsgStop("Datas de Processamento Invalidas !!!")
-   Return
-Endif
-*/  
-ProcRegua(15)
+   // verificar se há dados no destino
 
+   if TrocaEmp(aTab[nCont])
+      cMsg := "Há Dados na tabela " + aTab[nCont] +" da empresa: "+ _cEmpDes
+      cMsg += "Filial: "+ _cFilDes
+      cMsg += '<br><br><font color="#ff0000"> Deseja Sobrepor os dados ?  </font> '
 
-if _cEmpOri + _cFilOri == _cEmpDes + _cFilDes
-   MsgStop("Empresa + Filial Origem iguais a Empresa Filial Destino !!!")
-   return
-Endif
-IncProc("Processando Faturamento")
-IncProc("Processando Compras")
-IncProc("Processando XX")
+      if (ApMsgYesNo(cMsg, "Atenção"))
+         DelReg(aTab[nCont])
+      Endif
+   endif
 
-Return
+Next nConta
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-User Function ValidACols()
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Local cCampo  := ReadVar()
-Local _Return := .T.
-IF cCampo $ "M->ORIGEM/M->CF"
-   MsgStop("Este campo não pode ser alterado.","Atenção")
-   _Return := .F.
-ElseIF cCampo == "M->QTDE2UM"
-   nQuant     := &(cCampo)
-   aCols[n, aScan(aHeader, {|x| Upper(AllTrim(x[2])) == "QTDE"})]    := ConvUM(_cEmpOri,0,nQuant,1) // 1UM
-ElseIF cCampo == "M->QTDE"
-   nQuant     := &(cCampo)
-   aCols[n, aScan(aHeader, {|x| Upper(AllTrim(x[2])) == "QTDE2UM"})] := ConvUM(_cEmpOri,nQuant,0,2) // 2UM
-ElseIF cCampo == "M->ENDERECO" .And. aCols[n, aScan(aHeader, {|x| Upper(AllTrim(x[2])) == "ORIGEM"})] == "SDB" .And. Empty(&(cCampo))
-   MsgStop("O endereço deve ser preenchido.","Atenção")
-   _Return := .F.
-ElseIF cCampo == "M->LOTE" .And. aCols[n, aScan(aHeader, {|x| Upper(AllTrim(x[2])) == "ORIGEM"})] == "SD5" .And. Empty(&(cCampo))
-   MsgStop("O lote deve ser preenchido.","Atenção")
-   _Return := .F.
-ElseIF cCampo == "M->DATA" .And. !Empty(aCols[n, aScan(aHeader, {|x| Upper(AllTrim(x[2])) == "ORIGEM"})]) .And. Empty(&(cCampo))
-   MsgStop("A data deve ser preenchida.","Atenção")
-   _Return := .F.
-ElseIF cCampo == "M->DOCTO" .And. !Empty(aCols[n, aScan(aHeader, {|x| Upper(AllTrim(x[2])) == "ORIGEM"})]) .And. Empty(&(cCampo))
-   MsgStop("O documento deve ser preenchida.","Atenção")
-   _Return := .F.
-Endif      
-
-Return (_Return)
-
+return
 
 //----------------------------------------------------------
-/*/{Protheus.doc} fPesquisa
-Função fPesquisa
-@param cOpcao  utilizado para identificar uma alteracao ou exclusao
-@param oBrowse utilizado para passar objetivo oBrowse
-@return Não retorna nada
-@author Reinaldo Dias
-@owner Totvs S/A
-@obs Funcao utilizada para realizar pesquisa nos browsers.
-@history
-04/10/2012 - Acrescimo de cabecalho Protheus.Doc
+/*/{Protheus.doc} TrocaEmp
+Função TrocaEmp
+@param Não recebe parâmetros
+@return Query da tabela selecionada
+@author Tiago Santos
+@owner SMSTI
+@obs Query da tabela selecionada
 /*/
 //----------------------------------------------------------
-Static Function fPesquisa(cOpcao,oBrowse)
+static function TrocaEmp(cTab)
+Local cFilBus := left(_cFilDes,4)
 
-Local oDlgPesq
-Local aArea   := GetArea()
-Local cCampos := Space(20)          
-Local cSeek   := Space(20)   
-Local aCampos := {}
+cEmpant := _cEmpIni // inicial
+cFilAnt := _cFilIni
 
-For I:= 1 To Len(oBrowse:AHEADERS)
-   IF Valtype(oBrowse:AARRAY[1,I]) = "C" .AND. !UPPER(Alltrim(oBrowse:AHEADERS[I])) $ "STATUS/TM/SERIE/LOJA/CLIE.FOR/ORIGEM"
-      AAdd(aCampos,oBrowse:AHEADERS[I])
-   Endif   
-Next
+if select(cTab)==0
+   DBSELECTAREA( cTab )
+Endif
 
-DBSelectArea("SB1")
+EmpChangeTable(cTab,_cEmpDes ,_cEmpIni , 1) 
 
-DEFINE MSDIALOG oDlgPesq TITLE "Pesquisar no "+cOpcao  OF oDlgPesq PIXEL FROM 010,010 TO 150,265 
+cQuery := " Select *  From SX2" +_cEmpDes + "0 Where D_E_L_E_T_ =' '"
+cQuery += " and  X2_CHAVE = '" +cTab + "' "
 
-@ 010,005 COMBOBOX cCampos ITEMS aCampos       SIZE 100,10 PIXEL OF oDlgPesq 
-@ 030,005 MSGET oVar  VAR  cSeek Picture "@!"  SIZE 100,10 PIXEL OF oDlgPesq 
-                                                 
-@ 050,090 BUTTON "&Sair"      SIZE 30,14 PIXEL ACTION oDlgPesq:End()
+if select("QRYX2") <> 0
+   QRYX2->( DBCLOSEAREA(  ))
+Endif
 
-ACTIVATE MSDIALOG oDlgPesq  CENTERED
+TCQuery cQuery New Alias "QRYX2"
+if QRYX2->X2_MODO == 'E'
+   cFilBus :=_cFilDes
+Elseif QRYX2->(X2_MODO + X2_MODO + X2_MODOEMP) =='CCC'
+   cFilBus = Space(6)
+Endif
 
-RestArea(aArea)
+(cTab)->( DBGOTOP())
+lRet := (cTab)->( DbSeek(cFilBus))
 
-Return
-
-
-
+Return lRet
 //----------------------------------------------------------
 /*/{Protheus.doc} fDigSenha
 Função fDigSenha
@@ -332,7 +368,6 @@ Private cSenhAce := "tudo"
 @ 037,055 BmpButton Type 2 Action Close(Senhadlg)
 Activate Dialog Senhadlg CENTERED
 Return(_lReturn)                     
-
 
 //----------------------------------------------------------
 /*/{Protheus.doc} fOK
@@ -394,3 +429,72 @@ else
    lRet := .F.
 endif
 return lRet
+
+
+static function retTabelas ()
+atabelas := {}
+if lChSBM
+	aadd(atabelas,'SBM')
+Endif 
+if lChSB1
+	aadd(atabelas,'SB1')
+Endif
+if lChZ01
+	aadd(atabelas,'Z01')
+Endif
+if lChZ02
+	aadd(atabelas,'Z02')
+Endif
+if lChSAH
+	aadd(atabelas,'SAH')
+Endif
+if lChSE4
+	aadd(atabelas,'SE4')
+Endif
+if lChSED
+	aadd(atabelas,'SED')
+endif
+if lChZM9
+	aadd(atabelas,'ZM9')
+endif
+if lChSA2
+	aadd(atabelas,'SA2')
+endif
+if lChCT1
+	aadd(atabelas,'CT1')
+endif
+if lChCTD
+	aadd(atabelas,'CTD')
+endif
+if lChCTH
+	aadd(atabelas,'CTH')
+endif
+if lChCVD
+	aadd(atabelas,'CVD')
+endif
+if lChSVN
+	aadd(atabelas,'SVN')
+endif
+if lChCT5
+	aadd(atabelas,'CT5')
+endif
+if lChSF4
+	aadd(atabelas,'SF4')
+endif
+if lChSF7
+	aadd(atabelas,'SF7')
+endif
+if lChFK3
+	aadd(atabelas,'FK3')
+endif
+if lChCVE
+	aadd(atabelas,'CVE')
+endif
+if lChCVF
+	aadd(atabelas,'CVF')
+endif
+if lChCTN
+	aadd(atabelas,'CTN')
+endif
+
+Return atabelas

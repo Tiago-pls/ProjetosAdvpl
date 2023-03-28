@@ -146,8 +146,8 @@ If QRY->(!Eof())
 		cQuerySe2 +=" inner join "+ RetSqlName("SED") +" SED  on E2_NATUREZ = ED_CODIGO and SED.D_E_L_E_T_=' ' "+ cLFRC
 		
 		cQuerySe2 += " Where SE2.D_E_L_E_T_ =' ' and  E2_FILIAL = '"+QRY->F1_FILIAL+"' and E2_NUM =  '" +QRY->F1_DOC+"' "+ cLFRC
-		//cQuerySe2 += " and E2_TIPO ='TX' and E2_FORNECE = '" + QRY->F1_FORNECE +"' and E2_LOJA ='" +QRY->F1_LOJA+ "'"+ cLFRC
-		cQuerySe2 += " and E2_TIPO ='TX' "+ cLFRC
+		
+		cQuerySe2 += " and E2_TIPO in ('TX','INS') "+ cLFRC
 		If Select("QR2")>0         
 			QR2->(dbCloseArea())
 		Endif

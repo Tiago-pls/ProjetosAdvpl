@@ -16,11 +16,17 @@
 User Function Imp22101(aEmpFil)
 Local cHeadRet 	:= ""
 Local cPostRet 	:= "" 
+/* dados de acesso SOC*/
+Local cEmpresa := SUPERGETMV("FT_SOCEMP", .T., "362483")
+Local cCodigo  := SUPERGETMV("FT_SOCCOD", .T., "164802")
+Local cChave   := SUPERGETMV("FT_SOCCHV", .T., "c2138b4b1b0fcc2")
+
 /*
 877258
 */
 
-Local cString	:= "{'empresa':'752832','codigo':'138416','chave':'c4e3b8bcbe02b15726be','tipoSaida':'json','funcionarioInicio':'1','funcionarioFim':'999999999','pFuncionario':'0','funcionarios':'0','dataInicio':'"+dtoc(FirstDay(date()))+"','dataFim':'"+dtoc(LastDay(date()))+"','pDataAcidente':'0','esocial':true}"
+//Local cString	:= "{'empresa':'752832','codigo':'138416','chave':'c4e3b8bcbe02b15726be','tipoSaida':'json','funcionarioInicio':'1','funcionarioFim':'999999999','pFuncionario':'0','funcionarios':'0','dataInicio':'"+dtoc(FirstDay(date()))+"','dataFim':'"+dtoc(LastDay(date()))+"','pDataAcidente':'0','esocial':true}"
+Local cString	:= "{'empresa':'"+cEmpresa+"','codigo':'"+cCodigo+"','chave':'"+cChave+"','tipoSaida':'json','funcionarioInicio':'1','funcionarioFim':'999999999','pFuncionario':'0','funcionarios':'0','dataInicio':'"+dtoc(FirstDay(date()))+"','dataFim':'"+dtoc(LastDay(date()))+"','pDataAcidente':'0','esocial':true}"
 Local cUrl		:= "https://ws1.soc.com.br/WSSoc/services/ExportaDadosWs"
 Local cXml		:= ""
 Local cDir		:= '\log_ws\'   
@@ -42,7 +48,7 @@ Private aErros	:= {}
 
 
 If Empty(aEmpFil)
-	aEmpFil	:= {'01','01'} //1.Empresa - //2.Filial
+	aEmpFil	:= {'01','010101'} //1.Empresa - //2.Filial
 Endif
 
 //Loga na Empresa/Filial passada como parametro

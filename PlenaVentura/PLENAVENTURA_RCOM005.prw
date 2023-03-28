@@ -66,18 +66,25 @@ oSection3:SetHeaderSection(.F.)
 // Defini--o das colunas a serem impressas no relat-rio
 
 	TRCell():New(oSection1,"F1_FILIAL"	, "QRY", "Filial")
+	TRCell():New(oSection1,"F1_EMISSAO" , "QRY", "Dt Emissão")
 	TRCell():New(oSection1,"F1_DTDIGIT" , "QRY", "Dt Digitacao")
-	TRCell():New(oSection1,"F1_P1VENC"  , "QRY", "Vencimento")
 	TRCell():New(oSection1,"F1_DOC"		, "QRY", "Documento")
 	TRCell():New(oSection1,"F1_SERIE"	, "QRY", "Serie")
 	TRCell():New(oSection1,"F1_FORNECE" , "QRY", "Fornecedor")
 	TRCell():New(oSection1,"F1_LOJA"	, "QRY", "Loja")
-	TRCell():New(oSection1,"NOME"		, "QRY", "Nome",,40)
-	TRCell():New(oSection1,"F1_VALBRUT" , "QRY", "Valor Bruto")
-	TRCell():New(oSection1,"LIQUIDO"    , "SE2", "Valor Liquido")
+	TRCell():New(oSection1,"NOME"		, "QRY", "Nome",,40)	
+	TRCell():New(oSection1,"LIQUIDO"    , "SE2", "Valor Liquido")	
 	TRCell():New(oSection1,"Y1_NOME"    , "SY1", "Comprador")
+
+	TRCell():New(oSection1,"F1_P1VENC"  , "QRY", "Vencimento")
+
+
+
+	//TRCell():New(oSection1,"F1_VALBRUT" , "QRY", "Valor Bruto")
+
+	
 	TRFunction():New(oSection1:Cell("F1_DOC"),,"COUNT",,"QUANTIDADE",,,.F.,.T.,.F.,oSection1)
-	TRFunction():New(oSection1:Cell("F1_VALBRUT"),,"SUM",,"VALOR TOTAL",,,.F.,.T.,.F.,oSection1)
+	TRFunction():New(oSection1:Cell("LIQUIDO"),,"SUM",,"VALOR TOTAL",,,.F.,.T.,.F.,oSection1)
 
 	trCell():New(oSection2,"E2_FILIAL","QR2" ,  ,"@!",TamSx3("E5_NUMERO")[1])
 	trCell():New(oSection2," ","QR2" ,  ,"@E 999,999,999.99",17)
@@ -129,6 +136,7 @@ cQry := MontaQry()
 TcQuery cQry New Alias "QRY"                          
 
 TCSetField("QRY","F1_DTDIGIT","D",8,0)  
+TCSetField("QRY","F1_EMISSAO","D",8,0)  
 TCSetField("QRY","F1_P1VENC","D",8,0)  
 nCont := 0
 If QRY->(!Eof())
@@ -164,7 +172,7 @@ If QRY->(!Eof())
 		cQuerySe2 +=" inner join "+ RetSqlName("SED") +" SED  on E2_NATUREZ = ED_CODIGO and SED.D_E_L_E_T_=' ' "+ cLFRC
 		
 		cQuerySe2 += " Where SE2.D_E_L_E_T_ =' ' and  E2_FILIAL = '"+QRY->F1_FILIAL+"' and E2_NUM =  '" +QRY->F1_DOC+"' "+ cLFRC
-		cQuerySe2 += " and E2_TIPO ='TX' "+ cLFRC
+		cQuerySe2 += " and E2_TIPO in ('TX','INS') "+ cLFRC
 		If Select("QR2")>0         
 			QR2->(dbCloseArea())
 		Endif
@@ -175,15 +183,12 @@ If QRY->(!Eof())
 			oSection2:PrintLine()	
 			QR2->( DbSkip())
 		Enddo
-		oSection2:Finish()/*
-		oSection3:Init()	
-		oSection3:Cell("L"):SetValue('Liquido')
-		oSection3:Cell("LIQ"):SetValue(nValorLiq)
-		oSection3:PrintLine()
-		oSection3:Finish()	*/
+		oSection2:Finish()		
 
 		oRel:Skipline()
-     //   oSection1:SetHeaderSection(.F.)
+//		if nCont >1
+        	oSection1:SetHeaderSection(.F.)
+		//Endif
 	QRY->(dbSkip())			
 	oSection1:Finish()		
 	Enddo	
@@ -221,7 +226,7 @@ Return
 static Function MontaQry ()                                   
 Local cQuery := " " 
 
-cQuery += "	SELECT F1_FILIAL, F1_DTDIGIT, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_VALBRUT,F1_TIPO, F1_P1VENC, F1_PREFIXO, F1_IRRF, F1_VALPIS, F1_VALCOFI, F1_VALCSLL"+ cLFRC
+cQuery += "	SELECT F1_FILIAL, F1_EMISSAO, F1_DTDIGIT, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_VALBRUT,F1_TIPO, F1_P1VENC, F1_PREFIXO, F1_IRRF, F1_VALPIS, F1_VALCOFI, F1_VALCSLL"+ cLFRC
 cQuery += "	FROM " + RetSqlName('SF1') +" SF1"+ cLFRC
 cQuery += " Where F1_DOC >= '" +MV_PAR01+ "'"+ cLFRC
 cQuery += "	     AND F1_DOC <= '" + MV_PAR02 + "'"      + cLFRC
