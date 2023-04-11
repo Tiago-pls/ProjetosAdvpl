@@ -131,9 +131,19 @@ Static Function M140CondInfo()
 	Local lData		:= .T.
 	Local dData		:= DDATABASE
 	Local nTotalNF	:= 0
-
+	Local aPedidos  :={}
+	Local cPedido   :=""
 	Private oParcs
 
+	/*
+	 Verificar se há pedidos vinculados 
+	*/
+	nPosPedido := aScan(aHeader, {|x| AllTrim(x[2])=="D1_PEDIDO"})
+	For nCont := 1 to Len(aCols)
+		if  !acols[ncont , len(acols[nCont])]  .and. !Empty( acols[nCont][nPosPedido])
+			Aadd(aPedidos, acols[nCont][nPosPedido])
+		Endif
+	Next nCont
 	if Empty(cObservaoAdicional)
 		SD1->(dbSetOrder(1))
 		SC7->(dbSetOrder(1))
@@ -166,7 +176,7 @@ Static Function M140CondInfo()
 	@ 10,20   SAY "Condição de Pagamento" SIZE 73, 8 OF oDlgCustom PIXEL
 	@ 20,20   MSGET cCondicaoPagamento PICTURE PesqPict("SF1","F1_COND") F3 "SE4" VALID ExistCPO("SE4", cCondicaoPagamento) SIZE 20,9 OF oDlgCustom When INCLUI .Or. ALTERA PIXEL
 
-	@ 20, 50 Button "Gerar"  Size 32, 9 Pixel Action AtualizaParcelas(cCondicaoPagamento, @oParcs, @aParcsOld)   Of oDlgCustom
+	@ 20, 50 Button "Gerar"  Size 32, 9 Pixel Action AtualizaParcelas(cCondicaoPagamento, @oParcs, @aParcsOld,0, .T.,"")   Of oDlgCustom
 
 	oParcs  := MsNewGetDados():New(010,100,70,230,IIF(INCLUI .Or. ALTERA,GD_UPDATE,0),"AllwaysTrue","AllwaysTrue",/*inicpos*/,,/*freeze*/,120,"AllwaysTrue",/*superdel*/,/*delok*/,oDlgCustom,aHeadZK1,aColZK1)
 
@@ -177,6 +187,20 @@ Static Function M140CondInfo()
 		//não sendo o caso, desabilita edição no memo
 		oObs:lReadOnly := .T.
 	EndIF
+	ZK1->( DbSetorder(2))
+	ZK1->( DbGotop())
+	
+	For nCont := 1 to len(aPedidos)		
+		if ZK1->( DbSeek( xFilial("ZK1") + aPedidos[nCont] ))
+			cPedido := ZK1->ZK1_PEDIDO
+		endif
+	Next nCont
+
+	If ALTERA .and. !Empty(cPedido)
+		oParcs:aCols := AtualizaParcelas(cCondicaoPagamento, @oParcs, @aParcsOld,0 , .F., cPedido)
+		oParcs:refresh()
+	Endif
+
 
 	DEFINE SBUTTON FROM 150, 175 When .T. TYPE 1 ACTION (aColZK1 := oParcs:aCols, aHeadZK1 := oParcs:aHeader,oDlgCustom:End(),lOk:=.T.) ENABLE OF oDlgCustom
 	DEFINE SBUTTON FROM 150, 205 When .T. TYPE 2 ACTION (oDlgCustom:End()) ENABLE OF oDlgCustom
@@ -277,7 +301,8 @@ Return
 (examples)
 @see (links_or_references)
 /*/
-Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld)
+
+Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld,nTotal, lReproce, cPedido)
 
 	Local nValTotal 	:= A140Total[3] //VALTOTNF()
 	Local aParcelas 	:= Condicao(nValTotal, cCondicao,,dDatabase)
@@ -296,29 +321,50 @@ Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld)
 		EndiF
 	Next n1
 	aCols := {}
+	if INCLUI .or. lReproce
+		For n1 := 1 to len(aParcelas)
+			aAdd( aCols, Array(len(aHeader)+1) )
+			For n2 := 1 To Len(aHeader)
+				IF IsHeadRec(aHeader[n2][2])
+					aCols[len(aCols)][n2] := 0
+				ElseIF IsHeadAlias(aHeader[n2][2])
+					aCols[len(aCols)][n2] := "ZK1"
+				Else
+					aCols[len(aCols)][n2] := CriaVar(aHeader[n2,2],.F.)
+				EndIF
+			Next n2
+			aCols[len(aCols)][len(aHeader)+1] := .F.
+			aCols[n1][nZK1_PARC]  := cParcela //posicao 1
+			aCols[n1][nZK1_VENC]  := aParcelas[n1][1]	//posicao 2
+			aCols[n1][nZK1_VALOR] := aParcelas[n1][2] //ALLTRIM(TransForm(aParcelas[n1][2],"@E 999,999.99"))
 
-	For n1 := 1 to len(aParcelas)
-		aAdd( aCols, Array(len(aHeader)+1) )
-		For n2 := 1 To Len(aHeader)
-			IF IsHeadRec(aHeader[n2][2])
-				aCols[len(aCols)][n2] := 0
-			ElseIF IsHeadAlias(aHeader[n2][2])
-				aCols[len(aCols)][n2] := "ZK1"
-			Else
-				aCols[len(aCols)][n2] := CriaVar(aHeader[n2,2],.F.)
-			EndIF
-		Next n2
-
-		aCols[len(aCols)][len(aHeader)+1] := .F.
-
-		aCols[n1][nZK1_PARC]  := cParcela //posicao 1
-		aCols[n1][nZK1_VENC]  := aParcelas[n1][1]	//posicao 2
-		aCols[n1][nZK1_VALOR] := aParcelas[n1][2] //ALLTRIM(TransForm(aParcelas[n1][2],"@E 999,999.99"))
-		//aCols[n1][4]  		 := cUserName //posicao 4
-
-		cParcela := MaParcela(cParcela)
-	Next n1
-
+			cParcela := MaParcela(cParcela)
+			
+		Next n1	
+	Elseif ALTERA
+		ZK1->( DbSetorder(2))
+		ZK1->( DbGotop())
+		ZK1->( DbSeek(xFilial("ZK1")+cPedido ))
+		nCont :=1
+		While ZK1->(! EOF()) .and. ZK1->(ZK1_FILIAL+ ZK1_PEDIDO) == xFilial("ZK1")+cPedido
+			aAdd( aCols, Array(len(aHeader)+1) )
+			For n2 := 1 To Len(aHeader)
+				IF IsHeadRec(aHeader[n2][2])
+					aCols[len(aCols)][n2] := 0
+				ElseIF IsHeadAlias(aHeader[n2][2])
+					aCols[len(aCols)][n2] := "ZK1"
+				Else
+					aCols[len(aCols)][n2] := CriaVar(aHeader[n2,2],.F.)
+				EndIF
+			Next n2
+			aCols[len(aCols)][len(aHeader)+1] := .F.
+			aCols[nCont][nZK1_PARC]  := ZK1->ZK1_PARC //posicao 1
+			aCols[nCont][nZK1_VENC]  := ZK1->ZK1_VENC	//posicao 2
+			aCols[nCont][nZK1_VALOR] := ZK1->ZK1_VALOR //ALLTRIM(TransForm(aParcelas[n1][2],"@E 999,999.99"))
+			nCont +=1
+			ZK1->( DbSkip())
+		Enddo		
+	endif
 	oGrid:aCols := aCols
 	oGrid:Refresh()
 

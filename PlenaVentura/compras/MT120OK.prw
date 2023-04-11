@@ -10,27 +10,24 @@ PE confirmação pedido de compras
 @return variant, return_description
 /*/
 User Function  MT120OK()
-	Local lValido := .T.
-	Local nX       := 0 
-	Local nTotal   := 0 
-	Local cNaturez := SA2->A2_NATUREZ 
-	Local cText	:= 'Deseja mudar a Natureza Financeira?'
-
-    if !l120Auto
+	Local lValido   := .T.
+	Local nX        := 0 
+	Local cNaturez  := SA2->A2_NATUREZ 
+	Local cText	    := 'Deseja mudar a Natureza Financeira?'
+	Local nTotal    := 0 
+	    if !l120Auto
 		nPosTot := aScan(aHeader, {|x| AllTrim(x[2])=="C7_TOTAL"})
 		nPosDesc := aScan(aHeader, {|x| AllTrim(x[2])=="C7_VLDESC"})
 
 		For nCont := 1 to Len(aCols)
 			if  !acols[ncont , len(acols[nCont])]
-			//SC7->(C7_TOTAL - C7_VLDESC + C7_SEGURO + C7_DESPESA + C7_VALFRE)
 				nTotal += acols[nCont][nPosTot]
 				nTotal -= acols[nCont][nPosDesc]
-				
 			Endif
 		Next nCont
-
-        u_CondInfo(nTotal)
+        u_PCodInfo(nTotal) // janela de condição de pagamento de pedido de compras
     Endif
+
 	//Não é execauto?
 	if !l120Auto .AND. SC7->(FieldPos( "C7_ZNATURE" )) > 0
 		cNaturez := IIF(Empty(gdfieldget("C7_ZNATURE")),cNaturez,gdfieldget("C7_ZNATURE"))

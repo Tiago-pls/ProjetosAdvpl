@@ -318,7 +318,7 @@ User Function CNBProdutValid(cProduto, cThis, lAvisa, cRevisao)
 					EndSQL
 
 					IF ! (cAlias)->( Eof() )
-					 	Help('',1,'BRASLIFT-ATIVO ' + cThis,,'Produto '+alltrim(cProduto)+' está vinculado ao contrato '+alltrim((cAlias)->CN9_NUMERO)+alltrim((cAlias)->CN9_REVISA)+' item '+(cAlias)->CNB_ITEM+'.',4)
+					 	Help('',1,'BRASLIFT-ATIVO ' + cThis,,'Produto '+alltrim(cProduto)+' está vinculado ao contrato '+alltrim((cAlias)->CN9_NUMERO)+'revisao: ' +alltrim((cAlias)->CN9_REVISA)+' item '+(cAlias)->CNB_ITEM+'.',4)
 						//IF ! lAvisa Tiago Santos
 							// sistema não estava gerando a mensagem de falha na validação do produto 
 							lValido := .F.
@@ -338,7 +338,7 @@ User Function CNBProdutValid(cProduto, cThis, lAvisa, cRevisao)
 			SN1->( dbSkip() )
 		EndDO
 
-		IF ! lEncontrou
+		IF ! lEncontrou .and. FwFldGet("CN9_ESPCTR") =='2'// venda 
 		 	Help('',1,'BRASLIFT-ATIVO',,'Produto '+alltrim(cProduto)+' não está cadastrado no ativo.',4)
 			lValido := .F.
 		EndIF

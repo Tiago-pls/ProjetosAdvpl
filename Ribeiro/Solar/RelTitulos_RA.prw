@@ -50,6 +50,7 @@ Local aOrdem 	:= {}
 Local oRel
 Local oDados             
 Local oDados2             
+Local oDados3             
 
 //T-tulo do relat-rio no cabe-alho
 cTitle := OemToAnsi("Relatorio Títulos")
@@ -66,6 +67,7 @@ oRel:SetDevice(4)
 //Inicia a Sess-o
 oDados := trSection():New(oRel,cTitle,{"SF2","SD2","SA3"},aOrdem)
 oDados2 := trSection():New(oRel,cTitle,{"SF2","SD2","SA3"},aOrdem)
+oDados3 := trSection():New(oRel,cTitle,{"SF2","SD2","SA3"},aOrdem)
 //oDados:SetHeaderSection(.F.)    
 //oDados:HeaderBreak()     
 oDados:SetHeaderBreak() 
@@ -92,7 +94,13 @@ trCell():New(oDados2,"E5_DOCUMEN  ","QRY" ,  ,"@E",TamSx3("E5_DOCUMEN")[1])
 trCell():New(oDados2,"E5_HISTOR   ","QRY" ,  ,"@E",TamSx3("E5_HISTOR")[1])
 
 // Remessa
-trCell():New(oDados3,"E5_HISTOR   ","QRY" ,  ,"@E",TamSx3("E5_HISTOR")[1])
+//trCell():New(oDados3,"REMESSA   ","QRY" ,  ,"@E",TamSx3("E5_CLIFOR")[1])
+trCell():New(oDados3,"D2_EMISSAO","QR3" ,  ,"@E",TamSx3("D2_EMISSAO")[1])
+trCell():New(oDados3,"D2_COD","QR3" ,      ,"@E",TamSx3("D2_COD")[1])
+trCell():New(oDados3,"D2_TOTAL","QR3" ,  ,"@E 999,999,999.99",17)
+trCell():New(oDados3,"CMV","QR3" ,       ,"@E 999,999,999.99",17)
+trCell():New(oDados3,"D2_CUSTO1","QR3" ,  ,"@E 999,999,999.99",17)
+
 oRel:SetTotalInLine(.F.)
        
 //Aqui, farei uma quebra  por seção
@@ -131,9 +139,9 @@ TcQuery cQry New Alias "QRY"
 TCSetField("QRY","E5_DATA","D",8,0)  
 TCSetField("QRY","E1_VENCTO","D",8,0)  
 TCSetField("QRY","E1_VENCREA","D",8,0)  
+
 nCont := 0
 If QRY->(!Eof())
-
 	While QRY->(!Eof()) .and. !oRel:Cancel() 
   		ProcRegua(10)
   		nCont ++
@@ -144,18 +152,17 @@ If QRY->(!Eof())
 		EndIf   		
         oDados:Init()
   		oRel:IncMeter(10)   
-        //nSaldo := SaldoTit(QRY->E1_PREFIXO,QRY->E1_NUM,QRY->E1_PARCELA,QRY->E1_TIPO,QRY->E1_NATUREZ,"P",QRY->E5_CLIFOR,1,,,QRY->E5_LOJA,,0)
-        //oDados:Cell("LIQ"):SetValue(nSaldo)	
-        
+        oRel:printtext("* TÍTULOS")   
   		oDados:PrintLine()
         oDados:SetHeaderSection(.T.)  
-
         oDados2:init() 	
         nTotVendV1 := 0
         nTotVendV2 := 0
         nTotVendV3 := 0
-        cChave := QRY->(E1_CLIENTE + E1_LOJA +E1_NUM)
-	    //While cChave == QRY->(E1_CLIENTE + E1_LOJA + E1_NUM)            
+        cChave := QRY->(E1_CLIENTE + E1_LOJA +E1_NUM)	   
+        
+        oRel:Skipline()
+        oRel:printtext("* MOVIMENTAÇÃO FINANCEIRA")          
 	    while cChave == QRY->(E1_CLIENTE + E1_LOJA + E1_NUM)  
             oDados2:Cell("NOMECLI"):SetValue(posicione('SA1',1,xFilial('SA1')+QRY->E5_CLIFOR +QRY->E5_LOJA ,'A1_NOME')) 
             oDados2:PrintLine()                     
@@ -165,9 +172,28 @@ If QRY->(!Eof())
  		oRel:ThinLine()
  		oRel:Skipline()
  		//finalizo a primeira seção
+        If Select("QR3")>0         
+            QR3->(dbCloseArea())
+        Endif
+        // remessa
+        cQry := QryRem(right(cChave,9))
+        TcQuery cQry New Alias "QR3"     
+        TCSetField("QR3","D2_EMISSAO","D",8,0)  
+
+        // Remessas
+        oRel:printtext("* REMESSAS")        
+        oDados3:init()         
+        //oDados3:PrintLine("REMESSA")                     
+        While QR3->( !EOF())
+            oDados3:PrintLine()
+            QR3->( DbSkip())
+        enddo
+
+        QR3->(dbCloseArea())
+        oDados3:Finish()
+        oRel:Skipline()
 		oDados:Finish()
 
-//	QRY->(dbSkip())	
     Enddo
 Else		
 	MsgInfo("Nao foram encontrados registros para os parametros informados!")
@@ -188,14 +214,15 @@ Return
 Static Function GeraPerg(cPerg) 
 Local aRegs:= {}
 
+// Chamado 28539 Resp. Vitor Mello, Ajustados parametros MV_PAR03 e MV_PAR04 
 aAdd(aRegs,{cPerg,"01","Filial"         ,"Filial De"        ,"Filial De"       ,"mv_ch1","C",04,0,0,"G"," "           ,"mv_par01","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SM0","",""})
 aAdd(aRegs,{cPerg,"02","Filial Ate"     ,"Filial Ate"       ,"Filial Ate"      ,"mv_ch2","C",04,0,0,"G","naovazio()"  ,"mv_par02","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SM0","",""})
-aAdd(aRegs,{cPerg,"03","Titulo"         ,"Titulo"              ,"Doc"             ,"mv_ch5","C",09,0,0,"G"," "           ,"mv_par05","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","CTT","",""})
-aAdd(aRegs,{cPerg,"04","Titulo ate"     ,"Titulo ate"          ,"Doc ate"         ,"mv_ch6","C",09,0,0,"G","naovazio()"  ,"mv_par06","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","CTT","",""})
-aAdd(aRegs,{cPerg,"05","Cliente"        ,"Item De"          ,"Item De"         ,"mv_ch5","C",06,0,0,"G"," "           ,"mv_par05","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","CTD","",""})
-aAdd(aRegs,{cPerg,"06","Cliente Ate"    ,"Item Ate"         ,"Item Ate"        ,"mv_ch6","C",06,0,0,"G" ,"naovazio()" ,"mv_par06","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","CTD","",""})
-aAdd(aRegs,{cPerg,"07","Loja Cli"       ,"Loja Cli"         ,"Loja Cli"        ,"mv_ch7","C",04,0,0,"G"," "           ,"mv_par07","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SRA","",""})
-aAdd(aRegs,{cPerg,"08","Loja Cli Ate"   ,"Loja Cli Ate"     ,"Loja Cli Ate"    ,"mv_ch8","C",04,0,0,"G","naovazio()"  ,"mv_par08","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SRA","",""})
+aAdd(aRegs,{cPerg,"03","Titulo"         ,"Titulo"              ,"Doc"             ,"mv_ch3","C",09,0,0,"G"," "           ,"mv_par03","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SE1","",""})
+aAdd(aRegs,{cPerg,"04","Titulo ate"     ,"Titulo ate"          ,"Doc ate"         ,"mv_ch4","C",09,0,0,"G","naovazio()"  ,"mv_par04","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SE1","",""})
+aAdd(aRegs,{cPerg,"05","Cliente"        ,"Item De"          ,"Item De"         ,"mv_ch5","C",06,0,0,"G"," "           ,"mv_par05","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SA1","",""})
+aAdd(aRegs,{cPerg,"06","Cliente Ate"    ,"Item Ate"         ,"Item Ate"        ,"mv_ch6","C",06,0,0,"G" ,"naovazio()" ,"mv_par06","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SA1","",""})
+aAdd(aRegs,{cPerg,"07","Loja Cli"       ,"Loja Cli"         ,"Loja Cli"        ,"mv_ch7","C",04,0,0,"G"," "           ,"mv_par07","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SA1","",""})
+aAdd(aRegs,{cPerg,"08","Loja Cli Ate"   ,"Loja Cli Ate"     ,"Loja Cli Ate"    ,"mv_ch8","C",04,0,0,"G","naovazio()"  ,"mv_par08","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SA1","",""})
 
 U_BuscaPerg(aRegs)
 
@@ -210,9 +237,24 @@ cQuery += " E1_TIPO, E1_NATUREZ, E1_CLIENTE, E1_LOJA, A1_NOME,  SE5.* from " + R
 cQuery += " left join "+RetSqlName("SE5")+" SE5 on E1_FILIAL = E5_FILIAL and E1_NUM = E5_NUMERO and E1_CLIENTE = E5_CLIFOR and E1_LOJA = E5_LOJA and SE1.D_E_L_E_T_ =' '"+cLFRC
 cQuery += " inner join "+RetSqlName("SA1")+" SA1 on E1_CLIENTE = A1_COD and E1_LOJA = A1_LOJA and SA1.D_E_L_E_T_ =' '"+cLFRC
 cQuery += " where  E1_TIPO ='NF' and E1_NUM  >='"+MV_PAR03+"'and E1_NUM <='"+MV_PAR04+"'"
-//cQuery += " and E1_FILIAL  >='"+MV_PAR01+"'and E1_FILIAL <='"+MV_PAR02+"'"
+
 cQuery += " and E1_CLIENTE  >='"+MV_PAR05+"'and E1_CLIENTE <='"+MV_PAR07+"'"
 cQuery += " and E1_LOJA  >='"+MV_PAR06+"'and E1_LOJA <='"+MV_PAR08+"'"
 cQuery += " and SE1.D_E_L_E_T_ =' '"
+
+return cQuery
+
+
+
+
+static function QryRem(cTitulo)
+local cQuery :=""
+cQuery += " select C6_XNFORIR, D2_EMISSAO, D2_COD, D2_TOTAL, D2_CUSTO1, round (((D2_TOTAL - D2_CUSTO1) / D2_TOTAL)*100,2) CMV "+cLFRC
+cQuery += " from SC6010 SC6"+cLFRC
+cQuery += " inner join " + RetSqlName("SD2") +" SD2 on SD2.D_E_L_E_T_ =' ' and C6_NOTA = D2_DOC"+cLFRC
+cQuery += " inner join " + RetSqlName("SF4") +" SF4 on C6_FILIAL = F4_FILIAL and C6_TES = F4_CODIGO"+cLFRC
+cQuery += " Where"+cLFRC
+cQuery += "	 SC6.D_E_L_E_T_ =' ' and C6_XNFORIR ='" + cTitulo +"'"+cLFRC
+cQuery += "	 and F4_ESTOQUE ='S'"+cLFRC
 
 return cQuery
