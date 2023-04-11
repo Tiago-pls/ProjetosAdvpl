@@ -27,7 +27,7 @@ While QRY->( ! EOF())
             
                 Reclock("SF1",.F.)
                     SF1->F1_XNESE2:= '1'
-                SF1->(msUnlock()) 
+                SF1->(msUnlock())
             
         SF1->(DbSkip())
         enddo
