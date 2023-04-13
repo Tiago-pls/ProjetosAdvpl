@@ -23,15 +23,14 @@ SF1->( Dbgotop())
 
 While QRY->( ! EOF())
     if SF1->( DbSeek( QRY->(E2_FILIAL + E2_FORNECE + E2_LOJA + E2_NUM)))
-        While SF1->(F1_FILIAL + F1_FORNECE + F1_LOJA +F1_DOC) == QRY->(E2_FILIAL + E2_FORNECE + E2_LOJA +E2_NUM)
-            
-                Reclock("SF1",.F.)
-                    SF1->F1_XNESE2:= '1'
-                SF1->(msUnlock())
-            
-        SF1->(DbSkip())
+        While SF1->(F1_FILIAL + F1_FORNECE + F1_LOJA +F1_DOC) == QRY->(E2_FILIAL + E2_FORNECE + E2_LOJA +E2_NUM)            
+            Reclock("SF1",.F.)
+                SF1->F1_XNESE2:= '1'
+            SF1->(msUnlock())            
+            SF1->(DbSkip())
         enddo
     Endif
     QRY->( DbSkip())
 Enddo
+
 return
