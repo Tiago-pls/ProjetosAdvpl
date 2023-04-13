@@ -56,9 +56,9 @@ oRel:SetDevice(4)
 
 //Inicia a Sess-o
 oSection1 := trSection():New(oRel,cTitle,{"SF2","SD2","SA3"},aOrdem)
-oSection2 := trSection():New(oRel,cTitle,{"SF2","SD2","SA3"},aOrdem)   
+//oSection2 := trSection():New(oRel,cTitle,{"SF2","SD2","SA3"},aOrdem)   
 oSection1:SetHeaderBreak() 
-oSection2:SetHeaderSection(.F.)
+//oSection2:SetHeaderSection(.F.)
 
 	TRCell():New(oSection1,"F1_FILIAL"	, "QRY", "Filial")
 	TRCell():New(oSection1,"F1_EMISSAO" , "QRY", "Dt Emissão")	
@@ -72,29 +72,8 @@ oSection2:SetHeaderSection(.F.)
 	TRCell():New(oSection1,"Y1_NOME"    , "SY1", "Comprador")
 	TRCell():New(oSection1,"F1_P1VENC"  , "QRY", "Vencimento")
 
-	TRFunction():New(oSection1:Cell("F1_DOC"),,"COUNT",,"QUANTIDADE",,,.F.,.T.,.F.,oSection1)
-	TRFunction():New(oSection1:Cell("LIQUIDO"),,"SUM",,"VALOR TOTAL",,,.F.,.T.,.F.,oSection1)
-	
-	//Executa o relatorio
-	trCell():New(oSection2,"E2_FILIAL","QR2" ,  ,"@!",TamSx3("E5_NUMERO")[1])
-	trCell():New(oSection2,"EMISSAO","QR2" ,  ,"@!",TamSx3("E5_NUMERO")[1])	
-	trCell():New(oSection2,"DIGITACAO","QR2" ,  ,"@!",TamSx3("E5_NUMERO")[1])	
-	trCell():New(oSection2,"E2_NUM","QR2" ,  ,"@!",TamSx3("E5_NUMERO")[1])	
-	
-	trCell():New(oSection2," ","QR2" ,  ,"@E 999,999,999.99",17)
-	trCell():New(oSection2,"E2_FORNECE","QR2" ,  ,"@!",TamSx3("E2_FORNECE")[1])	
-	
-	trCell():New(oSection2,"E2_LOJA","QR2" ,  ,"@!",TamSx3("E2_LOJA")[1])	
-	trCell():New(oSection2,"IMPOSTO","QR2" ,  ,"@!",TamSx3("E5_NUMERO")[1])	
-	trCell():New(oSection2,"E2_VALOR","QR2" ,  ,"@E 999,999,999.99",17)
-	trCell():New(oSection2," ","QR2" ,  ,"@E 999,999,999.99",17)
-	trCell():New(oSection2,"E2_VENCREA","QR2" ,  ,"@!",TamSx3("E5_NUMERO")[1])
-
-//trCell():New(oSection2,"LIQUIDO","QR2" ,  ,"@!",TamSx3("E5_NUMERO")[1])	
-
-//	oBreak := TRBreak():New(oSection2,oSection2:Cell("E2_VALOR"),'Liquido',.F.)
-//	TRFunction():New(oSection2:Cell("E2_VALOR"),NIL,"SUM",oBreak,Nil,/*cPicture*/,/*uFormula*/,.F.,.F.,,oSection1) //"Total dos Itens: "
-
+	//TRFunction():New(oSection1:Cell("F1_DOC"),,"COUNT",,"QUANTIDADE",,,.F.,.T.,.F.,oSection1)
+	//TRFunction():New(oSection1:Cell("LIQUIDO"),,"SUM",,"VALOR TOTAL",,,.F.,.T.,.F.,oSection1)
 
 	oSection1:SetPageBreak(.T.)
 oRel:PrintDialog()
@@ -111,7 +90,7 @@ Return
 Static Function ReportPrint(oRel)
 
 Local oSection1  	:= oRel:Section(1)
-Local oSection2  	:= oRel:Section(2)
+//Local oSection2  	:= oRel:Section(2)
 
 //Seleciona os registros
 //********************************************************************************
@@ -125,12 +104,13 @@ TCSetField("QRY","F1_DTDIGIT","D",8,0)
 TCSetField("QRY","F1_EMISSAO","D",8,0)  
 TCSetField("QRY","F1_P1VENC","D",8,0)  
 nCont := 0
+nValTotal := 0
 If QRY->(!Eof())
 	While QRY->(!Eof()) .and. !oRel:Cancel() 
   		ProcRegua(10)
   		nCont ++
+		
 		 MsProcTxt("Analisando registro " )		 
-		//Cancelado pelo usuario
 		If oRel:Cancel()
 			Exit
 		EndIf   
@@ -150,15 +130,23 @@ If QRY->(!Eof())
 			cComprador := SY1->Y1_NOME
 		EndIf
 		nValorLiq :=QRY->( F1_VALBRUT - F1_IRRF - F1_VALPIS - F1_VALCOFI - F1_VALCSLL)
+		nValTotal += nValorLiq
 		oSection1:Cell("NOME"):SetValue(cForCli)
 		oSection1:Cell("LIQUIDO"):SetValue(nValorLiq)
-
+		oSection1:Cell("F1_FILIAL"):SetValue(QRY->F1_FILIAL)
+		oSection1:Cell("F1_FORNECE"):setValue(QRY->F1_FORNECE)
+		oSection1:Cell("F1_LOJA"):setValue(QRY->F1_LOJA)
+		oSection1:Cell("F1_P1VENC"):setValue(QRY->F1_P1VENC)
+		oSection1:Cell("F1_DOC"):setValue(QRY->F1_DOC)
+		oSection1:Cell("Y1_NOME"):setValue( Alltrim(cComprador))
+		oSection1:Cell("F1_EMISSAO"):setValue(QRY->F1_EMISSAO)
+		oSection1:Cell("F1_DTDIGIT"):setValue(QRY->F1_DTDIGIT)
+		oSection1:Cell("F1_SERIE"):setValue(QRY->F1_SERIE)
+		
   		oSection1:PrintLine()
 		
-		oSection2:init()
 		cQuerySe2 :="select E2_FILIAL, E2_NUM, E2_VENCREA, E2_VALOR, ED_DESCRIC, E2_FORNECE, E2_LOJA from " + RetSqlName("SE2") + " SE2"+ cLFRC
-		cQuerySe2 +=" inner join "+ RetSqlName("SED") +" SED  on E2_NATUREZ = ED_CODIGO and SED.D_E_L_E_T_=' ' "+ cLFRC
-		
+		cQuerySe2 +=" inner join "+ RetSqlName("SED") +" SED  on E2_NATUREZ = ED_CODIGO and SED.D_E_L_E_T_=' ' "+ cLFRC		
 		cQuerySe2 += " Where SE2.D_E_L_E_T_ =' ' and  E2_FILIAL = '"+QRY->F1_FILIAL+"' and E2_NUM =  '" +QRY->F1_DOC+"' "+ cLFRC
 		cQuerySe2 += " and E2_TIPO in ('TX','INS') and E2_PREFIXO ='"+QRY->F1_SERIE+"' "+ cLFRC	
 
@@ -170,24 +158,37 @@ If QRY->(!Eof())
 		nTotal := 0
 		While QR2->(!Eof())			
 			nTotal += QR2->E2_VALOR
-			oSection2:Cell("E2_VALOR"):setValue(QR2->E2_VALOR)
-			oSection2:Cell("IMPOSTO"):SetValue(Alltrim(QR2->ED_DESCRIC))
-			oSection2:Cell("E2_FORNECE"):SetValue(Alltrim(QR2->E2_FORNECE))
-			oSection2:Cell("E2_LOJA"):SetValue(Alltrim(QR2->E2_LOJA))
-			oSection2:PrintLine()
+			oSection1:Cell("F1_FILIAL"):setValue(QR2->E2_FILIAL)
+			oSection1:Cell("F1_FORNECE"):setValue(QR2->E2_FORNECE)
+			oSection1:Cell("F1_LOJA"):setValue(QR2->E2_LOJA)			
+			oSection1:Cell("NOME"):setValue(Alltrim(QR2->ED_DESCRIC))
+			oSection1:Cell("LIQUIDO"):setValue(QR2->E2_VALOR)
+			oSection1:Cell("F1_P1VENC"):setValue(QR2->E2_VENCREA)
+			oSection1:Cell("F1_DOC"):setValue(QR2->E2_NUM)
+			oSection1:PrintLine()
 			QR2->( DbSkip())
 		Enddo
-		//oSection2:Cell("E2_FILIAL"):SetValue(Alltrim(QRY->F1_FILIAL))
-		oSection2:Cell("IMPOSTO"):SetValue(Alltrim('* Total Imposto'))
-		oSection2:Cell("E2_NUM"):SetValue(Alltrim(' 	'))
-		oSection2:Cell("E2_VALOR"):SetValue(nTotal)
-		oSection2:PrintLine()
-		oSection2:finish()
+		oSection1:Cell("F1_FILIAL"):SetValue(' ')
+		oSection1:Cell("F1_FORNECE"):setValue(' ')
+		oSection1:Cell("F1_LOJA"):setValue(' ')
+		oSection1:Cell("F1_P1VENC"):setValue(' ')
+		oSection1:Cell("F1_DOC"):setValue(' ')
+		oSection1:Cell("Y1_NOME"):setValue(' ')
+		oSection1:Cell("F1_EMISSAO"):setValue(' ')
+		oSection1:Cell("F1_DTDIGIT"):setValue(' ')
+		oSection1:Cell("F1_SERIE"):setValue(' ')
+	
+		oSection1:Cell("NOME"):setValue('* Total Imposto')
+		oSection1:Cell("LIQUIDO"):setValue(nTotal)
+		oSection1:PrintLine()	
+
         oSection1:SetHeaderSection(.F.)
 		oSection1:Finish()	
-	QRY->(dbSkip())			
-		
+	QRY->(dbSkip())					
 	Enddo	
+	oRel:printtext("Total Geral")  
+	oRel:printtext("QUANTIDADE: "+ cValToChar(nCont) )  
+	oRel:printtext("VALOR TOTAL: "+ cValToChar(nValTotal) )  
 Else		
 	MsgInfo("Nao foram encontrados registros para os parametros informados!")
     Return .F.
@@ -214,27 +215,21 @@ CheckSx1(cPerg, '04', 'Dt Digitacao Ate?'  	, '', '', 'mv_ch4', 'D', tamSx3("F1_
 CheckSx1(cPerg, '05', 'Fornecedor De?' 		, '', '', 'mv_ch5', 'C', 6, 0, 0, 'G', '', 'A2A', '', '', 'mv_par05')
 CheckSx1(cPerg, '06', 'Fornecedor Ate?'		, '', '', 'mv_ch6', 'C', 6, 0, 0, 'G', '', 'A2A', '', '', 'mv_par06')
 CheckSx1(cPerg, '07', '1º Vencimento De?'	, '', '', 'mv_ch7', 'D', 8, 0, 0, 'G', '', '', '', '', 'mv_par07')
-CheckSx1(cPerg, '08', '1º Vencimento Ate?', '', '', 'mv_ch8', 'D', 8, 0, 0, 'G', '', '', '', '', 'mv_par08')
+CheckSx1(cPerg, '08', '1º Vencimento Ate?'  , '', '', 'mv_ch8', 'D', 8, 0, 0, 'G', '', '', '', '', 'mv_par08')
 
 Return
 
 static Function MontaQry ()                                   
 Local cQuery := " " 
 
-cQuery += "	SELECT F1_FILIAL, F1_EMISSAO, F1_DTDIGIT, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_VALBRUT,F1_TIPO,  F1_PREFIXO, F1_IRRF, F1_VALPIS, F1_VALCOFI, F1_VALCSLL, '20230101' F1_P1VENC"+ cLFRC
+cQuery += "	SELECT F1_FILIAL, F1_EMISSAO, F1_DTDIGIT, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_VALBRUT,F1_TIPO,  F1_PREFIXO, F1_IRRF, F1_VALPIS, F1_VALCOFI, F1_VALCSLL,  F1_P1VENC"+ cLFRC
 cQuery += "	FROM " + RetSqlName('SF1') +" SF1"+ cLFRC
-//cQuery += " Where F1_DOC >= '" +MV_PAR01+ "'"+ cLFRC
-cQuery += " Where F1_DOC >= ''"+ cLFRC
-//cQuery += "	     AND F1_DOC <= '" + MV_PAR02 + "'"      + cLFRC
-cQuery += "	     AND F1_DOC <= 'ZZZZZZZZZ'"      + cLFRC
-//cQuery += "	     AND F1_DTDIGIT	>= '" + DtoS(MV_PAR03) + "'"  + cLFRC
-cQuery += "	     AND F1_DTDIGIT	>= '20230101'"  + cLFRC
-//cQuery += "	     AND F1_DTDIGIT	<= '" + DtoS('MV_PAR04') + "'"  + cLFRC
-cQuery += "	     AND F1_DTDIGIT	<= '20230131'"  + cLFRC
-//cQuery += "	     AND F1_FORNECE	>= '" + MV_PAR05 + "'"  + cLFRC
-cQuery += "	     AND F1_FORNECE	>= '      '"  + cLFRC
-//cQuery += "	     AND F1_FORNECE	<= '" + MV_PAR06 + "'"  + cLFRC
-cQuery += "	     AND F1_FORNECE	<= 'ZZZZZZ'"  + cLFRC
+cQuery += " Where F1_DOC >= '" +MV_PAR01+ "'"+ cLFRC
+cQuery += "	     AND F1_DOC <= '" + MV_PAR02 + "'"      + cLFRC
+cQuery += "	     AND F1_DTDIGIT	>= '" + DtoS(MV_PAR03) + "'"  + cLFRC
+cQuery += "	     AND F1_DTDIGIT	<= '" + DtoS(MV_PAR04) + "'"  + cLFRC
+cQuery += "	     AND F1_FORNECE	>= '" + MV_PAR05 + "'"  + cLFRC
+cQuery += "	     AND F1_FORNECE	<= '" + MV_PAR06 + "'"  + cLFRC
 cQuery += "	     AND SF1.D_E_L_E_T_ =' ' "  + cLFRC
 
 return cQuery
