@@ -26,7 +26,7 @@ Local oNoMarked      := LoaDBitmap( GetResources(), "LBNO" )
 Local oMarked        := LoaDBitmap( GetResources(), "LBOK" )
 Local cPerg          := "ANALISE"
  
-Private cLFRC	:= chr(13)+chr(10)
+
 Private cPict2UM     := PesqPict('SB2','B2_QTSEGUM')
 Private cPictD5      := PesqPict('SD5','D5_QUANT')
 Private cPictDB      := PesqPict('SDB','DB_QUANT')
@@ -55,13 +55,6 @@ private lChFK3   := .F.
 private lChCVE   := .F.
 private lChCVF   := .F.
 private lChCTN   := .F.
-private lChSAL   := .F.
-private lChSY1   := .F.
-private lChDHL   := .F.
-private lChSF4   := .F.
-private lChSF7   := .F.
-private lChSFM   := .F.
-private lChF3K   := .F.
 private lMarkTd   := .F.
 private aOpcoes  := {}
                                              
@@ -121,7 +114,7 @@ DEFINE FONT oBold3  NAME "Arial" SIZE 0, -80 BOLD
 DBSelectArea("SB1")
 
 //@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Financeiro","Compras","Contabilidade","XX","XX","XX","XX","XX","XX","XX","XX" PIXEL SIZE 478,241
-@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Financeiro","Compras","Contabilidade","Fiscal"  PIXEL SIZE 478,241
+@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Financeiro","Compras","Contabilidade"  PIXEL SIZE 478,241
 //                                           01                 02         03          04           05          06    07    08                09                 10                11                   12
 
 @ 005,005 TO 070, 220 PROMPT "Origem"             PIXEL OF oDlgMain 
@@ -174,9 +167,6 @@ DBSelectArea("SB1")
 @ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[3] ACTION sfMkAll(.F., 3)
 
 @ 030, 006 checkbox oChFAT var lChSA2 size 100, 008 pixel of oFolder:aDialogs[3] prompt "SA2 - Fornecedores" pixel  
-@ 040, 006 checkbox oChFAT var lChSY1 size 100, 008 pixel of oFolder:aDialogs[3] prompt "SY1 - Comprador" pixel  
-@ 050, 006 checkbox oChFAT var lChSAL size 100, 008 pixel of oFolder:aDialogs[3] prompt "SAL - Alcadas" pixel  
-@ 060, 006 checkbox oChFAT var lChDHL size 100, 008 pixel of oFolder:aDialogs[3] prompt "DHL - Perfil Aprovacao" pixel  
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FOLDER 04
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,15 +185,7 @@ DBSelectArea("SB1")
 @ 120, 006 checkbox oChFAT var lChCVE size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVE - Visão Gerencial" pixel  
 @ 130, 006 checkbox oChFAT var lChCVF size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVF - Visão Gerencial" pixel  
 @ 140, 006 checkbox oChFAT var lChCTN size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTN - Livro Contábil" pixel  
-// FOLDER 05
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-@ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[5] ACTION sfMkAll(.T., 5)
-@ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[5] ACTION sfMkAll(.F., 5)
 
-@ 030, 006 checkbox oChFAT var lChSF4 size 100, 008 pixel of oFolder:aDialogs[5] prompt "SF4 - Tipos Entrada Saida" pixel  
-@ 040, 006 checkbox oChFAT var lChSF7 size 100, 008 pixel of oFolder:aDialogs[5] prompt "SF7 - Excecao Fiscal" pixel  
-@ 050, 006 checkbox oChFAT var lChSFM size 100, 008 pixel of oFolder:aDialogs[5] prompt "SFM - TES Inteligente" pixel  
-@ 060, 006 checkbox oChFAT var lChF3K size 100, 008 pixel of oFolder:aDialogs[5] prompt "F3K - Produto X Cod Valores Declaratórios" pixel  
 @ 080,320 BUTTON "&Sair"        SIZE 40,16 PIXEL ACTION oDlgMain:End()
 
 ACTIVATE MSDIALOG oDlgMain  CENTERED
@@ -241,9 +223,6 @@ endif
 
 if nOpc ==3 .or. nOpc == 0
    lChSA2 := lMark
-   lChSY1 := lMark
-   lChSAL := lMark
-   lChDHL := lMark
 endif
 if nOpc ==4 .or. nOpc == 0
    lChCT1 := lMark
@@ -259,12 +238,7 @@ if nOpc ==4 .or. nOpc == 0
    lChCVF := lMark
    lChCTN := lMark
 Endif
-if nOpc ==5 .or. nOpc == 0
-   lChSF4 := lMark
-   lChSF7 := lMark
-   lChSFM := lMark
-   lChF3K := lMark
-endif
+
 Return
 
 //----------------------------------------------------------
@@ -319,7 +293,13 @@ For nCont :=1 to len (aTab)
    // verificar se há dados no destino
 
    if TrocaEmp(aTab[nCont])
-  
+      cMsg := "Há Dados na tabela " + aTab[nCont] +" da empresa: "+ _cEmpDes
+      cMsg += "Filial: "+ _cFilDes
+      cMsg += '<br><br><font color="#ff0000"> Deseja Sobrepor os dados ?  </font> '
+
+      if (ApMsgYesNo(cMsg, "Atenção"))
+         DelReg(aTab[nCont])
+      Endif
    endif
 
 Next nConta
@@ -337,106 +317,33 @@ Função TrocaEmp
 /*/
 //----------------------------------------------------------
 static function TrocaEmp(cTab)
-Local cFilBus := left(_cFilOri,4)
-Local cFilDes := left(_cFilDes,4)
-Local lRet := .T.
-Local _nQtdReg :=0
+Local cFilBus := left(_cFilDes,4)
 
-// pegar o nome da tabela SX2 destino
+cEmpant := _cEmpIni // inicial
+cFilAnt := _cFilIni
+
+if select(cTab)==0
+   DBSELECTAREA( cTab )
+Endif
+
+EmpChangeTable(cTab,_cEmpDes ,_cEmpIni , 1) 
+
 cQuery := " Select *  From SX2" +_cEmpDes + "0 Where D_E_L_E_T_ =' '"
 cQuery += " and  X2_CHAVE = '" +cTab + "' "
-if select("QRX2") <> 0
-   QRX2->( DBCLOSEAREA(  ))
+
+if select("QRYX2") <> 0
+   QRYX2->( DBCLOSEAREA(  ))
 Endif
-TCQuery cQuery New Alias "QRX2"
 
-
-// verificar se a table existe no banco
-if QRX2->( !EOF())
-   cQuery := "select table_name TN from ALL_TABLES where table_name = '" + alltrim(QRX2->X2_ARQUIVO) +"'"
-   if select("QRALL") <> 0
-      QRALL->( DBCLOSEAREA(  ))
-   Endif
-   TCQuery cQuery New Alias "QRALL"
-
-   // verificar compartilhamento table
-   if QRX2->X2_MODO == 'E'
-      cFilBus :=_cFilOri
-      cFilDes := _cFilDes
-   Elseif QRX2->(X2_MODO + X2_MODO + X2_MODOEMP) =='CCC'
-      cFilBus = Space(6)
-      cFilDes = Space(6)
-   Endif
-   cFilWhere := iif(left(cTab,1)=="S", right(cTab,2),cTab) + '_FILIAL'   
-
-   // buscar campos SX3 não virtuais
-   cQuery := "Select X3_CAMPO, X3_TIPO from SX3"+_cEmpOri+"0 Where X3_ARQUIVO ='"+cTab+"' and D_E_L_E_T_ =' ' and X3_CONTEXT <> 'V' "
-   cQuery += "and X3_CAMPO <>  '"+cFilWhere+"'  and X3_CAMPO NOT like ('%USERLG%')   Order by X3_ORDEM"
-   if select("QX3") <> 0
-      QX3->( DBCLOSEAREA(  ))
-   Endif
-   TCQuery cQuery New Alias "QX3"
-   // força a mudança de empresas antes da função EmpOpenFile
-   if cEmpant == _cEmpDes
-      cEmpant := '01'
-   endif
-
-   // buscar registros tabela origem
-   cQuery := "select * from " + alltrim(QRALL->TN )+ " Where "+cFilWhere +"='"+cFilBus+"' and D_E_L_E_T_ =' '"
-   if select("QOR") <> 0
-      QOR->( DBCLOSEAREA(  ))
-   Endif
-   TCQuery cQuery New Alias "QOR"
-   cModo :=""
-   cCampo := ''
-   cValor := ' '
-   nTotal := 0
-   Count To nTotal
-   QOR->(DbGoTop())
-   
-   oprocess:IncRegua1("Tabela: "+cTab)
-   oprocess:SetRegua2(nTotal)
-   if EmpOpenFile(cTab,cTab,1,.T.,_cEmpDes,@cModo)
-      // se existir registros da filial destino, pergunta se deseja excluir antes da cópia
-      if (cTab)->(DbSeek(cFilDes))
-         cMsg := "Há Dados na tabela " + cTab +" da empresa: "+ _cEmpDes
-         cMsg += " Filial: "+ _cFilDes
-         cMsg += '<br><br><font color="#ff0000"> Deseja Sobrepor os dados ?  </font> '
-         if (ApMsgYesNo(cMsg, "Atenção"))            
-            MsAguarde({|| DelReg(cTab, cFilWhere, cFilDes)}, "Aguarde...", "Deletando Registros "+cTab +" Emp: " + _cEmpDes +" Filial: "+_cFilDes)
-         else
-            return
-         Endif
-      Endif
-      nAtual :=0
-      While QOR ->( ! EOF())
-         nAtual++
-         oProcess:IncRegua2("Registro " + cValToChar(nAtual) + " de " + cValToChar(nTotal) )
-         Begin Transaction
-            RecLock(cTab, .T.)	
-               &(cTab+'->'+cFilWhere)     :=  cFilDes
-                  QX3->( Dbgotop())
-                  While QX3->(!EOF())   
-                     //oprocess:IncRegua2("Campo: "+QX3->X3_CAMPO )  
-                     if QX3->X3_TIPO =='D'
-                        &(ctab+ '->'+QX3->X3_CAMPO)  :=  Stod(&('QOR->'+QX3->X3_CAMPO)   )                        
-                     elseif QX3->X3_TIPO =='L'
-                        &(ctab+ '->'+QX3->X3_CAMPO)  := iif(&('QOR->'+QX3->X3_CAMPO)=='T', .T., .F.)
-                     else
-                        &(ctab+ '->'+QX3->X3_CAMPO)  :=      &('QOR->'+QX3->X3_CAMPO)    
-                     Endif                     
-                     QX3->( DbSkip())
-                  Enddo                        
-            (cTab)->( MsUnLock())         
-         End Transaction
-         QOR->( DbSkip())
-      Enddo 
-   Endif
-else
-   cMsg := '<br><br><font color="#ff0000"> Tabela: '+cTab+' nao criada na empresa: '+_cEmpDes+'   </font> '
-   MSGALERT( cMsg, 'Atencao'  )
-   lRet := .F.
+TCQuery cQuery New Alias "QRYX2"
+if QRYX2->X2_MODO == 'E'
+   cFilBus :=_cFilDes
+Elseif QRYX2->(X2_MODO + X2_MODO + X2_MODOEMP) =='CCC'
+   cFilBus = Space(6)
 Endif
+
+(cTab)->( DBGOTOP())
+lRet := (cTab)->( DbSeek(cFilBus))
 
 Return lRet
 //----------------------------------------------------------
@@ -589,47 +496,5 @@ endif
 if lChCTN
 	aadd(atabelas,'CTN')
 endif
-if lChSAL
-	aadd(atabelas,'SAL')
-endif
-if lChDHL
-	aadd(atabelas,'DHL')
-endif
-if lChSY1
-	aadd(atabelas,'SY1')
-endif
-if lChSF4
-	aadd(atabelas,'SF4')
-endif
-if lChSF7
-	aadd(atabelas,'SF7')
-endif
-if lChSFM
-	aadd(atabelas,'SFM')
-endif
-if lChF3K
-	aadd(atabelas,'F3K')
-endif
 
 Return atabelas
-
-
-
-
-static function DelReg (cTab, cFilWhere, cFilDel)
-local aArea := (cTab)->(GetArea())
-
-cFilDel := cFilDel + Space(tamsx3("A2_FILIAL")[1] - len(cFilDel)) 
-
-(cTab)->(DBGOTOP(  ))
-if (cTab)->(DbSeek(cFilDel))
-   While (cTab)->( !EOF()) .and. &(ctab+ '->'+cFilWhere) == cFilDel
-      RecLock(cTab, .F.)
-         DBDelete()
-      (cTab)->(MSUNLOCK())
-      (cTab)->(DbSkip())
-   Enddo
-Endif
-
-(cTab)->(RestArea(aArea))
-Return

@@ -179,7 +179,7 @@ method upload(file) class PdfAttachment
         
         /* SMS */  
         // controle de LOG
-        if FWCodEmp() =='09' .and. SF1->(FieldPos("F1_XNESE2")) > 0 .and. !Empty(SF1->F1_DOC)
+        if SF1->(FieldPos("F1_XNESE2")) > 0 .and. !Empty(SF1->F1_DOC)
 
           // controle do campo novo de controle pdf anexado a duplicata
           Reclock("SF1",.F.)
@@ -275,7 +275,7 @@ method drop() class PdfAttachment
       Endif      
       If SF1->(FieldPos("F1_XNESE2")) > 0 .and. !Empty(SF1->F1_XNESE2)
         Reclock("SF1",.F.)
-           SF1->F1_XNESE2:= '1' 
+           SF1->F1_XNESE2:= '2' 
         SF1->(msUnlock())  
       Endif  
 
