@@ -1,8 +1,8 @@
 #include 'protheus.ch'
-user  Function PCodInfo(nTotal,cObs)
+user  Function PCodInfo(nTotal)
 
 	Local cCondicaoPagamento := cCondicao
-	Local cObservaoAdicional := cObs
+	Local cObservaoAdicional := 'SF1->F1_OBSADL'
 	
 	Local oDlgCustom
 	Local oObs
@@ -79,7 +79,7 @@ user  Function PCodInfo(nTotal,cObs)
 
 		//se a data digitada for acima da data base do sistema entra no if
 		If lData		
-			u_DelZK1(CA120NUM)
+			DelZK1()
 			For n1 := 1 to len(aColZK1)
 				ZK1->( dbSetOrder(2) ) // pedido
 					// Filial + Pedido + Parcela
@@ -177,13 +177,13 @@ Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld,nTotal,lReproce)
 	oGrid:Refresh()
 Return aCols
 
-user  function DelZK1(cPed)
+static function DelZK1(aZK1)
 Local aAreaZK1 := ZK1->( GetArea())
 ZK1->( DbSetorder(2))
 ZK1->( DbGotop())
 
-if ZK1->( DbSeek(xFilial("ZK1")+cPed ))
-	While ZK1->(! EOF()) .and. ZK1->(ZK1_FILIAL+ ZK1_PEDIDO) == xFilial("ZK1")+cPed
+if ZK1->( DbSeek(xFilial("ZK1")+CA120NUM ))
+	While ZK1->(! EOF()) .and. ZK1->(ZK1_FILIAL+ ZK1_PEDIDO) == xFilial("ZK1")+CA120NUM
 		RecLock("ZK1",.F.)
 		ZK1->( dbDelete() )
 		ZK1->( MsUnLock())

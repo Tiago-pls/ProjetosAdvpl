@@ -62,7 +62,7 @@ EM QUE PONTO: Ponto de Entrada utilizado na atualização do cabeçalho do Pré-Docu
 @see http://tdn.totvs.com/pages/releaseview.action?pageId=6085617
 /*/
 User Function SF1140I()
-//private lGrvSD1 := .F.
+
 
 	//se for inclusao
 	IF INCLUI
@@ -72,39 +72,7 @@ User Function SF1140I()
 			//Criado para apresentar ou nao a tela customizada da condicao de pagamento.
 			IF cEmpAnt $ GetMv( "MV_xCCOND" , .F.)
 
-				M140CondInfo()				
-				cText	    := 'Deseja mudar a Natureza Financeira?'					
-				cNaturez := POSICIONE( "SC7",1, SD1->(D1_FILIAL + D1_PEDIDO) ,"C7_ZNATURE")
-					//Não é execauto?
-				if !l140Auto .AND. SD1->(FieldPos( "D1_ZNATURE" )) > 0
-					cNaturez := IIF(Empty(gdfieldget("D1_ZNATURE")),cNaturez,gdfieldget("D1_ZNATURE"))
-					DEFINE MSDIALOG oDlgSB2 TITLE "Natureza Financeira"  OF oDlgSB2 PIXEL FROM 010,010 TO 200,265 Style DS_MODALFRAME 
-					DEFINE FONT oBold   NAME "Arial" SIZE 0, -12 BOLD
-					@ 014,010 SAY cText  SIZE 180,10 PIXEL OF oDlgSB2 FONT oBold 
-					@ 044,005 SAY "Natureza: "                              SIZE 040,10 PIXEL OF oDlgSB2 FONT oBold 
-					@ 040,043 MSGET oVar  VAR  cNaturez  F3 'SED' Picture "@!" SIZE 050,10 PIXEL OF oDlgSB2  Valid(!Empty(Alltrim(cNaturez)) .AND. Existcpo("SED",cNaturez))
-					@ 075,050 BUTTON "&Confirmar" SIZE 30,14 PIXEL ACTION (oDlgSB2:End())
-					ACTIVATE MSDIALOG oDlgSB2  CENTERED	
-					if !Empty(Alltrim(cNaturez)) .and. ExistCPO("SED", cNaturez)
-						aSD1:= SD1->( GetArea())
-						//Atualiza natureza
-						//D1_FILIAL+D1_DOC+D1_SERIE+D1_FORNECE+D1_LOJA+D1_COD+D1_ITEM                                                                                                     
-						if SD1->( dbseek(SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA)))
-							While SD1->(D1_FILIAL+D1_DOC+D1_SERIE+D1_FORNECE+D1_LOJA)== SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA)
-								RECLOCK( "SD1", .F. )
-									SD1->D1_ZNATURE := cNaturez
-								SD1->( MSUNLOCK())
-								SD1->( DbSkip())
-							Enddo
-						Endif
-						RestArea(aSD1)
-
-					Else
-						MsgStop("Informe uma natureza financeira valida para alteração!")
-						lValido := .F.
-					EndIF
-				Endif
-
+				M140CondInfo()
 			EndIF
 		EndIF
 	EndIF
@@ -120,19 +88,24 @@ Return
 /*/
 User Function SD1140E()
 
-ZK1->( dbSetOrder(1) )
-ZK1->( dbSeek( xFilial("ZK1") + SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA+F1_TIPO) ) )
-While !ZK1->( Eof() ) .And. ZK1->(ZK1_FILIAL+ZK1_CHAVE) == xFilial("ZK1") + SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA+F1_TIPO)
-	RecLock("ZK1",.F.)
+	ZK1->( dbSetOrder(1) )
+	ZK1->( dbSeek( xFilial("ZK1") + SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA+F1_TIPO) ) )
+
+	While !ZK1->( Eof() ) .And. ZK1->(ZK1_FILIAL+ZK1_CHAVE) == xFilial("ZK1") + SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA+F1_TIPO)
+
+		RecLock("ZK1",.F.)
 		ZK1->( dbDelete() )
 		ZK1->( MsUnLock())
-	ZK1->( dbSkip() )
-EndDO
+
+		ZK1->( dbSkip() )
+	EndDO
 
 Return
 
+
 /*/{Protheus.doc} M140CondInfo
 Função para mostrar/alterar a Observação e a Condição de Pagamento da Nota no Documento de Entrada
+
 @author Rafael Ricardo Vieceli
 @since 03/07/2015
 @version 1.0
@@ -216,15 +189,14 @@ Static Function M140CondInfo()
 	EndIF
 	ZK1->( DbSetorder(2))
 	ZK1->( DbGotop())
-	cPedido :="X"
+	
 	For nCont := 1 to len(aPedidos)		
 		if ZK1->( DbSeek( xFilial("ZK1") + aPedidos[nCont] ))
-			cCondicaoPagamento := ZK1->ZK1_COND
-			cPedido := aPedidos[nCont]
+			cPedido := ZK1->ZK1_PEDIDO
 		endif
 	Next nCont
 
-	If  cPedido <> 'X'
+	If ALTERA .and. !Empty(cPedido)
 		oParcs:aCols := AtualizaParcelas(cCondicaoPagamento, @oParcs, @aParcsOld,0 , .F., cPedido)
 		oParcs:refresh()
 	Endif
@@ -263,9 +235,7 @@ Static Function M140CondInfo()
 
 		//se a data digitada for acima da data base do sistema entra no if
 		If lData
-			if len(apedidos) >0
-				u_DelZK1(apedidos[1])
-			Endif
+
 			//grava os dados na nota
 			RecLock("SF1",.F.)
 			SF1->F1_COND   := cCondicaoPagamento
@@ -284,15 +254,16 @@ Static Function M140CondInfo()
 			Next n1
 
 			For n1 := 1 to len(aColZK1)
+				ZK1->( dbSetOrder(1) )
+				ZK1->( dbSeek( cSeek + aColZK1[n1][1] ) )
 
-				RecLock("ZK1", .T.)
+				RecLock("ZK1", !ZK1->(Found()))
 				ZK1->ZK1_FILIAL := xFilial("ZK1")
 				ZK1->ZK1_CHAVE  := SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA+F1_TIPO)
 				ZK1->ZK1_PARC   := aColZK1[n1][1]
 				ZK1->ZK1_VENC   := aColZK1[n1][2]
 				ZK1->ZK1_VALOR  := aColZK1[n1][3]
-				ZK1->ZK1_COND   := aColZK1[n1][5]
-				ZK1->ZK1_PEDIDO := iif( len(aPedidos) =0, '', aPedidos[1])
+				//ZK1->ZK1_USER   := aColZK1[n1][4]
 				ZK1->( MsUnLock())
 			Next n1
 
@@ -343,7 +314,6 @@ Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld,nTotal, lReproce, c
 	Local nZK1_PARC  	:= aScan(aHeader,{|x| AllTrim(x[2]) == "ZK1_PARC"} ) //Pega a posicao do campo
 	Local nZK1_VENC  	:= aScan(aHeader,{|x| AllTrim(x[2]) == "ZK1_VENC"} ) //Pega a posicao do campo
 	Local nZK1_VALOR 	:= aScan(aHeader,{|x| AllTrim(x[2]) == "ZK1_VALOR"} ) //Pega a posicao do campo
-	Local nZK1_COND 	:= aScan(aHeader,{|x| AllTrim(x[2]) == "ZK1_COND"} ) 
 
 	For n1 := 1 to len(aCols)
 		IF GDFieldGet('ZK1_REC_WT',n1) != 0
@@ -367,7 +337,7 @@ Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld,nTotal, lReproce, c
 			aCols[n1][nZK1_PARC]  := cParcela //posicao 1
 			aCols[n1][nZK1_VENC]  := aParcelas[n1][1]	//posicao 2
 			aCols[n1][nZK1_VALOR] := aParcelas[n1][2] //ALLTRIM(TransForm(aParcelas[n1][2],"@E 999,999.99"))
-			aCols[n1][nZK1_COND]  := cCondicao
+
 			cParcela := MaParcela(cParcela)
 			
 		Next n1	
@@ -391,7 +361,6 @@ Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld,nTotal, lReproce, c
 			aCols[nCont][nZK1_PARC]  := ZK1->ZK1_PARC //posicao 1
 			aCols[nCont][nZK1_VENC]  := ZK1->ZK1_VENC	//posicao 2
 			aCols[nCont][nZK1_VALOR] := ZK1->ZK1_VALOR //ALLTRIM(TransForm(aParcelas[n1][2],"@E 999,999.99"))
-			aCols[nCont][nZK1_COND]  := ZK1->ZK1_COND //ALLTRIM(TransForm(aParcelas[n1][2],"@E 999,999.99"))
 			nCont +=1
 			ZK1->( DbSkip())
 		Enddo		
@@ -400,7 +369,7 @@ Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld,nTotal, lReproce, c
 	oGrid:Refresh()
 
 
-Return aCols
+Return .T.
 
 /*/{Protheus.doc} MT140LOK
 (MT140LOK - Valida informações no pré-documento de entrada)

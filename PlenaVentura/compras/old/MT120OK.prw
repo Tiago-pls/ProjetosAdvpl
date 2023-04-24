@@ -18,16 +18,14 @@ User Function  MT120OK()
 	    if !l120Auto
 		nPosTot := aScan(aHeader, {|x| AllTrim(x[2])=="C7_TOTAL"})
 		nPosDesc := aScan(aHeader, {|x| AllTrim(x[2])=="C7_VLDESC"})
-		nPosObs := aScan(aHeader, {|x| AllTrim(x[2])=="C7_OBS"})
-		cObs :=""
+
 		For nCont := 1 to Len(aCols)
 			if  !acols[ncont , len(acols[nCont])]
 				nTotal += acols[nCont][nPosTot]
 				nTotal -= acols[nCont][nPosDesc]
-				cObs += Alltrim(acols[nCont][nPosObs])
 			Endif
 		Next nCont
-        u_PCodInfo(nTotal,cObs) // janela de condição de pagamento de pedido de compras
+        u_PCodInfo(nTotal) // janela de condição de pagamento de pedido de compras
     Endif
 
 	//Não é execauto?
