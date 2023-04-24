@@ -22,7 +22,7 @@ User Function MA140BUT()
 
 			//Criado para apresentar ou nao a tela customizada da condicao de pagamento.
 			IF cEmpAnt $ GetMv( "MV_xCCOND" , .F.)
-				aAdd(aBotoes,{"BUDGET",  {|| M140CondInfo() },"Cond. Pagto/Observação","Cond. Pagto/Observação" })
+				aAdd(aBotoes,{"BUDGET",  {|| M140CondInfo(Alltrim(SC7->C7_OBS)) },"Cond. Pagto/Observação","Cond. Pagto/Observação" })
 			EndIF
 		EndIF
 	EndIF
@@ -72,7 +72,7 @@ User Function SF1140I()
 			//Criado para apresentar ou nao a tela customizada da condicao de pagamento.
 			IF cEmpAnt $ GetMv( "MV_xCCOND" , .F.)
 
-				M140CondInfo()				
+				M140CondInfo(alltrim(SC7->C7_OBS))
 				cText	    := 'Deseja mudar a Natureza Financeira?'					
 				cNaturez := POSICIONE( "SC7",1, SD1->(D1_FILIAL + D1_PEDIDO) ,"C7_ZNATURE")
 					//Não é execauto?
@@ -137,7 +137,7 @@ Função para mostrar/alterar a Observação e a Condição de Pagamento da Nota no Do
 @since 03/07/2015
 @version 1.0
 /*/
-Static Function M140CondInfo()
+Static Function M140CondInfo(cObsSC7)
 
 	Local cCondicaoPagamento := SF1->F1_COND
 	Local cObservaoAdicional := SF1->F1_OBSADL
@@ -308,7 +308,7 @@ Static Function M140CondInfo()
 			         	   'Solução:  Verifique o valor digitado. ', 'TOTVS' )*/
 			EndIF
 
-			M140CondInfo()
+			M140CondInfo(Alltrim(SC7->C7_OBS))
 		EndIF
 	EndIF
 

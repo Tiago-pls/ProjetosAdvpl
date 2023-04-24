@@ -79,7 +79,11 @@ user  Function PCodInfo(nTotal,cObs)
 
 		//se a data digitada for acima da data base do sistema entra no if
 		If lData		
+			// delete os registros anteriores
 			u_DelZK1(CA120NUM)
+
+			// altera a observação de acordo com texto digitado na tela
+			//SC7->( dbSeek( xFilial("SC7")))
 			For n1 := 1 to len(aColZK1)
 				ZK1->( dbSetOrder(2) ) // pedido
 					// Filial + Pedido + Parcela
@@ -105,7 +109,7 @@ user  Function PCodInfo(nTotal,cObs)
 	aCols := aSaveGrid[1]
 	aHeader := aSaveGrid[2]
 
-Return
+Return cObservaoAdicional
 
 
 
