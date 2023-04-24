@@ -47,19 +47,16 @@ private lChCT1   := .F.
 private lChCTD   := .F.
 private lChCTH   := .F.
 private lChCVD   := .F.
-private lChSVN   := .F.
+private lChCVN   := .F.
 private lChCT5   := .F.
 private lChSF4   := .F.
 private lChSF7   := .F.
-private lChFK3   := .F.
 private lChCVE   := .F.
 private lChCVF   := .F.
 private lChCTN   := .F.
 private lChSAL   := .F.
 private lChSY1   := .F.
 private lChDHL   := .F.
-private lChSF4   := .F.
-private lChSF7   := .F.
 private lChSFM   := .F.
 private lChF3K   := .F.
 private lMarkTd   := .F.
@@ -187,14 +184,12 @@ DBSelectArea("SB1")
 @ 040, 006 checkbox oChFAT var lChCTD size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTD - Item Contábil" pixel  
 @ 050, 006 checkbox oChFAT var lChCTH size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTH - Classe Valor" pixel  
 @ 060, 006 checkbox oChFAT var lChCVD size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVD - Plano Contas Referencial" pixel  
-@ 070, 006 checkbox oChFAT var lChSVN size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVN - Amarração Plano Contas referencial" pixel  
+@ 070, 006 checkbox oChFAT var lChCVN size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVN - Amarração Plano Contas referencial" pixel  
 @ 080, 006 checkbox oChFAT var lChCT5 size 100, 008 pixel of oFolder:aDialogs[4] prompt "CT5 - Lançamento Padrão" pixel  
-@ 090, 006 checkbox oChFAT var lChSF4 size 100, 008 pixel of oFolder:aDialogs[4] prompt "SF4 - TES" pixel  
-@ 100, 006 checkbox oChFAT var lChSF7 size 100, 008 pixel of oFolder:aDialogs[4] prompt "SF7 - Exceção Fiscal" pixel  
-@ 110, 006 checkbox oChFAT var lChFK3 size 100, 008 pixel of oFolder:aDialogs[4] prompt "FK3 - Produtos X Valores declaratórios" pixel  
-@ 120, 006 checkbox oChFAT var lChCVE size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVE - Visão Gerencial" pixel  
-@ 130, 006 checkbox oChFAT var lChCVF size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVF - Visão Gerencial" pixel  
-@ 140, 006 checkbox oChFAT var lChCTN size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTN - Livro Contábil" pixel  
+//@ 090, 006 checkbox oChFAT var lChFK3 size 100, 008 pixel of oFolder:aDialogs[4] prompt "FK3 - Produtos X Valores declaratórios" pixel  
+@ 090, 006 checkbox oChFAT var lChCVE size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVE - Visão Gerencial" pixel  
+@ 100, 006 checkbox oChFAT var lChCVF size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVF - Visão Gerencial" pixel  
+@ 110, 006 checkbox oChFAT var lChCTN size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTN - Livro Contábil" pixel  
 // FOLDER 05
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 @ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[5] ACTION sfMkAll(.T., 5)
@@ -250,11 +245,8 @@ if nOpc ==4 .or. nOpc == 0
    lChCTD := lMark
    lChCTH := lMark
    lChCVD := lMark
-   lChSVN := lMark
+   lChCVN := lMark
    lChCT5 := lMark
-   lChSF4 := lMark
-   lChSF7 := lMark
-   lChFK3 := lMark
    lChCVE := lMark
    lChCVF := lMark
    lChCTN := lMark
@@ -422,7 +414,7 @@ if QRX2->( !EOF())
                         &(ctab+ '->'+QX3->X3_CAMPO)  :=  Stod(&('QOR->'+QX3->X3_CAMPO)   )                        
                      elseif QX3->X3_TIPO =='L'
                         &(ctab+ '->'+QX3->X3_CAMPO)  := iif(&('QOR->'+QX3->X3_CAMPO)=='T', .T., .F.)
-                     else
+                     elseif QX3->X3_TIPO <>'M'
                         &(ctab+ '->'+QX3->X3_CAMPO)  :=      &('QOR->'+QX3->X3_CAMPO)    
                      Endif                     
                      QX3->( DbSkip())
@@ -565,20 +557,11 @@ endif
 if lChCVD
 	aadd(atabelas,'CVD')
 endif
-if lChSVN
-	aadd(atabelas,'SVN')
+if lChCVN
+	aadd(atabelas,'CVN')
 endif
 if lChCT5
 	aadd(atabelas,'CT5')
-endif
-if lChSF4
-	aadd(atabelas,'SF4')
-endif
-if lChSF7
-	aadd(atabelas,'SF7')
-endif
-if lChFK3
-	aadd(atabelas,'FK3')
 endif
 if lChCVE
 	aadd(atabelas,'CVE')
