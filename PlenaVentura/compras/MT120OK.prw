@@ -27,7 +27,17 @@ User Function  MT120OK()
 				cObs += Alltrim(acols[nCont][nPosObs])
 			Endif
 		Next nCont
-        u_PCodInfo(nTotal,cObs) // janela de condição de pagamento de pedido de compras
+        cObsSC7 := alltrim(u_PCodInfo(nTotal,cObs)) // janela de condição de pagamento de pedido de compras
+		if cObsSC7 <> cObs
+			// atualiza a observação do pedido
+			for nCont := 1 to len (aCols)
+				if  !acols[ncont , len(acols[nCont])]
+					acols[ nCont ,nPosObs] := cObsSC7
+					nCont := len(aCols)
+				endif
+			Next nCont
+			
+		endif
     Endif
 
 	//Não é execauto?
