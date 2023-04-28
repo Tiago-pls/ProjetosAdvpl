@@ -179,12 +179,13 @@ method upload(file) class PdfAttachment
         
         /* SMS */  
         // controle de LOG
-        if SF1->(FieldPos("F1_XNESE2")) > 0 .and. !Empty(SF1->F1_DOC)
+        if FWCodEmp() =='09'
+          //u_LogAnexo(SE2->E2_FILIAL ,SE2->E2_NUM, 'I', 'SE2', SE2->E2_PARCELA)
 
           // controle do campo novo de controle pdf anexado a duplicata
           Reclock("SF1",.F.)
             SF1->F1_XNESE2:= '1'          
-          SF1->(msUnlock())    
+          SF1->(msUnlock())
         Endif      
       Endif
   Endif
@@ -273,13 +274,6 @@ method drop() class PdfAttachment
         SE2->(msUnlock())  
         //u_LogAnexo(SE2->E2_FILIAL ,SE2->E2_NUM, 'E', 'SE2', SE2->E2_PARCELA)
       Endif      
-      If SF1->(FieldPos("F1_XNESE2")) > 0 .and. !Empty(SF1->F1_XNESE2)
-        Reclock("SF1",.F.)
-           SF1->F1_XNESE2:= '2' 
-        SF1->(msUnlock())  
-      Endif  
-
-              
     endif
 
     ::message(result, 'Arquivo excluído com sucesso.', 'Não foi possivel excluir o arquivo.' + CRLF + CRLF + "Error: " + cValToChar(FError()))

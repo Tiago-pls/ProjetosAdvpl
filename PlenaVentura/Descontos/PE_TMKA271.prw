@@ -22,6 +22,7 @@ Local aCardData :={}
 Local aRecnoSUA 	:= {}
 Local lIntFluig := .F.
 Local cBloqOrc :='N'
+if FWCodEmp() =='09'
 
 	nPos := aScan(aHeader, {|x| AllTrim(x[2])=="UB_DESC"})
     For nCont := 1 to Len(aCols)
@@ -57,7 +58,7 @@ Local cBloqOrc :='N'
 		aAdd(aCardData,{'txtOperacao', '2'})    
 		cUserComp := GetLogFlg(Alltrim('000034')) // utilizar o usuario logado
 		aAdd(aCardData,{'codSolicitante', cUserComp})    // solicitante
-		aAdd(aCardData,{'codAprovador',   GetLogFlg(Alltrim('000034'))})    // aprovador
+		aAdd(aCardData,{'codAprovador',   GetLogFlg(Alltrim('000034'))})    // U7_XAPROV  aprovador
 		for nCont :=1 to len(acols)
 			if nCont == 1
 				cStatus :="V"
@@ -76,8 +77,9 @@ Local cBloqOrc :='N'
 			aAdd(aCardData,{'txtStatus___'+cvaltochar(nCont), cStatus})
 			
 		Next nCont
-		//GeraFluig(aCardData, aRecnoSUA, cUserComp)
+		GeraFluig(aCardData, aRecnoSUA, cUserComp)
 	Endif
+Endif
 RestArea(aArea)
 return
 
@@ -184,8 +186,10 @@ Return
 */
 
 Static function GetLogFlg(cLogin)
-	Local cFluigUsr 	:= AllTrim(GetMv("MV_FLGUSER"))
-	Local cFluigPss		:= AllTrim(GetMv("MV_FLGPASS"))
+	//Local cFluigUsr 	:= AllTrim(GetMv("MV_FLGUSER"))
+	//Local cFluigPss		:= AllTrim(GetMv("MV_FLGPASS"))
+	Local cFluigUsr 	:= 'totvs'
+	Local cFluigPss		:= 'Empi@32@'
 	Local nCompany		:= 1
 	Local cEmail 		:= AllTrim(UsrRetMail(cLogin))
 	Local cLogFluig		:= ''

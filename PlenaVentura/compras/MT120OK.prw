@@ -48,7 +48,7 @@ User Function  MT120OK()
 		@ 014,010 SAY cText  SIZE 180,10 PIXEL OF oDlgSB2 FONT oBold 
 		@ 044,005 SAY "Natureza: "                              SIZE 040,10 PIXEL OF oDlgSB2 FONT oBold 
 		@ 040,043 MSGET oVar  VAR  cNaturez  F3 'SED' Picture "@!" SIZE 050,10 PIXEL OF oDlgSB2  Valid(!Empty(Alltrim(cNaturez)) .AND. Existcpo("SED",cNaturez))
-															
+		
 		@ 075,050 BUTTON "&Confirmar" SIZE 30,14 PIXEL ACTION (oDlgSB2:End())
 		ACTIVATE MSDIALOG oDlgSB2  CENTERED	
 		if !Empty(Alltrim(cNaturez)) .and. ExistCPO("SED", cNaturez)

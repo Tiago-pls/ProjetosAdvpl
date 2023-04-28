@@ -59,6 +59,14 @@ private lChSY1   := .F.
 private lChDHL   := .F.
 private lChSFM   := .F.
 private lChF3K   := .F.
+private lChSA6   := .F.
+private lChSM4   := .F.
+private lChSA1   := .F.
+private lChSA3   := .F.
+private lChCTS   := .F.
+private lChCTT   := .F.
+private lChSNG   := .F.
+private lChNNR   := .F.
 private lMarkTd   := .F.
 private aOpcoes  := {}
                                              
@@ -118,8 +126,8 @@ DEFINE FONT oBold3  NAME "Arial" SIZE 0, -80 BOLD
 DBSelectArea("SB1")
 
 //@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Financeiro","Compras","Contabilidade","XX","XX","XX","XX","XX","XX","XX","XX" PIXEL SIZE 478,241
-@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Financeiro","Compras","Contabilidade","Fiscal"  PIXEL SIZE 478,241
-//                                           01                 02         03          04           05          06    07    08                09                 10                11                   12
+@ 100,006 FOLDER oFolder OF oDlgMain PROMPT "&Faturamento","Financeiro","Compras","Contabilidade","Fiscal","Ativo Fixo","Estoque"  PIXEL SIZE 478,241
+//                                           01                 02         03          04           05          06        07    08                09                 10                11                   12
 
 @ 005,005 TO 070, 220 PROMPT "Origem"             PIXEL OF oDlgMain 
 @ 020,010 SAY "Empresa "                                     SIZE 040,10 PIXEL OF oDlgMain FONT oBold 
@@ -153,6 +161,9 @@ DBSelectArea("SB1")
 @ 060, 006 checkbox oChFAT var lChZ02 size 100, 008 pixel of oFolder:aDialogs[1] prompt "Z02 - Família" pixel  
 @ 070, 006 checkbox oChFAT var lChSAH size 100, 008 pixel of oFolder:aDialogs[1] prompt "SAH - Unidade Medidas" pixel  
 @ 080, 006 checkbox oChFAT var lChSE4 size 100, 008 pixel of oFolder:aDialogs[1] prompt "SE4 - Condição Pagamento" pixel  
+@ 090, 006 checkbox oChFAT var lChSM4 size 100, 008 pixel of oFolder:aDialogs[1] prompt "SM4 - Formulas" pixel  
+@ 100, 006 checkbox oChFAT var lChSA1 size 100, 008 pixel of oFolder:aDialogs[1] prompt "SA1 - Clientes" pixel  
+@ 110, 006 checkbox oChFAT var lChSA3 size 100, 008 pixel of oFolder:aDialogs[1] prompt "SA3 - Vendedores" pixel  
 
 @ 080,450 BUTTON "&Processar"   SIZE 40,16 PIXEL ACTION Processa({||fValida()})
 
@@ -162,8 +173,9 @@ DBSelectArea("SB1")
 @ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[2] ACTION sfMkAll(.T., 2)
 @ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[2] ACTION sfMkAll(.F., 2)
 
-@ 030, 006 checkbox oChFAT var lChSED size 100, 008 pixel of oFolder:aDialogs[2] prompt "SED - Natureza Financeira" pixel  
-@ 040, 006 checkbox oChFAT var lChZM9 size 100, 008 pixel of oFolder:aDialogs[2] prompt "ZM9 - Empresa Fluig" pixel  
+@ 030, 006 checkbox oChFAT var lChSA6 size 100, 008 pixel of oFolder:aDialogs[2] prompt "SA6 - Bancos" pixel  
+@ 040, 006 checkbox oChFAT var lChSED size 100, 008 pixel of oFolder:aDialogs[2] prompt "SED - Natureza Financeira" pixel  
+@ 050, 006 checkbox oChFAT var lChZM9 size 100, 008 pixel of oFolder:aDialogs[2] prompt "ZM9 - Empresa Fluig" pixel  
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FOLDER 03
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,6 +202,8 @@ DBSelectArea("SB1")
 @ 090, 006 checkbox oChFAT var lChCVE size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVE - Visão Gerencial" pixel  
 @ 100, 006 checkbox oChFAT var lChCVF size 100, 008 pixel of oFolder:aDialogs[4] prompt "CVF - Visão Gerencial" pixel  
 @ 110, 006 checkbox oChFAT var lChCTN size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTN - Livro Contábil" pixel  
+@ 120, 006 checkbox oChFAT var lChCTS size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTS - Visoes Gerenciais" pixel  
+@ 130, 006 checkbox oChFAT var lChCTT size 100, 008 pixel of oFolder:aDialogs[4] prompt "CTT - Centro de Custo" pixel  
 // FOLDER 05
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 @ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[5] ACTION sfMkAll(.T., 5)
@@ -200,6 +214,20 @@ DBSelectArea("SB1")
 @ 050, 006 checkbox oChFAT var lChSFM size 100, 008 pixel of oFolder:aDialogs[5] prompt "SFM - TES Inteligente" pixel  
 @ 060, 006 checkbox oChFAT var lChF3K size 100, 008 pixel of oFolder:aDialogs[5] prompt "F3K - Produto X Cod Valores Declaratórios" pixel  
 @ 080,320 BUTTON "&Sair"        SIZE 40,16 PIXEL ACTION oDlgMain:End()
+
+// FOLDER 06 - Ativo Fixo
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[6] ACTION sfMkAll(.T., 6)
+@ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[6] ACTION sfMkAll(.F., 6)
+
+@ 030, 006 checkbox oChFAT var lChSNG size 100, 008 pixel of oFolder:aDialogs[6] prompt "SNG - Grupo Bens" pixel  
+// FOLDER 07 - Estoque
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@ 005,005 BUTTON "&Marcar todos"        SIZE 50,12 PIXEL of oFolder:aDialogs[7] ACTION sfMkAll(.T., 7)
+@ 005,075 BUTTON "&Desmarcar todos"     SIZE 60,12 PIXEL of oFolder:aDialogs[7] ACTION sfMkAll(.F., 7)
+
+@ 030, 006 checkbox oChFAT var lChNNR size 100, 008 pixel of oFolder:aDialogs[7] prompt "NNR - Locais Estoque" pixel  
+
 
 ACTIVATE MSDIALOG oDlgMain  CENTERED
 cEmpAnt := _cEmpOld
@@ -228,8 +256,12 @@ if nOpc == 1 .or. nOpc == 0
    lChZ02 := lMark
    lChSAH := lMark
    lChSE4 := lMark 
+   lChSM4 := lMark 
+   lChSA1 := lMark 
+   lChSA3 := lMark 
 endif
 if nOpc == 2 .or. nOpc == 0
+   lChSA6 := lMark
    lChSED := lMark
    lChZM9 := lMark
 endif
@@ -250,12 +282,20 @@ if nOpc ==4 .or. nOpc == 0
    lChCVE := lMark
    lChCVF := lMark
    lChCTN := lMark
+   lChCTS := lMark
+   lChCTT := lMark
 Endif
 if nOpc ==5 .or. nOpc == 0
    lChSF4 := lMark
    lChSF7 := lMark
    lChSFM := lMark
    lChF3K := lMark
+endif
+if nOpc ==6 .or. nOpc == 0
+   lChSNG := lMark
+endif
+if nOpc ==7 .or. nOpc == 0
+   lChNNR := lMark
 endif
 Return
 
@@ -388,6 +428,9 @@ if QRX2->( !EOF())
    
    oprocess:IncRegua1("Tabela: "+cTab)
    oprocess:SetRegua2(nTotal)
+   if cTab =='Z01'
+     lTst :=  TST(cTab,cTab,1,.T.,_cEmpDes,@cModo)
+   Endif
    if EmpOpenFile(cTab,cTab,1,.T.,_cEmpDes,@cModo)
       // se existir registros da filial destino, pergunta se deseja excluir antes da cópia
       if (cTab)->(DbSeek(cFilDes))
@@ -395,7 +438,8 @@ if QRX2->( !EOF())
          cMsg += " Filial: "+ _cFilDes
          cMsg += '<br><br><font color="#ff0000"> Deseja Sobrepor os dados ?  </font> '
          if (ApMsgYesNo(cMsg, "Atenção"))            
-            MsAguarde({|| DelReg(cTab, cFilWhere, cFilDes)}, "Aguarde...", "Deletando Registros "+cTab +" Emp: " + _cEmpDes +" Filial: "+_cFilDes)
+            //MsAguarde({|| DelReg(cTab, cFilWhere, cFilDes)}, "Aguarde...", "Deletando Registros "+cTab +" Emp: " + _cEmpDes +" Filial: "+_cFilDes)
+             DelReg(cTab, cFilWhere, cFilDes,nTotal)
          else
             return
          Endif
@@ -403,7 +447,7 @@ if QRX2->( !EOF())
       nAtual :=0
       While QOR ->( ! EOF())
          nAtual++
-         oProcess:IncRegua2("Registro " + cValToChar(nAtual) + " de " + cValToChar(nTotal) )
+         oProcess:IncRegua2("Copiando Registro " + cValToChar(nAtual) + " de " + cValToChar(nTotal) )
          Begin Transaction
             RecLock(cTab, .T.)	
                &(cTab+'->'+cFilWhere)     :=  cFilDes
@@ -444,11 +488,11 @@ Função fDigSenha
 /*/
 //----------------------------------------------------------
 Static Function fDigSenha()
-Private cSenha   := Space(10)         
-Private cSenhAce := "tudo"
+Private cSenha   := Space(20)         
+Private cSenhAce := "cpd**%$#@!**"
 @ 067,020 To 169,312 Dialog Senhadlg Title OemToAnsi("Liberação de Acesso")
 @ 015,005 Say OemToAnsi("Informe a senha para o acesso ?") Size 80,8
-@ 015,089 Get cSenha Size 50,10 Password
+@ 015,089 Get cSenha Size 50,20 Password
 @ 037,106 BmpButton Type 1 Action fOK()
 @ 037,055 BmpButton Type 2 Action Close(Senhadlg)
 Activate Dialog Senhadlg CENTERED
@@ -470,7 +514,7 @@ Static Function fOK()
 
 If ALLTRIM(cSenha)<> cSenhAce
    MsgStop("Senha não Confere !!!")
-   cSenha  := Space(10)
+   cSenha  := Space(20)
    dlgRefresh(Senhadlg)
 Else
    _lReturn  := .T.
@@ -536,6 +580,15 @@ Endif
 if lChSE4
 	aadd(atabelas,'SE4')
 Endif
+if lChSM4
+	aadd(atabelas,'SM4')
+Endif
+if lChSA1
+	aadd(atabelas,'SA1')
+Endif
+if lChSA3
+	aadd(atabelas,'SA3')
+Endif
 if lChSED
 	aadd(atabelas,'SED')
 endif
@@ -562,6 +615,12 @@ if lChCVN
 endif
 if lChCT5
 	aadd(atabelas,'CT5')
+endif
+if lChCTS
+	aadd(atabelas,'CTS')
+endif
+if lChCTT
+	aadd(atabelas,'CTT')
 endif
 if lChCVE
 	aadd(atabelas,'CVE')
@@ -593,20 +652,31 @@ endif
 if lChF3K
 	aadd(atabelas,'F3K')
 endif
+if lChSA6
+	aadd(atabelas,'SA6')
+endif
+if lChSNG
+	aadd(atabelas,'SNG')
+endif
+if lChNNR
+	aadd(atabelas,'NNR')
+endif
 
 Return atabelas
 
 
 
 
-static function DelReg (cTab, cFilWhere, cFilDel)
+static function DelReg (cTab, cFilWhere, cFilDel,nTotal)
 local aArea := (cTab)->(GetArea())
-
+Local nAtual :=0
 cFilDel := cFilDel + Space(tamsx3("A2_FILIAL")[1] - len(cFilDel)) 
 
 (cTab)->(DBGOTOP(  ))
 if (cTab)->(DbSeek(cFilDel))
    While (cTab)->( !EOF()) .and. &(ctab+ '->'+cFilWhere) == cFilDel
+      nAtual += 1
+      oProcess:IncRegua2("Deletando Registro " + cValToChar(nAtual) + " de " + cValToChar(nTotal) )
       RecLock(cTab, .F.)
          DBDelete()
       (cTab)->(MSUNLOCK())
@@ -616,3 +686,45 @@ Endif
 
 (cTab)->(RestArea(aArea))
 Return
+
+
+static function TST(cExp1,cExp2,nExp3,lExp4,cExp5,cExp6)
+//TST(cTab,cTab,1,.T.,_cEmpDes,@cModo)
+//https://terminaldeinformacao.com/knowledgebase/opensxs/
+Local cSX2 := "SX2", cAlias := Alias(), nRegX2
+Local lRet := .t.
+
+DEFAULT lExp4 := .T.
+DEFAULT cExp5 := cEmpAnt
+DEFAULT nExp3 := 1
+
+IF Select(cExp1) > 0
+	dbSelectArea(cExp1)
+	dbCloseArea()
+Endif
+
+IF lExp4
+  IF cExp5 != cEmpAnt
+	 OpenSXs( , , , ,cExp5,"SX2TMP")
+	 cSX2 := "SX2TMP"
+  Endif
+  dbSelectArea(cSX2)
+  nRegX2 := Recno()
+  dbSeek(cExp2)
+  cExp6 := (cSX2)->X2_MODO
+  IF ( lRet := ChkFile(cExp2,.f.,cExp1,,,,,cSX2,.F.) )
+  	dbSelectArea(cExp1)
+	dbSetOrder(nExp3)
+  EndIF	
+  (cSX2)->(dbGoto(nRegX2))
+  IF cSX2 == "SX2TMP"
+  	dbSelectArea("SX2TMP")
+  	dbCloseArea()
+  Endif
+Endif
+
+IF !empty(cAlias) .and. Select(cAlias) > 0
+	dbSelectArea(cAlias)
+Endif
+
+Return lRet

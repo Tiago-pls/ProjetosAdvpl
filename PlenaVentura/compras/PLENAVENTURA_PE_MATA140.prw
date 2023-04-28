@@ -76,8 +76,8 @@ User Function SF1140I()
 				cText	    := 'Deseja mudar a Natureza Financeira?'					
 				cNaturez := POSICIONE( "SC7",1, SD1->(D1_FILIAL + D1_PEDIDO) ,"C7_ZNATURE")
 					//Não é execauto?
-				if !l140Auto .AND. SD1->(FieldPos( "D1_ZNATURE" )) > 0
-					cNaturez := IIF(Empty(gdfieldget("D1_ZNATURE")),cNaturez,gdfieldget("D1_ZNATURE"))
+				if !l140Auto .AND. SF1->(FieldPos( "F1_ZNATURE" )) > 0
+					cNaturez := IIF(Empty(gdfieldget("F1_ZNATURE")),cNaturez,gdfieldget("F1_ZNATURE"))
 					DEFINE MSDIALOG oDlgSB2 TITLE "Natureza Financeira"  OF oDlgSB2 PIXEL FROM 010,010 TO 200,265 Style DS_MODALFRAME 
 					DEFINE FONT oBold   NAME "Arial" SIZE 0, -12 BOLD
 					@ 014,010 SAY cText  SIZE 180,10 PIXEL OF oDlgSB2 FONT oBold 
@@ -86,19 +86,10 @@ User Function SF1140I()
 					@ 075,050 BUTTON "&Confirmar" SIZE 30,14 PIXEL ACTION (oDlgSB2:End())
 					ACTIVATE MSDIALOG oDlgSB2  CENTERED	
 					if !Empty(Alltrim(cNaturez)) .and. ExistCPO("SED", cNaturez)
-						aSD1:= SD1->( GetArea())
 						//Atualiza natureza
-						//D1_FILIAL+D1_DOC+D1_SERIE+D1_FORNECE+D1_LOJA+D1_COD+D1_ITEM                                                                                                     
-						if SD1->( dbseek(SF1->(F1_FILIAL + F1_DOC + F1_SERIE + F1_FORNECE + F1_LOJA)))
-							While SD1->(D1_FILIAL+D1_DOC+D1_SERIE+D1_FORNECE+D1_LOJA)== SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA)
-								RECLOCK( "SD1", .F. )
-									SD1->D1_ZNATURE := cNaturez
-								SD1->( MSUNLOCK())
-								SD1->( DbSkip())
-							Enddo
-						Endif
-						RestArea(aSD1)
-
+						RECLOCK( "SF1", .F. )
+							SF1->F1_ZNATURE := cNaturez
+						SF1->( MSUNLOCK())
 					Else
 						MsgStop("Informe uma natureza financeira valida para alteração!")
 						lValido := .F.
@@ -119,7 +110,7 @@ Return
 @see (http://tdn.totvs.com/display/public/mp/SD1140E)
 /*/
 User Function SD1140E()
-
+/*
 ZK1->( dbSetOrder(1) )
 ZK1->( dbSeek( xFilial("ZK1") + SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA+F1_TIPO) ) )
 While !ZK1->( Eof() ) .And. ZK1->(ZK1_FILIAL+ZK1_CHAVE) == xFilial("ZK1") + SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA+F1_TIPO)
@@ -128,7 +119,7 @@ While !ZK1->( Eof() ) .And. ZK1->(ZK1_FILIAL+ZK1_CHAVE) == xFilial("ZK1") + SF1-
 		ZK1->( MsUnLock())
 	ZK1->( dbSkip() )
 EndDO
-
+*/
 Return
 
 /*/{Protheus.doc} M140CondInfo

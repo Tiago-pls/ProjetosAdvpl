@@ -2,7 +2,7 @@
 #INCLUDE "apwebsrv.ch"
 
 /* ===============================================================================
-WSDL Location    http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService?wsdl
+WSDL Location    https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService?wsdl
 Gerado em        01/30/22 20:55:13
 Observa��es      C�digo-Fonte gerado por ADVPL WSDL Client 1.120703
                  Altera��es neste arquivo podem causar funcionamento incorreto
@@ -521,7 +521,7 @@ cSoap += "</q1:importProcess>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"importProcess",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -552,7 +552,7 @@ cSoap += "</q1:setDueDate>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"setDueDate",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -581,7 +581,7 @@ cSoap += "</q1:takeProcessTask>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"takeProcessTask",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -609,7 +609,7 @@ cSoap += "</q1:getInstanceCardData>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getInstanceCardData",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetInstanceCardDataCardData:SoapRecv( WSAdvValue( oXmlRet,"_CARDDATA","stringArrayArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -636,7 +636,7 @@ cSoap += "</q1:createWorkFlowProcessVersion>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"createWorkFlowProcessVersion",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -665,7 +665,7 @@ cSoap += "</q1:getCardValue>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getCardValue",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::ccontent           :=  WSAdvValue( oXmlRet,"_CONTENT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -691,7 +691,7 @@ cSoap += "</q1:getAllProcessAvailableToExport>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAllProcessAvailableToExport",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAllProcessAvailableToExportresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","processDefinitionDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -728,7 +728,7 @@ cSoap += "</q1:saveAndSendTask>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"saveAndSendTask",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSsaveAndSendTaskresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","stringArrayArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -763,7 +763,7 @@ cSoap += "</q1:setAutomaticDecisionClassic>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"setAutomaticDecisionClassic",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSsetAutomaticDecisionClassicresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","keyValueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -804,7 +804,7 @@ cSoap += "</q1:importProcessWithCardAndRelatedDatasets>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"importProcessWithCardAndRelatedDatasets",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSimportProcessWithCardAndRelatedDatasetsresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","webServiceMessage",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -835,7 +835,7 @@ cSoap += "</q1:calculateDeadLineHours>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"calculeDeadLineHours",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWScalculateDeadLineHoursresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","deadLineDto",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -861,7 +861,7 @@ cSoap += "</q1:getAllProcessAvailableToImport>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAllProcessAvailableToImport",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAllProcessAvailableToImportresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","processDefinitionDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -890,7 +890,7 @@ cSoap += "</q1:cancelInstance>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"cancelInstance",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -918,7 +918,7 @@ cSoap += "</q1:getActualThread>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getActualThread",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::nActualThread      :=  WSAdvValue( oXmlRet,"_ACTUALTHREAD","int",NIL,NIL,NIL,"N",NIL,NIL) 
@@ -945,7 +945,7 @@ cSoap += "</q1:getWorkFlowProcessVersion>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getWorkFlowProcessVersion",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::nresult            :=  WSAdvValue( oXmlRet,"_RESULT","int",NIL,NIL,NIL,"N",NIL,NIL) 
@@ -974,7 +974,7 @@ cSoap += "</q1:getAvailableProcessOnDemand>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAvailableProcessOnDemand",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAvailableProcessOnDemandAvailableProcesses:SoapRecv( WSAdvValue( oXmlRet,"_AVAILABLEPROCESSES","processDefinitionVersionDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1003,7 +1003,7 @@ cSoap += "</q1:getAvailableStatesDetail>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAvailableStatesDetail",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAvailableStatesDetailAvailableStatesDetail:SoapRecv( WSAdvValue( oXmlRet,"_AVAILABLESTATESDETAIL","processStateDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1030,7 +1030,7 @@ cSoap += "</q1:exportProcessInZipFormat>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"exportProcess",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","base64Binary",NIL,NIL,NIL,"SB",NIL,NIL) 
@@ -1068,7 +1068,7 @@ cSoap += "</q1:importProcessWithCard>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"importProcessWithCard",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSimportProcessWithCardresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","webServiceMessage",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1106,7 +1106,7 @@ cSoap += "</q1:saveAndSendTaskByReplacement>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"saveAndSendTaskByReplacement",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSsaveAndSendTaskByReplacementresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","stringArrayArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1142,7 +1142,7 @@ cSoap += "</q1:startProcessClassic>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"startProcessClassic",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSstartProcessClassicresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","keyValueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1172,7 +1172,7 @@ cSoap += "</q1:cancelInstanceByReplacement>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"cancelInstanceByReplacement",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -1203,7 +1203,7 @@ cSoap += "</q1:calculateDeadLineTime>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"calculeDeadLineTime",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWScalculateDeadLineTimeresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","deadLineDto",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1233,7 +1233,7 @@ cSoap += "</q1:simpleStartProcess>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"simpleStartProcess",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSsimpleStartProcessresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","stringArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1260,7 +1260,7 @@ cSoap += "</q1:getAvailableProcess>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAvailableProcess",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAvailableProcessAvailableProcesses:SoapRecv( WSAdvValue( oXmlRet,"_AVAILABLEPROCESSES","processDefinitionVersionDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1296,7 +1296,7 @@ cSoap += "</q1:startProcess>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"startProcess",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSstartProcessresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","stringArrayArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1324,7 +1324,7 @@ cSoap += "</q1:getAllActiveStates>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAllActiveStates",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAllActiveStatesStates:SoapRecv( WSAdvValue( oXmlRet,"_STATES","intArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1351,7 +1351,7 @@ cSoap += "</q1:releaseProcess>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"relaseProcess",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -1381,7 +1381,7 @@ cSoap += "</q1:setTasksComments>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"setTasksComments",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -1410,7 +1410,7 @@ cSoap += "</q1:searchProcess>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"searchProcess",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSsearchProcesssearchResults:SoapRecv( WSAdvValue( oXmlRet,"_SEARCHRESULTS","processDefinitionVersionDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1442,7 +1442,7 @@ cSoap += "</q1:getAvailableUsersOnDemand>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAvailableUsersOnDemand",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAvailableUsersOnDemandAvailableUsers:SoapRecv( WSAdvValue( oXmlRet,"_AVAILABLEUSERS","availableUsersDto",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1469,7 +1469,7 @@ cSoap += "</q1:getProcessFormId>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getProcessFormId",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::nresult            :=  WSAdvValue( oXmlRet,"_RESULT","int",NIL,NIL,NIL,"N",NIL,NIL) 
@@ -1506,7 +1506,7 @@ cSoap += "</q1:saveAndSendTaskClassic>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"saveAndSendTaskClassic",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSsaveAndSendTaskClassicresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","keyValueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1538,7 +1538,7 @@ cSoap += "</q1:getAvailableUsersStartOnDemand>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAvailableUsersStartOnDemand",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAvailableUsersStartOnDemandAvailableUsers:SoapRecv( WSAdvValue( oXmlRet,"_AVAILABLEUSERS","availableUsersDto",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1567,7 +1567,7 @@ cSoap += "</q1:getAvailableUsers>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAvailableUsers",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAvailableUsersAvailableUsers:SoapRecv( WSAdvValue( oXmlRet,"_AVAILABLEUSERS","stringArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1595,7 +1595,7 @@ cSoap += "</q1:getProcessImage>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getProcessImage",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cImage             :=  WSAdvValue( oXmlRet,"_IMAGE","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -1623,7 +1623,7 @@ cSoap += "</q1:getAttachments>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAttachments",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAttachmentsAttachments:SoapRecv( WSAdvValue( oXmlRet,"_ATTACHMENTS","processAttachmentDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1662,7 +1662,7 @@ cSoap += "</q1:importProcessWithCardAndPersistenceType>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"importProcessWithCardAndPersistenceType",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSimportProcessWithCardAndPersistenceTyperesult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","webServiceMessage",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1691,7 +1691,7 @@ cSoap += "</q1:getAvailableUsersStart>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAvailableUsersStart",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAvailableUsersStartAvailableUsers:SoapRecv( WSAdvValue( oXmlRet,"_AVAILABLEUSERS","stringArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1731,7 +1731,7 @@ cSoap += "</q1:importProcessWithCardAndGeneralInfo>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"importProcessWithCardAndGeneralInfo",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSimportProcessWithCardAndGeneralInforesult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","webServiceMessage",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1761,7 +1761,7 @@ cSoap += "</q1:takeProcessTaskByReplacement>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"takeProcessTaskByReplacement",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -1788,7 +1788,7 @@ cSoap += "</q1:exportProcess>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"exportProcess",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -1817,7 +1817,7 @@ cSoap += "</q1:getAvailableStates>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getAvailbleStates",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetAvailableStatesStates:SoapRecv( WSAdvValue( oXmlRet,"_STATES","intArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -1847,7 +1847,7 @@ cSoap += "</q1:updateWorkflowAttachment>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"updateWorkflowAttachment",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -1875,7 +1875,7 @@ cSoap += "</q1:getHistories>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getHistories",; 
 	"RPCX","http://ws.workflow.ecm.technology.totvs.com/",,,; 
-	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetHistoriesHistories:SoapRecv( WSAdvValue( oXmlRet,"_HISTORIES","processHistoryDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
