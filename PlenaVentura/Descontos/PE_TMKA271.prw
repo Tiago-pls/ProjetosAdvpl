@@ -26,10 +26,12 @@ if FWCodEmp() =='09'
 
 	nPos := aScan(aHeader, {|x| AllTrim(x[2])=="UB_DESC"})
     For nCont := 1 to Len(aCols)
-		if acols[nCont][nPos] > SU0->U0_XLIMDES
-			// limite maior que o configurado no grupo de atendimentos
-			lIntFluig := .T.
-			cBloqOrc :="S"			
+		if !aCols[nCont , Len(aCols[nCont])]
+			if acols[nCont][nPos] > SU0->U0_XLIMDES
+				// limite maior que o configurado no grupo de atendimentos
+				lIntFluig := .T.
+				cBloqOrc :="S"			
+			Endif
 		Endif
 	Next nCont
 	M->UA_XBLOQOR := cBloqOrc
@@ -45,39 +47,55 @@ if FWCodEmp() =='09'
 		aAdd(aCardData,{'txtAtendimento', M->UA_NUM})
 		aAdd(aCardData,{'txtCliente', M->UA_CLIENTE})
 		aAdd(aCardData,{'txtLoja', M->UA_LOJA})
-		aAdd(aCardData,{'txtEmpresa', FwCodFil()})
+		aAdd(aCardData,{'txtEmpresa', FWCodEmp()})
+		aAdd(aCardData,{'txtFilial', FwCodFil()})
+		aAdd(aCardData,{'txtRecno',  cValToChar(M->(RECNO()+1))})
 		aAdd(aCardData,{'txtDataSolicitacao', cData})
 		aAdd(aCardData,{'txtContato', M->UA_CODCONT})
 		aAdd(aCardData,{'txtNomeContato', M->UA_DESCNT})
 		aAdd(aCardData,{'txtOperador', M->UA_OPERADO})
-		aAdd(aCardData,{'docNome', 'OC: empre + solicitacao'})
+		aAdd(aCardData,{'docNome', 'Emp: '+ FWCodEmp() + " Fil: " + FwCodFil() +" Orc: " + M->UA_NUM })
 		aAdd(aCardData,{'txtNomeOperador', UsrFullName(RetCodUsr())})
 		aAdd(aCardData,{'txtCondicao', M->UA_CONDPG})
 		aAdd(aCardData,{'txtCondicaoDescricao', posicione("SE4",1, xFilial("SE4") + M->UA_CONDPG, 'E4_DESCRI')})
 		aAdd(aCardData,{'txtTabela', M->UA_TABELA})
 		aAdd(aCardData,{'txtOperacao', '2'})    
+		aAdd(aCardData,{'numQuestionamentos', '0'})    
+		aAdd(aCardData,{'numAtividade', '0'})    
 		cUserComp := GetLogFlg(Alltrim('000034')) // utilizar o usuario logado
 		aAdd(aCardData,{'codSolicitante', cUserComp})    // solicitante
-		aAdd(aCardData,{'codAprovador',   GetLogFlg(Alltrim('000034'))})    // U7_XAPROV  aprovador
+		//aAdd(aCardData,{'codAprovador',   GetLogFlg(Alltrim('000034'))})    // U7_XAPROV  aprovador
+		aAdd(aCardData,{'codAprovador',   cUserComp})    // U7_XAPROV  aprovador
 		for nCont :=1 to len(acols)
-			if nCont == 1
-				cStatus :="V"
-			else
-				cStatus :="F"
-			endif
-			
-			aAdd(aCardData,{'txtItem___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_ITEM"})]})
-			aAdd(aCardData,{'txtProduto___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_PRODUTO"})]})
-			aAdd(aCardData,{'txtQuantidade___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_QUANT"})]})
-			aAdd(aCardData,{'txtPrecoUnit___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VRUNIT"})]})
-			aAdd(aCardData,{'txtVlrItem___'+cvaltochar(nCont),acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VLRITEM"})]})
-			aAdd(aCardData,{'txtDesconto___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_DESC"})]})
-			aAdd(aCardData,{'txtVlrDesc___'+cvaltochar(nCont), acols[nCont, aScan(aHeader,{|x| AllTrim(x[2])=="UB_VALDESC"})]})
-			aAdd(aCardData,{'txtItemTotal___'+cvaltochar(nCont), '0'})
-			aAdd(aCardData,{'txtStatus___'+cvaltochar(nCont), cStatus})
-			
+			if !aCols[nCont , Len(aCols[nCont])]
+				
+				cStatus := iif( acols[nCont][nPos] > SU0->U0_XLIMDES, 'Desconto maior que o permitido',' ')
+					// limite maior que o configurado no grupo de atendimentos
+				/*
+				if nCont == 1
+					cStatus :="V"
+				else
+					cStatus :="F"
+				endif*/
+				nPosItem    := aScan(aHeader,{|x| AllTrim(x[2])=="UB_ITEM"})
+				nPosProd    := aScan(aHeader,{|x| AllTrim(x[2])=="UB_PRODUTO"})
+				nPosQtd     := aScan(aHeader,{|x| AllTrim(x[2])=="UB_QUANT"})
+				nPosVlr     := aScan(aHeader,{|x| AllTrim(x[2])=="UB_VRUNIT"})
+				nPosVlrItem := aScan(aHeader,{|x| AllTrim(x[2])=="UB_VLRITEM"})
+				nPosDesc    := aScan(aHeader,{|x| AllTrim(x[2])=="UB_DESC"})
+				nPosValDesc := aScan(aHeader,{|x| AllTrim(x[2])=="UB_VALDESC"})
+				aAdd(aCardData,{'txtItem___'+cvaltochar(nCont), acols[nCont, nPosItem]})
+				aAdd(aCardData,{'txtProduto___'+cvaltochar(nCont), Alltrim(acols[nCont, nPosProd]) +' - '+Alltrim( posicione('SB1',1,xFilial('SB1')+acols[nCont, nPosProd],'B1_DESC') )})
+				aAdd(aCardData,{'txtQuantidades___'+cvaltochar(nCont), cValtoChar(acols[nCont, nPosQtd])})
+				aAdd(aCardData,{'txtPrecoUnit___'+cvaltochar(nCont), PadR(TransForm(acols[nCont, nPosVlr],'@E 999,999,999.99'),15)})
+				aAdd(aCardData,{'txtVlrItem___'+cvaltochar(nCont),PadR(TransForm(acols[nCont, nPosVlrItem ],'@E 999,999,999.99'),15)})
+				aAdd(aCardData,{'txtDesconto___'+cvaltochar(nCont), PadR(TransForm(acols[nCont, nPosDesc],'@E 999,999,999.99'),15)})
+				aAdd(aCardData,{'txtVlrDesc___'+cvaltochar(nCont), PadR(TransForm(acols[nCont, nPosValDesc],'@E 999,999,999.99'),15)})
+				aAdd(aCardData,{'txtItemTotal___'+cvaltochar(nCont), PadR(TransForm(acols[nCont, nPosVlrItem ],'@E 999,999,999.99'),15)})
+				aAdd(aCardData,{'txtStatus___'+cvaltochar(nCont), cStatus})
+			Endif
 		Next nCont
-		GeraFluig(aCardData, aRecnoSUA, cUserComp)
+		//GeraFluig(aCardData, aRecnoSUA, cUserComp)
 	Endif
 Endif
 RestArea(aArea)
@@ -159,16 +177,16 @@ Local cIdProcess:= ""
 			
             //Gravar o ID Fluig
 			//For nI := 1 To Len(aRecnoSUB)
-				SUA->(DbGoTo(aRecnoSUA[nI]))
+			/*	SUA->(DbGoTo(aRecnoSUA[nI]))
 				RecLock("SUA",.F.)
 					SUA->UA_FLUIG := cIdProcess
-				SUB->(MsUnlock())
+				SUB->(MsUnlock())*/
 		//	Next
 		
 			conout("idProcess "+cIdProcess)
 		EndIf
 	Else
-		conout("Processo não integrado com o Fluig")
+		MsgAlert("Processo não integrado com o Fluig")
 	EndIf
 
 Return

@@ -25,8 +25,10 @@ WSSERVICE FluigProtheus DESCRIPTION 'Fluig x Protheus - Workflow'
 	
 	WSDATA Empresa			AS String
 	WSDATA Filial			AS String
+	WSDATA StatusRet    	AS String
 	WSDATA Status			AS String
 	WSDATA SCRRecno			AS String
+	WSDATA SUARecno			AS String
 	
 	WSMETHOD AprovWFPC		DESCRIPTION 'Aprovar Workflow de Pedido de Compras/Contratos'
 	WSMETHOD LiberarPC		DESCRIPTION 'Liberar Pedido de Compras'
@@ -271,7 +273,7 @@ Libera Contrato
 @since 15/03/2023
 /*/
 
-WSMETHOD LiberarOR WSRECEIVE Empresa, Filial, SUARecno WSSEND Status WSSERVICE FluigProtheus
+WSMETHOD LiberarOR WSRECEIVE Empresa, Filial, SUARecno, StatusRet WSSEND Status WSSERVICE FluigProtheus
 	Local lError 	:= .T.
 	Local cModulo := 'TMK'
 	Local cTabs := 'SUA'
@@ -296,7 +298,7 @@ WSMETHOD LiberarOR WSRECEIVE Empresa, Filial, SUARecno WSSEND Status WSSERVICE F
 			
 		// Altera a situação do Orçamento
 		if	RecLock("SUA", .F.)
-				SUA->UA_XBLOQOR := "N" // ou ' '
+				SUA->UA_XBLOQOR := StatusRet // ou ' '
 			SUA->(MsUnlock())
 		Endif		
 		lError := .F.		

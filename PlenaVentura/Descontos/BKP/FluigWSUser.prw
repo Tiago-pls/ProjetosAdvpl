@@ -374,7 +374,7 @@ cSoap += "</q1:updateColleague>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"updateColleague",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMColleagueService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -403,7 +403,7 @@ cSoap += "</q1:createColleaguewithDependencies>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"createColleaguewithDependencies",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMColleagueService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -428,7 +428,7 @@ cSoap += "</q1:getColleagueByLogin>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleagueByLogin",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMColleagueService")
 
 ::Init()
 ::oWSgetColleagueByLogincolleagueId:SoapRecv( WSAdvValue( oXmlRet,"_COLLEAGUEID","colleagueDto",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -454,7 +454,7 @@ cSoap += "</q1:getColleaguesCompressedData>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleaguesCompressedData",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMColleagueService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","base64Binary",NIL,NIL,NIL,"SB",NIL,NIL) 
@@ -480,7 +480,7 @@ cSoap += "</q1:getColleagues>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleagues",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMColleagueService")
 
 ::Init()
 ::oWSgetColleaguesresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","colleagueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -509,7 +509,7 @@ cSoap += "</q1:updateColleaguewithDependencies>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"updateColleaguewithDependencies",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMColleagueService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -535,7 +535,7 @@ cSoap += "</q1:createColleagueWithMap>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"createColleagueWithMap",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMColleagueService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -562,7 +562,7 @@ cSoap += "</q1:getColleague>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleague",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"http://fluig.homologacao.plenaventura.com.br:8181/webdesk/ECMColleagueService")
 
 ::Init()
 ::oWSgetColleaguecolab:SoapRecv( WSAdvValue( oXmlRet,"_COLAB","colleagueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )

@@ -164,7 +164,7 @@ cSoap += "</q1:getColleaguesMail>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleaguesMail",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetColleaguesMailresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","colleagueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -191,7 +191,7 @@ cSoap += "</q1:removeColleague>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"removeColleague",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -215,7 +215,7 @@ cSoap += "</q1:getSummaryColleagues>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getSummaryColleagues",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetSummaryColleaguesresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","colleagueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -241,7 +241,7 @@ cSoap += "</q1:validateColleagueLogin>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"validateColleagueLogin",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -268,7 +268,7 @@ cSoap += "</q1:activateColleague>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"activateColleague",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -293,7 +293,7 @@ cSoap += "</q1:getSimpleColleague>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleague",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetSimpleColleagueresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","colleagueDto",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -320,7 +320,7 @@ cSoap += "</q1:getGroups>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"get Groups",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetGroupscolab:SoapRecv( WSAdvValue( oXmlRet,"_COLAB","groupDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -347,7 +347,7 @@ cSoap += "</q1:createColleague>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"createCollegue",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -374,7 +374,7 @@ cSoap += "</q1:updateColleague>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"updateColleague",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -403,7 +403,7 @@ cSoap += "</q1:createColleaguewithDependencies>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"createColleaguewithDependencies",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -428,7 +428,7 @@ cSoap += "</q1:getColleagueByLogin>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleagueByLogin",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetColleagueByLogincolleagueId:SoapRecv( WSAdvValue( oXmlRet,"_COLLEAGUEID","colleagueDto",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -454,7 +454,7 @@ cSoap += "</q1:getColleaguesCompressedData>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleaguesCompressedData",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresult            :=  WSAdvValue( oXmlRet,"_RESULT","base64Binary",NIL,NIL,NIL,"SB",NIL,NIL) 
@@ -480,7 +480,7 @@ cSoap += "</q1:getColleagues>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleagues",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetColleaguesresult:SoapRecv( WSAdvValue( oXmlRet,"_RESULT","colleagueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
@@ -509,7 +509,7 @@ cSoap += "</q1:updateColleaguewithDependencies>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"updateColleaguewithDependencies",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -535,7 +535,7 @@ cSoap += "</q1:createColleagueWithMap>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"createColleagueWithMap",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::cresultXML         :=  WSAdvValue( oXmlRet,"_RESULTXML","string",NIL,NIL,NIL,"S",NIL,NIL) 
@@ -562,7 +562,7 @@ cSoap += "</q1:getColleague>"
 oXmlRet := SvcSoapCall(Self,cSoap,; 
 	"getColleague",; 
 	"RPCX","http://ws.foundation.ecm.technology.totvs.com/",,,; 
-	"https://plenaventura.com.br:8181/webdesk/ECMColleagueService")
+	"https://plenaventura.com.br:8181/webdesk/ECMWorkflowEngineService")
 
 ::Init()
 ::oWSgetColleaguecolab:SoapRecv( WSAdvValue( oXmlRet,"_COLAB","colleagueDtoArray",NIL,NIL,NIL,"O",NIL,NIL) )
