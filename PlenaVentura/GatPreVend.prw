@@ -38,12 +38,19 @@ if select("Z24")==0
     DbSelectArea("Z24")
 Endif
 
-nMarkup := u_RetMarkup()
+nMarkup := 100 - u_RetMarkup() // recalculado o MKP 
 nCustoProd := posicione("SB2",1,xFilial("SB2") + GDFIELDGET("UB_PRODUTO",N),"B2_CM1")
-
+nTot  := u_RetTotAliq()
+/*
 nRet := nCustoProd + (nCustoProd * nMarkup /100)
 nTot  := u_RetTotAliq()
 nValor := Round(nRet  / (1- (nTot / 100)),2)
+
+281002055371
+
+*/
+//C1/(1-(0,45+0,1325))
+nValor := nCustoProd / (1 - (nMarkup + nTot) / 100)
 
 GdFieldPut("UB_VRUNIT"	  ,nValor 	 ,N,aHeader,aCols)
 u_Tk273Calc("UB_VRUNIT")
@@ -153,7 +160,7 @@ Elseif nMKEst <> 0
     nMarkup:=  nMKEst
 Endif
 
-Return nMarkup
+Return  nMarkup
 
 /*-----------------+---------------------------------------------------------+
 !Nome              ! RetTotAliq                                              !

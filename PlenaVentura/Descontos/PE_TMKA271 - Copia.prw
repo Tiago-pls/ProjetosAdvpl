@@ -15,22 +15,24 @@
 !Data              ! 13/02/2023                                              !
 +------------------+---------------------------------------------------------!
 +------------------+--------------------------------------------------------*/
+//user function TK271BOK 
 user function TK271END 
 Local aArea := GetArea()
 Local nCont :=1
 Local aCardData :={}
-Local aRecnoSUA 	:= {}
 Local lIntFluig := .F.
+local aRecnoSUA :={}
 Local cBloqOrc :='N'
+Local nTotalOrc :=0
+Local nCountItens :=0
 if FWCodEmp() =='09'
-	nContItens :=0
-	nTotal :=0
+
 	nPos := aScan(aHeader, {|x| AllTrim(x[2])=="UB_DESC"})
-	nPosTOT := aScan(aHeader, {|x| AllTrim(x[2])=="UB_VLRITEM"})
+	nPosTot := aScan(aHeader, {|x| AllTrim(x[2])=="UB_VLRITEM"})
     For nCont := 1 to Len(aCols)
 		if !aCols[nCont , Len(aCols[nCont])]
-			nContItens +=1
-			nTotal += acols[nCont][nPosTOT]
+			nTotalOrc += acols[nCont][nPosTot]
+			nCountItens +=1
 			if acols[nCont][nPos] > SU0->U0_XLIMDES
 				// limite maior que o configurado no grupo de atendimentos
 				lIntFluig := .T.
@@ -38,7 +40,9 @@ if FWCodEmp() =='09'
 			Endif
 		Endif
 	Next nCont
-	M->UA_XBLOQOR := cBloqOrc
+	RECLOCK( "SUA", .F. )
+		SUA->UA_XBLOQOR := cBloqOrc
+	SUA->(MSUNLOCK())
 	if lIntFluig
 		//UsrRetMail(RetCodUsr()) testar com email do usuario
 		cData := Substr(dtos(ddatabase),7,2) + '/' + Substr(dtos(ddatabase),5,2) + '/'+ Substr(dtos(ddatabase),1,4)
@@ -50,16 +54,13 @@ if FWCodEmp() =='09'
 		aAdd(aCardData,{'emailAprovador', "marcelo.rosa@plenaventura.com.br"})
 		aAdd(aCardData,{'txtAtendimento', M->UA_NUM})
 		aAdd(aCardData,{'txtCliente', M->UA_CLIENTE})
-		aAdd(aCardData,{'txtLoja', M->UA_LOJA})
-		aAdd(aCardData,{'txtClienteNome', posicione("SA1",1, xFilial("SA1") + M->UA_CLIENTE+M->UA_LOJA, 'A1_NOME')})
-		//aAdd(aCardData,{'txtValorOrcamento', 'VALOR Orcamento'})
-		aAdd(aCardData,{'txtValorOrcamento', PadR(TransForm(nTotal,'@E 999,999,999.99'),15)})
+		aAdd(aCardData,{'txtClienteNome', 'CLIENTE TAL'})
 		aAdd(aCardData,{'txtEmpresa', FWCodEmp()})
 		aAdd(aCardData,{'txtFilial', FwCodFil()})
-		aAdd(aCardData,{'txtRecno',  cValToChar(M->(RECNO()+1))})
+		aAdd(aCardData,{'txtRecno',  cValToChar(SUA->(RECNO()+1))})
 		aAdd(aCardData,{'txtDataSolicitacao', cData})
-		aAdd(aCardData,{'txtContato', M->UA_CODCONT})
-		aAdd(aCardData,{'txtNomeContato', M->UA_DESCNT})
+		aAdd(aCardData,{'txtValorOrcamento', PadR(TransForm(nTotalOrc ,'@E 999,999,999.99'),15)})
+		aAdd(aCardData,{'numItens', PadR(TransForm(nCountItens ,'@E 999,999,999.99'),15)})
 		aAdd(aCardData,{'txtOperador', M->UA_OPERADO})
 		aAdd(aCardData,{'docNome', 'Emp: '+ FWCodEmp() + " Fil: " + FwCodFil() +" Orc: " + M->UA_NUM })
 		aAdd(aCardData,{'txtNomeOperador', UsrFullName(RetCodUsr())})
@@ -69,17 +70,21 @@ if FWCodEmp() =='09'
 		aAdd(aCardData,{'txtOperacao', '2'})    
 		aAdd(aCardData,{'numQuestionamentos', '0'})    
 		aAdd(aCardData,{'numAtividade', '0'})    
-		aAdd(aCardData,{'numItens', '99'})    
 		cUserComp := GetLogFlg(Alltrim('000034')) // utilizar o usuario logado
 		aAdd(aCardData,{'codSolicitante', cUserComp})    // solicitante
-		aAdd(aCardData,{'txtIdOrcamento',    SUA->UA_NUM })    // U7_XAPROV  aprovador
+		//aAdd(aCardData,{'codAprovador',   GetLogFlg(Alltrim('000034'))})    // U7_XAPROV  aprovador
 		aAdd(aCardData,{'codAprovador',   cUserComp})    // U7_XAPROV  aprovador
 		for nCont :=1 to len(acols)
 			if !aCols[nCont , Len(aCols[nCont])]
 				
-				cStatus := iif( acols[nCont][nPos] > SU0->U0_XLIMDES, 'C','D')
-				// limite maior que o configurado no grupo de atendimentos
-
+				cStatus := iif( acols[nCont][nPos] > SU0->U0_XLIMDES, 'C','S')
+					// limite maior que o configurado no grupo de atendimentos
+				/*
+				if nCont == 1
+					cStatus :="V"
+				else
+					cStatus :="F"
+				endif*/
 				nPosItem    := aScan(aHeader,{|x| AllTrim(x[2])=="UB_ITEM"})
 				nPosProd    := aScan(aHeader,{|x| AllTrim(x[2])=="UB_PRODUTO"})
 				nPosQtd     := aScan(aHeader,{|x| AllTrim(x[2])=="UB_QUANT"})
@@ -87,7 +92,7 @@ if FWCodEmp() =='09'
 				nPosVlrItem := aScan(aHeader,{|x| AllTrim(x[2])=="UB_VLRITEM"})
 				nPosDesc    := aScan(aHeader,{|x| AllTrim(x[2])=="UB_DESC"})
 				nPosValDesc := aScan(aHeader,{|x| AllTrim(x[2])=="UB_VALDESC"})
-				aAdd(aCardData,{'txtItem___'+cvaltochar(nCont), acols[nCont, nPosItem]})
+				//aAdd(aCardData,{'txtItem___'+cvaltochar(nCont), acols[nCont, nPosItem]})
 				aAdd(aCardData,{'txtProduto___'+cvaltochar(nCont), Alltrim(acols[nCont, nPosProd]) +' - '+Alltrim( posicione('SB1',1,xFilial('SB1')+acols[nCont, nPosProd],'B1_DESC') )})
 				aAdd(aCardData,{'txtQuantidades___'+cvaltochar(nCont), cValtoChar(acols[nCont, nPosQtd])})
 				aAdd(aCardData,{'txtPrecoUnit___'+cvaltochar(nCont), PadR(TransForm(acols[nCont, nPosVlr],'@E 999,999,999.99'),15)})
@@ -147,7 +152,7 @@ Local cIdProcess:= ""
 	oObjAnxArr := WsClassNew("ECMWorkflowEngineService_processAttachmentDtoArray")
 	
 	// Cria o objeto com os array dos itens
-	oObjItArr := WsClassNew("ECMWorkflowEngineService_keyValueDtoArray")
+	oObjItArr := WsClassNew("ECMWorkflowEngineService_keyValueDtmoArray")
 
 	// Percorre o array pra montar os objetos
 	For nI := 1 To Len(aCardData)
