@@ -558,7 +558,7 @@ WSMETHOD Produtos WSRECEIVE NULLPARAM WSSEND aProdutos WSSERVICE FluigProtheus
 	cQuery := " SELECT B1_FILIAL, B1_COD, B1_DESC, B1_TIPO, B1_UM "
 	cQuery += " FROM "+RetSqlName('SB1')+" SB1"
 	cQuery += " WHERE SB1.B1_MSBLQL <> '1'"
-	cQuery += " 	AND SB1.D_E_L_E_T_ = ' ' "
+	cQuery += " 	AND SB1.D_E_L_E_T_ = ' ' and SB1.B1_FILIAL ='010101'"
 	cQuery += " ORDER BY B1_FILIAL, B1_COD "
 
 	cQuery := ChangeQuery(cQuery)
