@@ -361,7 +361,7 @@ WSSTRUCT oCliente
 		WSDATA A1_PAIS    as String optional
 		WSDATA A1_CODPAIS as String optional
 		WSDATA A1_CBAIRRE as String
-		WSDATA A1_NATUREZ as String
+		WSDATA A1_NATUREZ as String optional
 
 ENDWSSTRUCT
 
@@ -405,10 +405,10 @@ WSSTRUCT oProdutoEstoque
 	WSDATA B1_FILIAL        AS String
     WSDATA B1_COD			AS String
 	WSDATA B1_DESC		    AS String
-    WSDATA B2_QATU			AS Float
+    WSDATA B2_QATU			AS String
 	WSDATA B1_UM			AS String
-	WSDATA B1_PESO			AS Float
-	WSDATA B1_PRV1      	AS Float
+	WSDATA B1_PESO			AS string
+	WSDATA B1_PRV1      	AS String
 ENDWSSTRUCT
 
 //FIM
@@ -2078,15 +2078,30 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 		elseif !empty(ocliente:A1_CGC )
 			DbSelectArea('SA1')
 			SA1->(dbSetOrder(3))  // A1_FILIAL+A1_CGC
+			
+			if len(ocliente:A1_CGC) == 8 // CPF
+				If SA1->(DbSeek(xFilial('SA2')+ocliente:A1_CGC))
+					cError:="Error: cliente com CNPJ/CPF "+ocliente:A1_CGC+" ja cadastrado."
+					memowrite(cFileErr, ;
+							varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
+					lError := .F.
+					cError := ""
+				Endif
+			Endif
+
+
+
 			If SA1->(DbSeek(xFilial('SA2')+ocliente:A1_CGC))
-				cError:="Error: cliente com CNPJ/CPF "+ocliente:A1_CGC+" ja cadastrado."
-				memowrite(cFileErr, ;
-						varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
-				lError := .F.
-				cError := ""
+				if len(ocliente:A1_CGC) == 8
+					cError:="Error: cliente com CNPJ/CPF "+ocliente:A1_CGC+" ja cadastrado."
+					memowrite(cFileErr, ;
+							varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
+					lError := .F.
+					cError := ""
+				endif
 			else
 				cCodMun := fCEPIBGE(oCliente:A1_CEP)
-				if empty(cCodMun)
+				if len(cCodMun)<>8
 					cError:="Error: codigo do municipio do CEP "+ocliente:A1_CEP+" nao encontrado."
 					memowrite(cFileErr, ;
 							varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
@@ -2095,18 +2110,19 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 					aVetSA1 := {}
 					aadd(aVetSA1, {"A1_TIPO"   , oCliente:A1_TIPO   , Nil})
 					aadd(aVetSA1, {"A1_CGC"    , oCliente:A1_CGC    , Nil})
-					aadd(aVetSA1, {"A1_INSCR"  , oCliente:A1_INSCR  , Nil})
-					aadd(aVetSA1, {"A1_NOME"   , oCliente:A1_NOME   , Nil})
-					aadd(aVetSA1, {"A1_NREDUZ" , oCliente:A1_NREDUZ , Nil})
-					aadd(aVetSA1, {"A1_END"    , oCliente:A1_END    , Nil})
-					aadd(aVetSA1, {"A1_BAIRRO" , oCliente:A1_BAIRRO , Nil})
-					aadd(aVetSA1, {"A1_COMPLEM", oCliente:A1_COMPLEM, Nil})
-					aadd(aVetSA1, {"A1_MUN"    , oCliente:A1_MUN    , Nil})
 					aadd(aVetSA1, {"A1_EST"    , oCliente:A1_EST    , Nil})
+					aadd(aVetSA1, {"A1_INSCR"  , oCliente:A1_INSCR  , Nil})
+					aadd(aVetSA1, {"A1_NOME"   , UPPER(oCliente:A1_NOME)   , Nil})
+					aadd(aVetSA1, {"A1_NREDUZ" , UPPER(oCliente:A1_NREDUZ) , Nil})
+					aadd(aVetSA1, {"A1_END"    , UPPER(oCliente:A1_END)    , Nil})
+					aadd(aVetSA1, {"A1_BAIRRO" , UPPER(oCliente:A1_BAIRRO) , Nil})
+					aadd(aVetSA1, {"A1_COMPLEM", UPPER(oCliente:A1_COMPLEM), Nil})
+					aadd(aVetSA1, {"A1_MUN"    , oCliente:A1_MUN    , Nil})					
 					aadd(aVetSA1, {"A1_CEP"    , oCliente:A1_CEP    , Nil})
 					aadd(aVetSA1, {"A1_DDD"    , oCliente:A1_DDD    , Nil})
 					aadd(aVetSA1, {"A1_TEL"    , oCliente:A1_TEL    , Nil})
-					aadd(aVetSA1, {"A1_NATUREZ", oCliente:A1_NATUREZ, Nil})
+					aadd(aVetSA1, {"A1_NATUREZ",     "OUTROS"       , Nil})
+
 					SA1->(dbSetOrder(1)) // A1_FILIAL + A1_COD + A1_LOJA
 					if SA1->(dbSeek(xFilial("SA1")+"XXXXXX", .t.))
 						SA1->(dbSkip(-1))
@@ -2136,6 +2152,7 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 								+ varInfo("aVetSA1",aVetSA1, , .f., .f.) + CRLF ;
                                 + cError )  
 						ConOut(Procname()+" -> "+cError)
+						lError := .T.
 					else
 						lError := .F.
 					EndIf
@@ -2365,10 +2382,10 @@ WSMETHOD ProdutosEstoque WSRECEIVE cFilBusca WSSEND aProdutosEstoque WSSERVICE F
 		oProdutoEstoque:B1_FILIAL 	:= (cAlias)->B1_FILIAL
 		oProdutoEstoque:B1_COD 	    := Alltrim((cAlias)->B1_COD)
 		oProdutoEstoque:B1_DESC	    := Alltrim((cAlias)->B1_DESC)		
-		oProdutoEstoque:B1_UM		:= (cAlias)->B1_UM
-		oProdutoEstoque:B1_PESO		:= (cAlias)->B1_PESO
-		oProdutoEstoque:B1_PRV1		:= (cAlias)->B1_PRV1
-		oProdutoEstoque:B2_QATU		:= (cAlias)->B2_QATU
+		oProdutoEstoque:B1_UM		:= (cAlias)->B1_UM		
+		oProdutoEstoque:B1_PESO		:= TRANSFORM((cAlias)->B1_PESO, '@E 999,999,999.9999') 
+		oProdutoEstoque:B1_PRV1		:= TRANSFORM((cAlias)->B1_PRV1, '@E 999,999,999.99') 
+		oProdutoEstoque:B2_QATU		:= TRANSFORM((cAlias)->B2_QATU, '@E 999,999,999.99') 
 
 		aAdd(::aProdutosEstoque:Itens, oProdutoEstoque)
 
