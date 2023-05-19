@@ -2290,40 +2290,72 @@ WSMETHOD GerarPV WSRECEIVE oPedVenda WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aCabec,{"C5_LOJAENT",oPedVenda:C5_LOJACLI,Nil})
 				aadd(aCabec,{"C5_CONDPAG","001 ",Nil})
 				aadd(aCabec,{"C5_IDFLUIG",oPedVenda:C5_IDFLUIG,Nil})
-				
-				aLinha := {}
+								
 				For nI := 1 To Len(oPedVenda['Itens'])
 					oItemPV := WSClassNew("oItemPV")
-					aItemPV := {}
-					aItemPV := oPedVenda['Itens']
-					oItemPV := aItemPV[nI]
-					aadd(aLinha,{"C6_ITEM"   , oItemPV:C6_ITEM,Nil})
-					aadd(alinha,{"C6_PRODUTO", oItemPV:C6_PRODUTO,NIL})
-					aadd(aLinha,{"C6_QTDVEN" , Val(oItemPV:C6_QTDVEN),Nil})
-					aadd(aLinha,{"C6_PRCVEN" , Val(oItemPV:C6_PRCVEN),Nil})
-					aadd(aLinha,{"C6_VALOR"  , Val(oItemPV:C6_QTDVEN) *Val(oItemPV:C6_PRCVEN) ,Nil})
+					aItemSA := {}
+					aItemSA := oPedVenda['Itens']
+					oItemSA := aItemSA[nI] 
+					Aadd(aItens, {;						
+						{"C6_ITEM",		StrZero(nI,TamSx3("C6_ITEM")[1]),NIL},;
+						{"C6_PRODUTO", oItemSA:C6_PRODUTO, 				NIL},;
+						{"C6_QTDVEN",	Val(oItemSA:C6_QTDVEN),  		NIL},;
+						{"C6_PRCVEN",	Val(oItemSA:C6_PRCVEN),			NIL},;
+						{"C6_VALOR",	Val(oItemSA:C6_PRCVEN),			NIL},;
+						{"C6_TES",	oItemSA:C6_TES,			NIL},;
+						{"C6_TES",	oItemSA:C6_TES,			NIL},;
+						{"C6_QTDLIB",	val(oItemSA:C6_QTDVEN),			NIL};
+						})
+
+/*
+					aadd(alinha,{"C6_ITEM ->"   , StrZero(nI,TamSx3("C6_ITEM")[1]),Nil})
+					aadd(alinha,{"C6_PRODUTO", oItemSA:C6_PRODUTO,NIL})					
+					aadd(aLinha,{"C6_QTDVEN" , Val(oItemSA:C6_QTDVEN),Nil})
+					aadd(aLinha,{"C6_PRCVEN" , Val(oItemSA:C6_PRCVEN),Nil})					
+					aadd(aLinha,{"C6_VALOR"  , 1 ,Nil})
 					aadd(aLinha,{"C6_TES"    , "501",Nil})
-					aadd(aLinha,{"C6_QTDLIB" , Val(oItemPV:C6_QTDVEN),Nil})
+					aadd(aLinha,{"C6_QTDLIB" , Val(oItemSA:C6_QTDVEN),Nil})					
+					aadd(aItens,aLinha) */
+/*
+					aadd(alinha,{"C6_ITEM"   , '01',Nil})
+					aadd(alinha,{"C6_PRODUTO", '1',NIL})
+					aadd(aLinha,{"C6_QTDVEN" , 1,Nil})
+					aadd(aLinha,{"C6_PRCVEN" , 1,Nil})
+					aadd(aLinha,{"C6_VALOR"  , 1 ,Nil})				
+					aadd(aLinha,{"C6_TES"    , "501",Nil})
+					aadd(aLinha,{"C6_QTDLIB" , 1,Nil})										
 					aadd(aItens,aLinha)
+					aLinha := {}
+					aadd(alinha,{"C6_ITEM"   , '02',Nil})
+					aadd(alinha,{"C6_PRODUTO", '99',NIL})
+					aadd(aLinha,{"C6_QTDVEN" , 1,Nil})
+					aadd(aLinha,{"C6_PRCVEN" , 1,Nil})
+					aadd(aLinha,{"C6_VALOR"  , 1 ,Nil})				
+					aadd(aLinha,{"C6_TES"    , "501",Nil})
+					aadd(aLinha,{"C6_QTDLIB" , 1,Nil})										
+					aadd(aItens,aLinha) */
 				Next nI
+				BEGIN TRANSACTION
+					//****************************************************************
+					//* Teste de Inclusao              
+					//****************************************************************
+					conout("aCabec: "+ cValToChar(Len(aCabec)))
+					conout("aItens: "+ cValToChar(Len(aItens)))
+					//MATA410(aCabec,aItens,3)
+					MSExecAuto({|x,y,z|mata410(x,y,z)},aCabec,aItens,3)
+					If !lMsErroAuto
+						ConOut("Incluido com sucesso! "+C5_NUM)
+						lError := .F.
+					Else
+						ConOut("Erro na inclusao!")
+						cError := "Error: "
+						//aLog  := GetAutoGRLog() 
+						//aeval(aLog, {|x| cError += x+CRLF})
+						//ConOut(Procname()+" -> "+cError)
+						lError := .T.
+					EndIf
 
-				 //****************************************************************
-				//* Teste de Inclusao              
-				//****************************************************************
-				MATA410(aCabec,aItens,3)
-				If !lMsErroAuto
-					ConOut("Incluido com sucesso! "+C5_NUM)
-					lError := .F.
-				Else
-					ConOut("Erro na inclusao!")
-					cError := "Error: "
-					aLog  := GetAutoGRLog() 
-					aeval(aLog, {|x| cError += x+CRLF})
-					ConOut(Procname()+" -> "+cError)
-					lError := .T.
-				EndIf
-
-
+				END TRANSACTION
 				
 
 
