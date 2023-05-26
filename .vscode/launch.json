@@ -18,6 +18,28 @@
 		},
 		{
 			"label": "u_XXXX"
+		},
+		{
+			"args": [],
+			"label": "u_ProcPed"
+		},
+		{
+			"args": [
+				"11",
+				"57"
+			],
+			"label": "u_AtuFluig"
+		},
+		{
+			"args": [],
+			"label": "u_TesteXML"
+		},
+		{
+			"args": [
+				"33400",
+				"60"
+			],
+			"label": "u_AtuFluig"
 		}
 	],
 	"lastProgramExecuted": "sigamdi"
