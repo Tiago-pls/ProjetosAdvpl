@@ -53,7 +53,12 @@ nValor := Round(nRet  / (1- (nTot / 100)),2)
 nValor := nCustoProd / (1 - (nMarkup + nTot) / 100)
 
 GdFieldPut("UB_VRUNIT"	  ,nValor 	 ,N,aHeader,aCols)
+
 u_Tk273Calc("UB_VRUNIT")
+GdFieldPut("UB_PRCTAB",round(nValor,2) 	 ,N,aHeader,aCols)
+if nValor <> 0 .and. SUB->(FieldPos( "UB_XCALC" )) > 0
+    GdFieldPut("UB_XCALC", 'S' 	 ,N,aHeader,aCols)
+Endif
 RestArea(aArea)
 
 Return nValor 
@@ -177,3 +182,14 @@ nAliqCofins := IIF(MaFisRet(N,"IT_BASECF2") <> 0, MaFisRet(N,"IT_ALIQCF2"),0)
 nAliqPIS    := IIF(MaFisRet(N,"IT_BASEPS2") <> 0, MaFisRet(N,"IT_ALIQPS2"),0)
 nRet        := nAliqICMS + nAliqCofins + nAliqPIS
 return  nRet
+
+//GDFIELDGET("UB_RUPEST",N)
+User Function PrcCalc(cCalculado)
+Local lRet := .T.
+
+if cCalculado =='S'
+    lRet := .F.
+Endif
+//
+Return lRet
+ 

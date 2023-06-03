@@ -8,7 +8,7 @@ Geração de contrato via Word
 @since 10/12/2015
 @version 1.0
 /*/
-User Function MCnt020()
+User Function MCnt030()
 
 	Local cPergunta := "MCNT020A"
 

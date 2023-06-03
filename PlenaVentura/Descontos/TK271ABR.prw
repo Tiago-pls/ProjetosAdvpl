@@ -23,4 +23,4 @@ If nOpc == 4 .and. SUA->UA_XBLOQOR =='S'
     lRet := .F.
 EndIf 
 
-Return(.T.)
+Return(lRet)

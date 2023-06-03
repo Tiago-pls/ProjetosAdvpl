@@ -38,7 +38,9 @@ if FWCodEmp() =='09'
 			Endif
 		Endif
 	Next nCont
-	M->UA_XBLOQOR := cBloqOrc
+	RECLOCK( "SUA", .F. )
+		SUA->UA_XBLOQOR := cBloqOrc
+	SUA->(MsUnlock())
 	if lIntFluig
 		//UsrRetMail(RetCodUsr()) testar com email do usuario
 		cData := Substr(dtos(ddatabase),7,2) + '/' + Substr(dtos(ddatabase),5,2) + '/'+ Substr(dtos(ddatabase),1,4)
@@ -87,10 +89,11 @@ if FWCodEmp() =='09'
 				nPosVlrItem := aScan(aHeader,{|x| AllTrim(x[2])=="UB_VLRITEM"})
 				nPosDesc    := aScan(aHeader,{|x| AllTrim(x[2])=="UB_DESC"})
 				nPosValDesc := aScan(aHeader,{|x| AllTrim(x[2])=="UB_VALDESC"})
+				nTotal := acols[nCont, nPosVlr] + acols[nCont, nPosValDesc]
 				aAdd(aCardData,{'txtItem___'+cvaltochar(nCont), acols[nCont, nPosItem]})
 				aAdd(aCardData,{'txtProduto___'+cvaltochar(nCont), Alltrim(acols[nCont, nPosProd]) +' - '+Alltrim( posicione('SB1',1,xFilial('SB1')+acols[nCont, nPosProd],'B1_DESC') )})
 				aAdd(aCardData,{'txtQuantidades___'+cvaltochar(nCont), cValtoChar(acols[nCont, nPosQtd])})
-				aAdd(aCardData,{'txtPrecoUnit___'+cvaltochar(nCont), PadR(TransForm(acols[nCont, nPosVlr],'@E 999,999,999.99'),15)})
+				aAdd(aCardData,{'txtPrecoUnit___'+cvaltochar(nCont), PadR(TransForm(nTotal,'@E 999,999,999.99'),15)})
 				aAdd(aCardData,{'txtVlrItem___'+cvaltochar(nCont),PadR(TransForm(acols[nCont, nPosVlrItem ],'@E 999,999,999.99'),15)})
 				aAdd(aCardData,{'txtDesconto___'+cvaltochar(nCont), PadR(TransForm(acols[nCont, nPosDesc],'@E 999,999,999.99'),15)})
 				aAdd(aCardData,{'txtVlrDesc___'+cvaltochar(nCont), PadR(TransForm(acols[nCont, nPosValDesc],'@E 999,999,999.99'),15)})

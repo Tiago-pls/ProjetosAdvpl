@@ -1,7 +1,7 @@
 #include "protheus.ch"
 #include "msole.ch"
 
-user function Sign(aArquivo)
+user function Sign(cArquivo)
 	Local nVezes := 0
 	Local cRemoteLocation := GetClientDir()
 
@@ -10,7 +10,7 @@ user function Sign(aArquivo)
 	Local cSignedFile := StrTran(SubStr(cArquivo,rAt("\",cArquivo)+1),".pdf","_signed.pdf")
 	Local cFileLocation := SubStr(cArquivo,1,rAt("\",cArquivo))
 
-	Local cPassword := alltrim(mv_par03)
+	Local cPassword := alltrim(mv_par08)
 
 	//pasta Sync
 	cRemoteLocation += IIF( Right(cRemoteLocation,1) == "\","","\") + "SignPDF\"
@@ -39,7 +39,9 @@ user function Sign(aArquivo)
 
 	//gera o .BAT com instrução de assinatura
 	//foi feito isso para poder capturar o resultado da assinatura
-	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+alltrim(mv_par02)+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 281 -lly 185 -urx 575 -ury 125 -d "'+cFileLocation+'"')
+//	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+alltrim(mv_par06)+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 281 -lly 185 -urx 575 -ury 125 -d "'+cFileLocation+'"')
+	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+alltrim(mv_par07)+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 281 -lly 185 -urx 575 -ury 125 -pg 2  -d "'+cFileLocation+'"')
+
 
 	//se não encontrar o BAT, alguma coisa deu errado
 	IF ! File( cRemoteLocation + cBatFile)
@@ -77,10 +79,38 @@ user function Sign(aArquivo)
 	IF Aviso("Resultado", "Arquivo PDF assinado com sucesso." + CRLF+CRLF+ StrTran(MemoRead(cRemoteLocation+cLogFile),"-ksp "+cPassword,"-ksp "+replicate("*",len(cPassword))), {"Abrir","Sair"}, 3) == 1
 		ShellExecute("open", cFileLocation + cSignedFile, "", "", 1)
 	EndIF
-	//exclui o log
+Return
 
-	enviaPDF(cFileLocation, cSignedFile)
+Static Function SyncJSignPDF()
+	Local n1
+	Local cRemoteLocation := GetClientDir()
+	Local cServerLocation := "\SignPDF\"
+	Local aFiles := {;
+		"conf\conf.properties",;
+		"conf\pkcs11.cfg",;
+		"lib\bcprov-jdk15-146.jar",;
+		"lib\commons-cli-1.2.jar",;
+		"lib\commons-io-2.1.jar",;
+		"lib\commons-lang3-3.1.jar",;
+		"lib\jsignpdf-itxt-1.6.1.jar",;
+		"lib\log4j-1.2.16.jar",;
+		"JSignPdf.jar"}
 
-	fErase(cRemoteLocation + cLogFile)
+	//pasta Sync
+	cRemoteLocation += IIF( Right(cRemoteLocation,1) == "\","","\") + "SignPDF\"
+
+	//cria as pastas dentro do remote
+	MakeDir(cRemoteLocation)
+	MakeDir(cRemoteLocation+"conf")
+	MakeDir(cRemoteLocation+"lib")
+
+	ProcRegua(len(aFiles))
+
+	For n1 := 1 to len(aFiles)
+		IncProc(aFiles[n1])
+		IF ! File(cRemoteLocation + aFiles[n1])
+			__CopyFile( cServerLocation + aFiles[n1], cRemoteLocation + aFiles[n1] )
+		EndIF
+	Next n1
 
 Return

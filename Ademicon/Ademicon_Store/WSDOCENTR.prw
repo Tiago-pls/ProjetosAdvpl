@@ -2472,6 +2472,7 @@ WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 	Local aLog
 	Local aEmprs
 	Local nPosFil := 1
+	Local lContinua := .T.
 	Local nOpc := 3 // Pre - opçao de inclusao
 	Local cFileErr := "/dirdoc/errows_"+procname()+"_"+dtos(date())+"_"+strtran(time(),":","")+".txt"
 	private cFilCli  := cFilAnt
@@ -2502,7 +2503,7 @@ WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 					memowrite(cFileErr, ;
 						varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
 					lError := .T.
-					cError := ""	
+					lContinua := .F.
 				else
 					// procutar por codigo e loja 
 					//A1_FILIAL+A1_COD+A1_LOJA
@@ -2529,7 +2530,7 @@ WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 				memowrite(cFileErr, ;
 					varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
 				lError := .T.			
-			else
+			elseif lContinua
 				cCodMun := fCEPIBGE(oCliente:A1_CEP)
 				aVetSA1 := {}
 				aadd(aVetSA1, {"A1_TIPO"   , 'F'   , Nil})
@@ -2546,6 +2547,7 @@ WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSA1, {"A1_DDD"    , oCliente:A1_DDD    , Nil})
 				aadd(aVetSA1, {"A1_TEL"    , oCliente:A1_TEL    , Nil})
 				aadd(aVetSA1, {"A1_NATUREZ",     "OUTROS"       , Nil})
+				aadd(aVetSA1, {"A1_PESSOA",   IIF(LEN(oCliente:A1_CGC)=14,'J','F')      , Nil})
 
 				SA1->(dbSetOrder(1)) // A1_FILIAL + A1_COD + A1_LOJA
 				if SA1->(dbSeek(xFilial("SA1")+"XXXXXX", .t.))
