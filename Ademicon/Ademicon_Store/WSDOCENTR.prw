@@ -380,7 +380,7 @@ WSSTRUCT oPedVenda
 		WSDATA C5_LOJAENT  as String  optional
 		WSDATA C5_CONDPAG  as String 
 		WSDATA C5_TPFRETE  as String  optional
-		WSDATA C5_FRETE    as String  optional
+		WSDATA C5_FRETE    as Float  optional
 		WSDATA C5_ESPECI1  as String  optional
 		WSDATA C5_VOLUME1  as String  optional
 		WSDATA C5_PESOL    as String  optional
@@ -395,8 +395,8 @@ WSSTRUCT oItemPV
         WSDATA C6_PRODUTO  as String
 		WSDATA C6_QTDVEN   as String
 		WSDATA C6_PRUNIT   as String optional
-		WSDATA C6_PRCVEN   as String
-		WSDATA C6_VALOR    as String optional
+		WSDATA C6_PRCVEN   as Float
+		WSDATA C6_VALOR    as Float optional
 		WSDATA C6_TES      as String optional
 		WSDATA C6_ITEM     as String 
 		WSDATA C6_VALDESC  as String optional
@@ -2276,6 +2276,8 @@ WSMETHOD GerarPV WSRECEIVE oPedVenda WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aCabec,{"C5_CLIENT" ,oPedVenda:C5_CLIENTE,Nil})
 				aadd(aCabec,{"C5_LOJAENT",oPedVenda:C5_LOJAENT,Nil})
 				aadd(aCabec,{"C5_CONDPAG","001 ",Nil})
+				aadd(aCabec,{"C5_TPFRETE",oPedVenda:C5_TPFRETE,Nil})
+				aadd(aCabec,{"C5_FRETE",oPedVenda:C5_FRETE,Nil})
 				aadd(aCabec,{"C5_IDFLUIG",oPedVenda:C5_IDFLUIG,Nil})
 								
 				For nI := 1 To Len(oPedVenda['Itens'])
@@ -2288,8 +2290,8 @@ WSMETHOD GerarPV WSRECEIVE oPedVenda WSSEND cCodigo WSSERVICE FluigProtheus
 						{"C6_ITEM",		StrZero(nI,TamSx3("C6_ITEM")[1]),NIL},;
 						{"C6_PRODUTO", oItemSA:C6_PRODUTO, 				NIL},;
 						{"C6_QTDVEN",	Val(oItemSA:C6_QTDVEN),  		NIL},;
-						{"C6_PRCVEN",	Val(oItemSA:C6_PRCVEN),			NIL},;
-						{"C6_VALOR",	Val(oItemSA:C6_PRCVEN) *Val(oItemSA:C6_QTDVEN),			NIL},;
+						{"C6_PRCVEN",	oItemSA:C6_PRCVEN,			NIL},;
+						{"C6_VALOR",	oItemSA:C6_PRCVEN * Val(oItemSA:C6_QTDVEN),			NIL},;
 						{"C6_TES",	    '502',			                NIL},;
 						{"C6_QTDLIB",	nQtdLib,			            NIL};
 						})
