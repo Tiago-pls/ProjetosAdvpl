@@ -198,7 +198,7 @@ Else
 				cGrpcst := &(c_GRPCST)
 			EndIf
 		EndIf
-		// Como não existe o campo NCM na SBZ, não sendo o módulo 23, será verificado na SB1
+		// Como não existe o ca123mpo NCM na SBZ, não sendo o módulo 23, será verificado na SB1
 		If !Empty(c_POSIPI)
 			cNCM := &(c_POSIPI)
 		Endif
