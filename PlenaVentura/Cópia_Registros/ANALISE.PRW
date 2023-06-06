@@ -134,7 +134,7 @@ DBSelectArea("SB1")
 @ 019,040 MSGET oVar   VAR _cEmpOri Picture "@!"         SIZE 010,10 PIXEL OF oDlgMain F3 "SM0MRP" VALID(ValEmpDe( 1))
 @ 019,065 MSGET oVar   VAR cDescEmpOri   Picture "@!"    SIZE 150,10 PIXEL OF oDlgMain When .F.
 
-@ 041,010 SAY "Filial"                                     SIZE 040,10 PIXEL OF oDlgMain FONT oBold 
+@ 041,010 SAY "Filial"                                   SIZE 040,10 PIXEL OF oDlgMain FONT oBold 
 @ 040,029 MSGET oVar   VAR _cFilOri Picture "@!"         SIZE 030,10 PIXEL OF oDlgMain F3 "SM0"  VALID(ValEmpDe(2))
 @ 040,065 MSGET oVar   VAR cDescFilOri      Picture "@!" SIZE 150,10 PIXEL OF oDlgMain When .F.
 
