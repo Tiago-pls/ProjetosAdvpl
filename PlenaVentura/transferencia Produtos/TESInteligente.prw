@@ -48,11 +48,11 @@ Local c_GRTRIB	:= ""	//SBI->BI_GRTRIB	/	SB1->B1_GRTRIB
 Local c_POSIPI	:= ""	//SBI->BI_POSIPI	/	SB1->B1_POSIPI
 Local c_TS		:= ""
 Local c_TE		:= ""
-Local cSb1Sbz	:= SuperGetMV("MV_ARQPROD",.F.,"SB1")
-Local lArqProp	:= SuperGetMV("MV_ARQPROP",.F.,.F.)
+Local cSb1Sbz	:= "SB1"//SuperGetMV("MV_ARQPROD",.F.,"SB1")
+Local lArqProp	:= .F. //SuperGetMV("MV_ARQPROP",.F.,.F.)
 Local bCond		:= {||.T.}
 Local bCondAux	:= {||.T.}
-Local lAddTes	:= .F.
+Local lAddTes	:= .T.
 Local bSort		:= {||}
 Local bAddTes	:= {||.T.}
 Local bAtTes	:= {||.T.}
@@ -97,7 +97,7 @@ DEFAULT cTpOper  := &(ReadVar())
 DEFAULT cClieFor := ""
 DEFAULT cProduto := ""
 DEFAULT nEntSai  := 0
-DEFAULT cTipoCF  := "C"
+DEFAULT cTipoCF  :=  iif (nEntSai==2, 'C','F')//"C"
 DEFAULT cCampo   := ""
 DEFAULT cTipoCli := Iif(Type("M->C5_TIPOCLI")<>"U",M->C5_TIPOCLI,"")
 DEFAULT cEstOrig := ""
@@ -455,18 +455,21 @@ While (cAliasSFM)->(!Eof()) .And. (cAliasSFM)->FM_TIPO==cTpOper
 	EndIf
 
 	//Será considerado como prioridade a maior quantidade de campos enquadrados
-	lAddTes	:= .F.
-	nQtdeEnq	:= 0			
+	//lAddTes	:= .F.
+	//nQtdeEnq	:= 0			
 	If !Empty((cAliasSFM)->FM_TS) .Or. !Empty((cAliasSFM)->FM_TE)
-/*
+
 		aCndTesInt	:= Condicao(cAliasSFM,	nFM_EST,	nFM_TIPOMO,	nFM_POSIPI,	nFM_GRPTI,;
 								nFM_TPCLI,	nFM_GRPCST,	lGrade,		cTipoCF,	cProduto,;
 								cGruProd,	cClieFor,	cLoja,		cGrupo,		cEstado,;
 								cNCM,		cGrpTi,		cTipoCli,	cGrpcst,	lTipPed,;
 								nFM_ORIGEM, cOrigem)
-*/
-		nQtdeEnq	:= 0
-		lAddTes	:= .F.
+
+		/*nQtdeEnq	:= 0
+		lAddTes	:= .F.*/
+		nQtdeEnq	:= aCndTesInt[2]
+		lAddTes	:= aCndTesInt[1]
+
 	EndIF
 
 	IF lAddTes .AND. Eval(bCondAux)
@@ -720,3 +723,258 @@ if SM0->( DbSeek(cEmpAnt + cFilBusca))
 Endif
 RestArea(aAreaSM0)
 Return cRet
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} ChkOrdSFM
+ 
+Função que faz a verificação se determinado campo do aTes está preenhido.
+Esta função é utilizada para processar ´critério de desempate,
+verificando campo por campo se está prenhido, considerando ordem de 
+prioridade dos campos da SFM, seja ordem padrão ou ordem definida pelo Cliente
+  
+@param  	aTes      - Array com informações dos Tes enquadrados
+			nOrdem    - Número que corresponde ao campo da tabela SFM
+			cTipoCF   -Indca operação com Cliente 'C' ou fornecedor 'F'
+
+@return	lRet 	   - Retornar booleano, indicando que campo em questão está preenchido no aTes			
+@author Erick G. Dias
+@since 12/05/2016
+@version 11.80
+
+/*/
+//-------------------------------------------------------------------
+Static Function ChkOrdSFM(aTes,nOrdem,cTipoCF)
+
+Local lRet	:= .F.
+
+If cTipoCF == 'C'
+	//CLIENTE
+	//1==FM_PRODUTO				 	== aTes 01
+	//2==FM_GRPROD  					== aTes 02
+	//3==FM_POSIPI 					== aTes 03
+	//4==FM_CLIENTE+FM_LOJACLI		== aTes4 + aTes5  
+	//5==FM_GRTRIB 				 	== aTes6
+	//6==FM_EST 					 	== aTes7
+	//7==FM_REFGRD 			     	== aTes10
+	//8==FM_GRPTI                  == aTes11
+	//9==FM_TIPOCLI                == aTes 12
+	//10==FM_GRPCST                == aTes 13	
+	//11==FM_TIPOMOV				   ==aTes 15
+	//12==FM_ORIGEM                == aTes 18
+	
+	Do Case
+		Case nOrdem == 1	
+			lRet	:= !Empty(aTes[1]) //FM_PRODUTO 				
+		Case nOrdem == 2
+			lRet	:= !Empty(aTes[2]) //FM_GRPROD				
+		Case nOrdem == 3
+			lRet	:= !Empty(aTes[3]) //FM_POSIPI								
+		Case nOrdem == 4
+			lRet	:= !Empty(aTes[4]+aTes[5]) //FM_CLIENTE+FM_LOJACLI
+		Case nOrdem == 5
+			lRet	:= !Empty(aTes[6]) //FM_GRTRIB			
+		Case nOrdem == 6
+			lRet	:= !Empty(aTes[7])//FM_EST				
+		Case nOrdem == 7
+			lRet	:= !Empty(aTes[10])//FM_REFGRD				
+		Case nOrdem == 8
+			lRet	:= !Empty(aTes[11])//FM_GRPTI				
+		Case nOrdem == 9
+			lRet	:= !Empty(aTes[12])//FM_TIPOCLI
+		Case nOrdem == 10
+			lRet	:= !Empty(aTes[13])//FM_GRPCST
+		Case nOrdem == 11
+			lRet	:= !Empty(aTes[15])//FM_TIPOMOV						
+		Case nOrdem == 12 
+			lRet	:= !Empty(aTes[18])//FM_ORIGEM 				
+	EndCase
+Else	
+	//FORNECEDOR
+	//1==FM_PRODUTO 			  	  	== aTes 01
+	//2==FM_GRPROD  			   		== aTes 02
+	//3==FM_POSIPI  			  	    == aTes 03
+	//4==FM_FORNECE+FM_LOJAFOR  	== aTes 4 + aTes 5  
+	//5==FM_GRTRIB 			   		== aTes 6
+	//6==FM_EST                   	== aTes 7
+	//7==FM_REFGRD              	== aTes 10
+	//8==FM_GRPTI               	== aTes 11
+	//9==FM_GRPCST              	== aTes 12
+	//10==FM_ORIGEM                 == aTes 16
+		
+	Do Case
+		Case nOrdem == 1	
+			lRet	:= !Empty(aTes[1]) //FM_PRODUTO				
+		Case nOrdem == 2
+			lRet	:= !Empty(aTes[2]) //FM_GRPROD				
+		Case nOrdem == 3
+			lRet	:= !Empty(aTes[3]) //FM_POSIPI								
+		Case nOrdem == 4
+			lRet	:= !Empty(aTes[4]+aTes[5]) //FM_FORNECE+FM_LOJAFOR				
+		Case nOrdem == 5
+			lRet	:= !Empty(aTes[6]) //FM_GRTRIB				
+		Case nOrdem == 6
+			lRet	:= !Empty(aTes[7]) //FM_EST				
+		Case nOrdem == 7
+			lRet	:= !Empty(aTes[10]) //FM_REFGRD				
+		Case nOrdem == 8
+			lRet	:= !Empty(aTes[11]) //FM_GRPTI				
+		Case nOrdem == 9
+			lRet	:= !Empty(aTes[12]) //FM_GRPCST		
+		Case nOrdem == 10 
+			lRet	:= !Empty(aTes[16]) //FM_ORIGEM
+	EndCase
+EndIF
+
+Return lRet
+
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} Condicao
+ 
+Esta função irá definir se as regras da SFM processada deverá ou não ser considerada
+para sugestão de TES.
+Serão consideradas as regras que tiverem informações IGUAIS da nota  
+
+
+@return	{lRet , nQtdeEnq}   - Array onde a primeira posição é se SFM deverá ou não ser considerada			
+@return	{lRet , nQtdeEnq}   - Array onde a segunda posição é a quantidade de campos enquadrados
+@author Erick G. Dias
+@since 12/05/2016
+@version 11.80
+
+/*/
+//-------------------------------------------------------------------
+Static Function Condicao(cAliasSFM,	nFM_EST,	nFM_TIPOMO,	nFM_POSIPI,	nFM_GRPTI,;
+						nFM_TPCLI,	nFM_GRPCST,	lGrade,		cTipoCF,	cProduto,;
+						cGruProd,	cClieFor,	cLoja,		cGrupo,		cEstado,;
+						cNCM,		cGrpTi,		cTipoCli,	cGrpcst,	lTipPed,;
+						nFM_ORIGEM, cOrigem)
+
+Local lPRODUTO := .F.
+Local lREFGRD  := .F.
+Local lGRPROD  := .F.
+Local lCLILOJA := .F.
+Local lFORLOJA := .F.
+Local lGRTRIB  := .F.
+Local lEST     := .F.
+Local lTIPOMOV := .F.
+Local lPOSIPI  := .F.
+Local lGRPTI   := .F.
+Local lTIPOCLI := .F.
+Local lGRPCST  := .F.
+Local lRet     := .F.
+Local lORIGEM  := .F. 
+Local nQtdeEnq := 0
+
+//---------------------------------------------------------------------------
+//INICIALIZA AS TODAS VARIÁVEIS COM .T. CASO A INFORMAÇÃO DA SFM ESTEJA VAZIA
+//---------------------------------------------------------------------------
+lPRODUTO := Empty((cAliasSFM)->FM_PRODUTO)
+lGRPROD  := Empty((cAliasSFM)->FM_GRPROD)
+lGRTRIB  := Empty((cAliasSFM)->FM_GRTRIB)
+lCLILOJA := Empty((cAliasSFM)->(FM_CLIENTE+FM_LOJACLI))
+lFORLOJA := Empty((cAliasSFM)->(FM_FORNECE+FM_LOJAFOR))
+lREFGRD  := Iif (cPaisLoc == "BRA" .And. Empty((cAliasSFM)->FM_REFGRD),.T.,.F.)
+lEST     := Iif((nFM_EST    > 0 .AND. Empty((cAliasSFM)->FM_EST))     .OR. nFM_EST    == 0,.T.,.F.)
+lTIPOMOV := Iif((cPaisLoc == "BRA" .And. nFM_TIPOMO > 0 .AND. Empty((cAliasSFM)->FM_TIPOMOV)) .OR. nFM_TIPOMO == 0,.T.,.F.)
+lPOSIPI  := IIf((nFM_POSIPI > 0 .AND. Empty((cAliasSFM)->FM_POSIPI))  .OR. nFM_POSIPI == 0,.T.,.F.)
+lGRPTI   := Iif((nFM_GRPTI  > 0 .AND. Empty((cAliasSFM)->FM_GRPTI))   .OR. nFM_GRPTI  == 0,.T.,.F.)
+lTIPOCLI := Iif((cPaisLoc == "BRA" .And. nFM_TPCLI  > 0 .AND. EmptY((cAliasSFM)->FM_TIPOCLI)) .OR. nFM_TPCLI  == 0,.T.,.F.)
+lGRPCST  := Iif((nFM_GRPCST > 0 .AND. Empty((cAliasSFM)->FM_GRPCST))  .OR. nFM_GRPCST == 0,.T.,.F.)
+lREFGRD  := Iif (cPaisLoc <> "BRA" ,.T.,lREFGRD)
+lORIGEM  := Iif(nFM_ORIGEM > 0,Iif(Empty((cAliasSFM)->FM_ORIGEM),.T.,.F.),.T.)
+
+//----------------------------------------------------------------------------------------------------------------------
+//SE TODOS OS CAMPOS DA SFM ESTIVEREM VAZIOS, ENTÃO IRÁ ADICIONAR E NÃO TERÁ NENHUM ENQUADRAMENTO, É UMA REGRA GENÉRICA
+//----------------------------------------------------------------------------------------------------------------------
+If lCLILOJA .AND. lFORLOJA .AND. lEST   	.AND. lGRTRIB  .AND. lPRODUTO .AND. lGRPROD  .AND. ;
+	lPOSIPI .AND. lREFGRD  .AND. lTIPOMOV  .AND. lGRPTI  .AND. lTIPOCLI .AND. lGRPCST .AND. lORIGEM
+	lRet	:= .T.
+EndIF
+//------------------------------------------------------------------------
+//VERIFICA CAMPO POR CAMPO DA SFM COMPARANDO COM INFORMAÇÃO DA NOTA FISCAL
+//SOMENTE SE ALGUM CAMPO DA SFM ESTIVER PREENCHIDO
+//------------------------------------------------------------------------
+
+If !lRet
+
+	If !lPRODUTO .And. Alltrim(cProduto) == Alltrim((cAliasSFM)->FM_PRODUTO)
+		nQtdeEnq	++
+		lPRODUTO	:= .T.
+	EndIF
+	
+	If lGrade .AND. !lREFGRD .And. Alltrim((cAliasSFM)->FM_REFGRD) 	== Alltrim(cProduto)
+		nQtdeEnq	++
+		lREFGRD	:= .T.
+	EndIF
+	
+	If !lGRPROD .AND. Alltrim(cGruProd) == Alltrim((cAliasSFM)->FM_GRPROD)
+		nQtdeEnq	++
+		lGRPROD	:= .T.
+	EndIF
+	
+	If cTipoCF == 'C'
+		If !lCLILOJA .AND. Alltrim(cClieFor+cLoja)  == Alltrim((cAliasSFM)->(FM_CLIENTE+FM_LOJACLI))
+			nQtdeEnq	++
+			lCLILOJA	:= .T.
+		EndIF
+	Else
+		If !lFORLOJA .AND. Alltrim(cClieFor+cLoja) == Alltrim((cAliasSFM)->(FM_FORNECE+FM_LOJAFOR)) 
+			nQtdeEnq	++
+			lFORLOJA	:= .T.
+		EndIF
+	EndIF
+	
+	If !lGRTRIB .And. AllTrim(cGrupo) == AllTrim((cAliasSFM)->FM_GRTRIB)
+		nQtdeEnq	++
+		lGRTRIB	:= .T.
+	EndIF
+	
+	If nFM_EST> 0 .And. !lEST .And. Alltrim(cEstado) == Alltrim((cAliasSFM)->FM_EST)
+		nQtdeEnq	++
+		lEST	:= .T.
+	EndIF
+	
+	If !lTipPed .Or.(nFM_TIPOMO > 0 .And. lTipPed .And. !lTIPOMOV .And. Alltrim(M->C5_TIPO) == Alltrim((cAliasSFM)->FM_TIPOMOV))
+		nQtdeEnq	++
+		lTIPOMOV	:= .T.
+	EndIF
+	
+	If nFM_POSIPI >0 .And. !lPOSIPI .And. Alltrim(cNCM) == Alltrim((cAliasSFM)->FM_POSIPI)
+		nQtdeEnq	++
+		lPOSIPI	:= .T.
+	EndIF
+	
+	If nFM_GRPTI > 0 .And. !lGRPTI .And. Alltrim(cGrpTi) == Alltrim((cAliasSFM)->FM_GRPTI)
+		nQtdeEnq	++
+		lGRPTI	:= .T.
+	EndIF
+	
+	If cTipoCF == 'C'
+		If nFM_TPCLI > 0 .And. !lTIPOCLI .And. Alltrim(cTipoCli) == Alltrim((cAliasSFM)->FM_TIPOCLI)
+			nQtdeEnq	++  
+			lTIPOCLI	:= .T.
+		EndIF
+	EndIF
+	
+	If nFM_GRPCST > 0 .And. !lGRPCST .And. Alltrim(cGrpcst) == Alltrim((cAliasSFM)->FM_GRPCST)
+		nQtdeEnq	++
+		lGRPCST	:= .T.
+	EndIF
+
+	If nFM_ORIGEM > 0 .And. !lORIGEM .And. Alltrim(cOrigem) == Alltrim((cAliasSFM)->FM_ORIGEM) 
+		nQtdeEnq	++
+		lORIGEM	:= .T.
+	EndIF
+
+	//------------------------------------------------------------
+	//FAZ VERIFICAÇÃO SE AS INFORMAÇÕES DA SFM PODERÁ SER SUGERIDA
+	//------------------------------------------------------------
+	If (Iif(cTipoCF == 'C',lCLILOJA,lFORLOJA)).AND. lEST   .AND. lGRTRIB  .AND. lPRODUTO .AND. lGRPROD  .AND. ;
+		lPOSIPI .AND. lREFGRD  .AND. Iif(cTipoCF == 'C',lTIPOMOV,.T.) .AND. lGRPTI  .AND. Iif(cTipoCF == 'C',lTIPOCLI,.T.) .AND. lGRPCST .AND. lORIGEM 
+		
+		lRet	:= .T.	
+	EndIF
+	
+EndIF
+Return {lRet , nQtdeEnq}

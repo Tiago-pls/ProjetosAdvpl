@@ -169,3 +169,12 @@ If lRet
 Endif
 return lRet
 
+user  function testaPV()
+	aParam[01] := cSerie
+	aParam[02] := cNotaIni
+	aParam[03] := cNotaFim
+procMonitorDoc('000011', cUrl, aParam, nTpMonitor, cModelo, lCte, @cAviso)
+000011
+SpedNFe6Mnt('1','000000042','000000042', .F., .F., '55',.F., .F.,.F.,.F.,.F.,.F.)
+
+Return

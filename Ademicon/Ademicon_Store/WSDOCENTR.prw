@@ -2269,13 +2269,21 @@ WSMETHOD GerarPV WSRECEIVE oPedVenda WSSEND cCodigo WSSERVICE FluigProtheus
 					ConOut("FunName()" + FunName())
 					aadd(aCabec,{"C5_NUM"    ,SC5->C5_NUM ,Nil})
 				Endif
-
+				if select("SE4")==0
+					DBSELECTAREA( "SE4" )
+				Endif
+				SE4->(DBOrderNickname("FLUIG"))
+				SE4->(dbGotop())
+				cCondPgt :=""
+				If SE4->( DbSeek(xFilial("SE4") + oPedVenda:C5_CONDPAG))
+					cCondPgt := SE4->E4_CODIGO
+				Endif
 				aadd(aCabec,{"C5_TIPO"   ,"N",Nil})
 				aadd(aCabec,{"C5_CLIENTE",oPedVenda:C5_CLIENTE,Nil})
 				aadd(aCabec,{"C5_LOJACLI",oPedVenda:C5_LOJACLI,Nil})
 				aadd(aCabec,{"C5_CLIENT" ,oPedVenda:C5_CLIENTE,Nil})
 				aadd(aCabec,{"C5_LOJAENT",oPedVenda:C5_LOJAENT,Nil})
-				aadd(aCabec,{"C5_CONDPAG","001 ",Nil})
+				aadd(aCabec,{"C5_CONDPAG", cCondPgt ,Nil})
 				aadd(aCabec,{"C5_TPFRETE",oPedVenda:C5_TPFRETE,Nil})
 				aadd(aCabec,{"C5_FRETE",oPedVenda:C5_FRETE,Nil})
 				aadd(aCabec,{"C5_IDFLUIG",oPedVenda:C5_IDFLUIG,Nil})
