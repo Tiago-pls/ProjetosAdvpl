@@ -40,7 +40,6 @@ Local cHelp     := OemToAnsi("Relat-rio Conferencia ")
 Local aOrdem 	:= {}                
 Local oRel
 Local oSection1             
-Local oSection2
 
 //T-tulo do relat-rio no cabe-alho
 cTitle := OemToAnsi("Relatorio valores faturados")
@@ -118,11 +117,21 @@ If QRY->(!Eof())
 		oSection1:Init()		
   		oRel:IncMeter(10)   
 		cCC :=""
+		// trata SA2
+		nLenSA2 :=len(alltrim(xFilial("SA2"))) 
+		cLenSA2 := Space(TamSx3("F1_FILIAL")[1] - len(alltrim(xFilial("SA2"))) ) 
+
+		// trata SA1
+		nLenSA1 :=len(alltrim(xFilial("SA1"))) 
+		cLenSA1 := Space(TamSx3("F1_FILIAL")[1] - len(alltrim(xFilial("SA1"))) ) 
+
 		If QRY->F1_TIPO $ ('BD')
-			cForCli := Posicione("SA1",1,xFilial("SA1")+QRY->F1_FORNECE+QRY->F1_LOJA,"A1_NOME")
+			//cForCli := Posicione("SA1",1, xFilial("SA1")+QRY->F1_FORNECE+QRY->F1_LOJA,"A1_NOME")
+			cForCli := Posicione("SA1",1, SUBSTR( QRY->F1_FILIAL, 1, nLenSA1)+cLenSA1+QRY->F1_FORNECE+QRY->F1_LOJA,"A1_NOME")
 			cComprador := ""
 		Else
-			cForCli := Posicione("SA2",1,xFilial("SA2")+QRY->F1_FORNECE+QRY->F1_LOJA,"A2_NOME")
+			//cForCli := Posicione("SA2",1,xFilial("SA2")+QRY->F1_FORNECE+QRY->F1_LOJA,"A2_NOME")
+			cForCli := Posicione("SA2",1, SUBSTR( QRY->F1_FILIAL, 1, nLenSA2)+cLenSA2 + QRY->F1_FORNECE+QRY->F1_LOJA,"A2_NOME")
 			SD1->( dbSetOrder(1) )
 			SD1->( dbSeek(QRY->F1_FILIAL + QRY->F1_DOC + QRY->F1_SERIE + QRY->F1_FORNECE + QRY->F1_LOJA) )
 			SC7->( dbSetOrder(1) )
@@ -149,11 +158,18 @@ If QRY->(!Eof())
 		
   		oSection1:PrintLine()
 		
-		cQuerySe2 :="select E2_FILIAL, E2_NUM, E2_VENCREA, E2_VALOR, ED_DESCRIC, E2_FORNECE, E2_LOJA from " + RetSqlName("SE2") + " SE2"+ cLFRC
-		cQuerySe2 +=" inner join "+ RetSqlName("SED") +" SED  on E2_NATUREZ = ED_CODIGO and SED.D_E_L_E_T_=' ' "+ cLFRC		
+		cLenSED :=cValtoChar(len(alltrim(xFilial("SED"))) )		
+
+		cQuerySe2 := "select"+ cLFRC
+		cQuerySe2+=  " E2_FILIAL, E2_NUM, E2_VENCREA, E2_VALOR, ED_DESCRIC, E2_FORNECE, E2_LOJA "+ cLFRC
+		cQuerySe2 += " from " + RetSqlName("SE2") + " SE2"+ cLFRC
+		cQuerySe2 += " inner join "+ RetSqlName("SED") +" SED  on "+ cLFRC
+		cQuerySe2 += " SubString(E2_FILIAL ,1,"+cLenSED+")   =  SubString(ED_FILIAL ,1,"+cLenSED+")
+		cQuerySe2 += " and   E2_NATUREZ = ED_CODIGO and SED.D_E_L_E_T_=' ' "+ cLFRC		
 		cQuerySe2 += " Where SE2.D_E_L_E_T_ =' ' and  E2_FILIAL = '"+QRY->F1_FILIAL+"' and E2_NUM =  '" +QRY->F1_DOC+"' "+ cLFRC
 		cQuerySe2 += " and E2_TIPO in ('TX','INS') and E2_PREFIXO ='"+QRY->F1_SERIE+"' "+ cLFRC	
 
+		cQuerySe2:= ChangeQuery(cQuerySe2)
 		If Select("QR2")>0         
 			QR2->(dbCloseArea())
 		Endif
