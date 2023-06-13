@@ -26,7 +26,7 @@ user function GTransfer(lGatilho)
 
 	Default lGatilho:= .f.
 
-	if isTransfer() .or. getValue('C6_TES') $ GetNewPar("BL_TESCM","XXX")
+	if isTransfer() .or. GDFIELDGET("C6_OPER",N) $ GetNewPar("BL_TESCM","XXX")
 		SB1->( dbSetOrder(1) )
 		if SB1->( dbSeek(xFilial('SB1') + cProduto ) )
 
@@ -48,6 +48,9 @@ user function GTransfer(lGatilho)
 
 					If lCalcImp .and. isTransfer()
 						nAliqIcms := aExcecao[2]
+						if nAliqIcms ==0
+							MSGALERT( ' Valor 0 de ICMS, favor verificar se esta correto' ,'Atencao')
+						Endif
 						nPrecoTransfer := Round(( nCustoMedio ) / (1 - ( nAliqIcms / 100 )), 2)
 					Else
 						nPrecoTransfer := Round(nCustoMedio,2)
@@ -81,7 +84,7 @@ user function VTransfer()
 
 	local istransfer := isTransfer()
 
-	If IsInCallStack("MATA310")
+	If IsInCallStack("MATA310") .or.IsInCallStack("MATA311")
 		isTransfer:= .f.
 	Else
 		if istransfer .and. !AllTrim(ReadVar()) $ "M->C6_TES#M->C6_OPER"

@@ -159,7 +159,28 @@ If QRY->(!Eof())
   		oSection1:PrintLine()
 		
 		cLenSED :=cValtoChar(len(alltrim(xFilial("SED"))) )		
-
+		//Títulos
+		cQuery := " Select * from "+ RetSqlName("SE2")+" SE2 "
+		cQuery += " where SE2.D_E_L_E_T_ =' ' and E2_NUM ='"+QRY->F1_DOC+"' and E2_FORNECE ='"+QRY->F1_FORNECE+"' and E2_LOJA ='"+QRY->F1_LOJA+"'"
+		If Select("QRI")>0         
+			QRI->(dbCloseArea())
+		Endif
+		TcQuery cQuery New Alias "QRI" 
+		TCSetField("QRI","E2_VENCREA","D",8,0) 
+		nConta := 0
+		While QRI->(!Eof())		
+			nConta += 1
+			oSection1:Cell("F1_FILIAL"):setValue(QRI->E2_FILIAL)
+			oSection1:Cell("F1_FORNECE"):setValue(QRI->E2_FORNECE)
+			oSection1:Cell("F1_LOJA"):setValue(QRI->E2_LOJA)			
+			oSection1:Cell("NOME"):setValue("* Parcela " +cValtoChar(nConta) +" " +Alltrim(QRI->E2_NOMFOR))
+			oSection1:Cell("LIQUIDO"):setValue(QRI->E2_VALOR)
+			oSection1:Cell("F1_P1VENC"):setValue(QRI->E2_VENCREA)
+			oSection1:Cell("F1_DOC"):setValue(QRI->E2_NUM)
+			oSection1:PrintLine()
+			QRI->( DbSkip())
+		Enddo
+		// Impostos
 		cQuerySe2 := "select"+ cLFRC
 		cQuerySe2+=  " E2_FILIAL, E2_NUM, E2_VENCREA, E2_VALOR, ED_DESCRIC, E2_FORNECE, E2_LOJA "+ cLFRC
 		cQuerySe2 += " from " + RetSqlName("SE2") + " SE2"+ cLFRC
@@ -201,7 +222,9 @@ If QRY->(!Eof())
 	
 		oSection1:Cell("NOME"):setValue('* Total Imposto')
 		oSection1:Cell("LIQUIDO"):setValue(nTotal)
-		oSection1:PrintLine()	
+		if nTotal <> 0
+			oSection1:PrintLine()	
+		endif
 
         oSection1:SetHeaderSection(.F.)
 		oSection1:Finish()	
