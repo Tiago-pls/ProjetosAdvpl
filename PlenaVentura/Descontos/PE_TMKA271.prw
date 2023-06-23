@@ -46,10 +46,10 @@ if FWCodEmp() =='09'
 		cData := Substr(dtos(ddatabase),7,2) + '/' + Substr(dtos(ddatabase),5,2) + '/'+ Substr(dtos(ddatabase),1,4)
 		
 		//UsrRetMail(RetCodUsr())  - Solicitante
-		aAdd(aCardData,{'emailSolicitante', "marcelo.rosa@plenaventura.com.br"})
+		aAdd(aCardData,{'emailSolicitante', UsrRetMail(RetCodUsr()) })
 
 		//UsrRetMail( SU7->U7_XAPROVA)  - Aprovador
-		aAdd(aCardData,{'emailAprovador', "marcelo.rosa@plenaventura.com.br"})
+		aAdd(aCardData,{'emailAprovador', UsrRetMail( SU7->U7_XAPROVA)})
 		aAdd(aCardData,{'txtAtendimento', M->UA_NUM})
 		aAdd(aCardData,{'txtCliente', M->UA_CLIENTE})
 		aAdd(aCardData,{'txtLoja', M->UA_LOJA})
@@ -72,9 +72,10 @@ if FWCodEmp() =='09'
 		aAdd(aCardData,{'numQuestionamentos', '0'})    
 		aAdd(aCardData,{'numAtividade', '0'})    
 		aAdd(aCardData,{'numItens', '99'})    
-		cUserComp := GetLogFlg(Alltrim('000034')) // utilizar o usuario logado
+		//cUserComp := GetLogFlg(Alltrim('000034')) // utilizar o usuario logado
+		cUserComp := GetLogFlg(Alltrim(RetCodUsr())) // utilizar o usuario logado
 		aAdd(aCardData,{'codSolicitante', cUserComp})    // solicitante
-		aAdd(aCardData,{'txtIdOrcamento',    SUA->UA_NUM })    // U7_XAPROV  aprovador
+		aAdd(aCardData,{'txtIdOrcamento',    SUA->UA_NUM })    
 		aAdd(aCardData,{'codAprovador',   cUserComp})    // U7_XAPROV  aprovador
 		for nCont :=1 to len(acols)
 			if !aCols[nCont , Len(aCols[nCont])]
@@ -101,7 +102,7 @@ if FWCodEmp() =='09'
 				aAdd(aCardData,{'txtStatus___'+cvaltochar(nCont), cStatus})
 			Endif
 		Next nCont
-		GeraFluig(aCardData, aRecnoSUA, cUserComp)
+		//GeraFluig(aCardData, aRecnoSUA, cUserComp)
 	Endif
 Endif
 RestArea(aArea)

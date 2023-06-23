@@ -8,9 +8,9 @@ Geração de contrato via Word
 @since 10/12/2015
 @version 1.0
 /*/
-User Function MCnt020()
+User Function MCnt999()
 
-	Local cPergunta := "MCNT020A"
+	Local cPergunta := "MCNT999"
 
 	//abre tela de perguntas
 	While Ask(cPergunta)
@@ -238,7 +238,7 @@ Static Function GeraWord(cLayout,cSalvarEm,lPDF)
 
 		if MSGYESNO( 'Deseja assinar documento ?', 'Atenção' )
 			MSGRun("Assinando arquivo RESUMO","Processando...", {|| ;
-				u_Sign(cSalvarEm + cNomeDoc + '.pdf') })
+				u_Sign(cSalvarEm + cNomeDoc + '.pdf', alltrim(mv_par07),alltrim(mv_par08)) })
 
 		Endif
 		IF File(cSalvarEm + cNomeDoc + '.pdf')

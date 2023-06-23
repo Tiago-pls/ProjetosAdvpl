@@ -1,7 +1,7 @@
 #include "protheus.ch"
 #include "msole.ch"
 
-user function Sign(cArquivo)
+user function Sign(cArquivo, cArqDig, cPassword)
 	Local nVezes := 0
 	Local cRemoteLocation := GetClientDir()
 
@@ -10,7 +10,7 @@ user function Sign(cArquivo)
 	Local cSignedFile := StrTran(SubStr(cArquivo,rAt("\",cArquivo)+1),".pdf","_signed.pdf")
 	Local cFileLocation := SubStr(cArquivo,1,rAt("\",cArquivo))
 
-	Local cPassword := alltrim(mv_par08)
+	//Local cPassword := alltrim(mv_par08)
 
 	//pasta Sync
 	cRemoteLocation += IIF( Right(cRemoteLocation,1) == "\","","\") + "SignPDF\"
@@ -39,8 +39,7 @@ user function Sign(cArquivo)
 
 	//gera o .BAT com instrução de assinatura
 	//foi feito isso para poder capturar o resultado da assinatura
-//	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+alltrim(mv_par06)+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 281 -lly 185 -urx 575 -ury 125 -d "'+cFileLocation+'"')
-	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+alltrim(mv_par07)+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 281 -lly 185 -urx 575 -ury 125 -pg 2  -d "'+cFileLocation+'"')
+	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+cArqDig+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 490 -lly 11 -urx 805 -ury 90 -pg 2  -d '+cFileLocation)
 
 
 	//se não encontrar o BAT, alguma coisa deu errado
@@ -63,7 +62,7 @@ user function Sign(cArquivo)
 	EndDO
 
 	//exclui o BAT
-	fErase( cRemoteLocation + cBatFile )
+	//fErase( cRemoteLocation + cBatFile )
 
 	//se passou 15 segundos e não gerou o PDF, deu algo errado
 	IF nVezes > 15

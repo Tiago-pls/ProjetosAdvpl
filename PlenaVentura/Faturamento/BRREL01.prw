@@ -40,6 +40,7 @@ Private cDoc        := MV_PAR01
 Private cSerie      := MV_PAR02
 Private lAdjustToLegacy := .t.
 Private lDisableSetup 	:= .F.
+private nLimite    :=2900
 
 //Fontes do Relatório Gráfico
 oFont1  := TFont():New("Tahoma",,15,,.T.,,,,.T.,.F.)
@@ -87,11 +88,18 @@ EmiDest()
 
 //Bloco natureza da operação
 nLin += 60
-oPrint:Box(nLin,nCol,nLin+50,nCol+2385)
-nLin += 30
+oPrint:Box(nLin,nCol,nLin+50,nCol+nLimite)
+nLin += 25
 oPrint:Say(nLin,nCol+10,"Natureza da operação realizada: "+Upper(Posicione("SF4",1,xFilial("SF4")+SD2->D2_TES,"F4_FINALID")),oFont12n,1400)
-
 nLin += 30
+
+Fatura()
+nLin += 60
+
+Transporte()
+nLin += 10
+Volume()
+nLin += 20
 
 CabecItem()  
 
@@ -146,9 +154,8 @@ oPrint:Say(nLin,nCol+10,"° Destinatários contribuintes do ICMS devem emitir nota
 
 nLin+=30
 GetNewPage()
-oPrint:Say(nLin,nCol+10,"° A fiscalização poderá solicitar a apresentação de documento que comprove a propriedade do bem transportado e a natureza",oFont12,1400)
-nLin+=30
-oPrint:Say(nLin,nCol+10,"  da operação declarada.",oFont12,1400)
+oPrint:Say(nLin,nCol+10,"° A fiscalização poderá solicitar a apresentação de documento que comprove a propriedade do bem transportado e a natureza da operação declarada.",oFont12,1400)
+
 
 nLin+=30
 GetNewPage()
@@ -178,10 +185,13 @@ oPrint:Say(nLin,nCol+10,"  Fiscalização, nos termos da legislação vigente.",oFon
 
 nLin+=50
 MensAdic()
-
+AssiNBox()
 oPrint:EndPage() //Fecha a página
-oPrint:Preview()
 
+oPrint:lViewPDF := .F.
+oPrint:Print()
+
+AssinatDig(oPrint:cPathPDF + alltrim(cDoc) + alltrim(cSerie)+".pdf")
 Return
 
 
@@ -194,22 +204,22 @@ Local _cLogo    := "\system\lgrl"+cEmpAnt+".bmp"
 //oPrint:StartPage()  
 
 nLin += 30
-oPrint:Line(nLin,nCol,nLin,nCol+2380)
+oPrint:Line(nLin,nCol,nLin,nCol+nLimite)
 nLin += 05
 oPrint:SayBitMap(nLin,nCol+5,_cLogo,320,180)
-oPrint:Say(nLin+20,nCol+2280,"Pág:"+strzero(nPag,3),oFont6,1400)
+oPrint:Say(nLin+20,nCol+2680,"Pág:"+strzero(nPag,3),oFont6,1400)
 nLin+=50
 // oPrint:Say(nLin,nCol+830,"DECLARAÇÃO DE ALIENAÇÃO",oFont16n,1400)
-oPrint:Say(nLin,nCol+830,"DECLARAÇÃO DE TRANSPORTE",oFont16n,1400)
+oPrint:Say(nLin,nCol+930,"DECLARAÇÃO DE TRANSPORTE",oFont16n,1400)
 nLin += 50
 //oPrint:Say(nLin,nCol+630,"TRANSPORTE DE BENS DO ATIVO IMOBILIZADO",oFont16n,1400)
-oPrint:Say(nLin,nCol+900,"E OUTROS FINS",oFont16n,1400)
+oPrint:Say(nLin,nCol+1000,"E OUTROS FINS",oFont16n,1400)
 nLin += 30
-oPrint:Say(nLin+30,nCol+950,"Nº."+SF2->F2_DOC+"/"+SF2->F2_SERIE,oFont16n,1400)
+oPrint:Say(nLin+30,nCol+1050,"Nº."+SF2->F2_DOC+"/"+SF2->F2_SERIE,oFont16n,1400)
 
-oPrint:Say(nLin,nCol+2140,"Emissão:"+CVALTOCHAR(Date()),oFont6,1400)
+oPrint:Say(nLin,nCol+2540,"Emissão:"+CVALTOCHAR(Date()),oFont6,1400)
 nLin += 30
-oPrint:Say(nLin,nCol+2205,"Hora:"+CVALTOCHAR(Time()),oFont6,1400)
+oPrint:Say(nLin,nCol+2605,"Hora:"+CVALTOCHAR(Time()),oFont6,1400)
 nLin += 30 
 oPrint:Line(nLin,nCol,nLin,nCol+2380)  
 
@@ -223,7 +233,7 @@ Local nLinAux:= nLin
 Local nColSep:= 1200
 
 //Box
-oPrint:Box(nLin,nCol,nLin+240,nCol+2385)
+oPrint:Box(nLin,nCol,nLin+240,nCol+nLimite)
 oPrint:Line(nLin,nColSep,nLin+240,nColSep) 
 
 //Cabeçalho do box
@@ -276,23 +286,23 @@ Local nColAux:= nCol
 Local nLinAux:= nLin
 Local nTamLinha:= 50
 
-oPrint:Box(nLin,nCol,nLin+50,nCol+2385)
+oPrint:Box(nLin,nCol,nLin+50,nCol+nLimite)
 nLin += 30
 nColAux+=10
 oPrint:Say(nLin,nColAux+10,"Item",oFont12n,1400)
-nColAux+=150
+nColAux+=100
 oPrint:Say(nLin,nColAux+10,"Código",oFont12n,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=300
 oPrint:Say(nLin,nColAux+10,"Descrição",oFont12n,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
-nColAux+=600
+nColAux+=1300
 oPrint:Say(nLin,nColAux+10,"Marca/Fabricante",oFont12n,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=400
 oPrint:Say(nLin,nColAux+10,"Quant.",oFont12n,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
-nColAux+=150
+nColAux+=130
 oPrint:Say(nLin,nColAux+10,"Vlr Unitário",oFont12n,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=350
@@ -313,24 +323,25 @@ Local nColAux:= nCol
 Local nLinAux:= nLin
 Local nTamLinha:= 50
 
-oPrint:Box(nLin,nCol,nLin+50,nCol+2385)
+oPrint:Box(nLin,nCol,nLin+50,nCol+nLimite)
 nLin += 30
 nColAux+=10
 oPrint:Say(nLin,nColAux+10,SD2->D2_ITEM,oFont12,1400)
-nColAux+=150
+nColAux+=100
 oPrint:Say(nLin,nColAux+10,SD2->D2_COD,oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=300
 //oPrint:Say(nLin,nColAux+10,SB1->B1_DESC,oFont12,1400)
-oPrint:Say(nLin,nColAux+10,SB5->B5_CEME,oFont12,1400)
+cProd := Alltrim(iif ( Empty(SB5->B5_CEME), SB1->B1_DESC,SB5->B5_CEME ))
+oPrint:Say(nLin,nColAux+10,cProd,oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
-nColAux+=600
+nColAux+=1300
 oPrint:Say(nLin,nColAux+10,SB1->B1_FABRIC,oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=400
 oPrint:Say(nLin,nColAux+10,cvaltochar(SD2->D2_QUANT),oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
-nColAux+=150
+nColAux+=130
 oPrint:Say(nLin,nColAux+10,Transform(SD2->D2_PRCVEN,PesqPict("SD2","D2_TOTAL")),oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=350
@@ -347,7 +358,8 @@ Return
 //---------------------------------+
 Static Function Total()
 
-oPrint:Box(nLin,nColTot,nLin+50,nCol+2380)
+//oPrint:Box(nLin,nColTot,nLin+50,nCol+2380)
+oPrint:Box(nLin,nColTot,nLin+50,nCol+nLimite)
 nLin += 30
 
 oPrint:Say(nLin,nColTot+10,Transform(nTotal,PesqPict("SD2","D2_TOTAL")),oFont12n,1400)
@@ -379,6 +391,8 @@ Local aRegs:= {}
 
 aAdd(aRegs,{cPerg, '01', "Documento"		,"Documento"  	,"Documento" 		, 'mv_ch1' , 'C', 09	, 0, 0, 'G', '', 'mv_par01', '','','','','','','','','','','','','','','','','','','','','','','','','SF2VEI','','',''})
 aAdd(aRegs,{cPerg, '02', "Série"			,"Série"  		,"Série" 			, 'mv_ch2' , 'C', 03	, 0, 0, 'G', '', 'mv_par02', '','','','','','','','','','','','','','','','','','','','','','','','','','','',''})
+aAdd(aRegs,{cPerg, '02', "Arquivo PFX*"		,"Série"  		,"Série" 			, 'mv_ch3' , 'C', 80	, 0, 0, 'G', '', 'mv_par03', '','','','','','','','','','','','','','','','','','','','','','','','','','','',''})
+aAdd(aRegs,{cPerg, '02', "Senha"			,"Senha"  		,"Senha" 			, 'mv_ch4' , 'C', 30	, 0, 0, 'G', '', 'mv_par04', '','','','','','','','','','','','','','','','','','','','','','','','','','','',''})
 
 U_BuscaPerg(aRegs)
 
@@ -411,29 +425,206 @@ oPrint:Say(MAXBOXV-2190, INIBOXH+60, "NF-e", oFont12n, , , 270)
 oPrint:Say(MAXBOXV-2160, INIBOXH+95, "Nº "+StrZero(Val(cDoc),9), oFont12n, , , 270)
 oPrint:Say(MAXBOXV-2160, INIBOXH+130, "SÉRIE "+cSerie, oFont12n, , , 270)
 
-oPrint:Say(MAXBOXV, INIBOXH+182, Replicate("- ",100), oFont12n, , , 270)
+oPrint:Say(MAXBOXV, INIBOXH+182, Replicate("- ",66), oFont12n, , , 270)
 
 nCol := 186
 Return
 
-
 Static Function MensAdic()
+Local lFimTexto := .F.
+Local nTamanho  := 250
+Local nCont  := 1
+Local cTextoSF2 := Alltrim(SF2->F2_MENNOTA)
+Local nLinha :=100
+oPrint:Box(nLin,nCol,MAXBOXV+50,nCol+1300)
+oPrint:Say(nLin +30,nCol+10,"Informações Complementares: ",oFont12n,1400)
 
-oPrint:Box(nLin,nCol,MAXBOXV+50,nCol+2385)
-oPrint:Say(nLin +10,nCol+10,"Informações Complementares: ",oFont12n,1400)
+While ! lFimTexto
+	cTexto := SUBSTR( cTextoSF2, nCont, 75) // 75 é o limite caracteres por linha
+	if !Empty(cTexto)
+		oPrint:Say(nLin +nLinha,nCol+10, cTexto ,oFont12,1400)
+		nCont  += 75
+		nLinha += 50
+	else
+		lFimTexto :=.T.
+	Endif
 
-/*
-oPrint:Box(nLin+2052,nCol+59, MAXBOXV+52, 151)
-oPrint:Say(MAXBOXV, INIBOXH+105, "DATA DE RECEBIMENTO", oFont12n, , , 270)
+Enddo
 
-oPrint:Box(nLin+100,nCol+59, MAXBOXV-370, 151)
-oPrint:Say(MAXBOXV -500, INIBOXH+105, "IDENTIFICAÇÃO E ASSINATURA DO RECEBEDOR", oFont12n, , , 270)
+Return
 
-// Nfe 
-oPrint:Box(nLin+30, nCol, nLin+280,  150)
-oPrint:Say(MAXBOXV-2190, INIBOXH+60, "NF-e", oFont12n, , , 270)
-oPrint:Say(MAXBOXV-2160, INIBOXH+95, "Nº "+StrZero(Val(cDoc),9), oFont12n, , , 270)
-oPrint:Say(MAXBOXV-2160, INIBOXH+130, "SÉRIE "+cSerie, oFont12n, , , 270)
-*/
+Static Function Fatura()
+Local nColAux:= nCol
+Local nLinAux:= nLin
+Local nTamLinha:= 50
+Local nCont
+oPrint:Box(nLin,nCol,nLin+100,nCol+nLimite)
+oPrint:Say(nLin +30,nCol+10,"Fatura    ",oFont12n,1400)
+nLin += 30
 
+nColAux+=150
+nColTit := (nLimite-nColAux)/8
+cQuery := " select E1_VENCREA, E1_VALOR from "+ RetSqlName("SE1")+ " SE1"
+cQuery += " Where D_E_L_E_T_ =' ' and E1_NUM ='"+cDoc+"' and E1_PREFIXO ='"+cSerie+"'"
+cQuery += " and E1_CLIENTE = '"+SF2->F2_CLIENTE+"' and E1_LOJA ='"+SF2->F2_LOJA+"' and E1_FILIAL ='"+xFilial("SE1")+"'"
+cQuery += " Order by 1"
+
+If Select("QRY")>0         
+	QRY->(dbCloseArea())
+Endif
+TcQuery cQuery New Alias "QRY"    
+for nCont :=1 to 8 // limite maximo de titulos NFe
+	If QRY->(!EOF())
+		While QRY->(!EOF())
+			cData := SUBSTR( QRY->E1_VENCREA, 7, 2)+'/'+SUBSTR( QRY->E1_VENCREA, 5, 2)+'/'+SUBSTR( QRY->E1_VENCREA, 1, 4)
+			oPrint:Say(nLin,nColAux+10,cData,oFont12,1400)	
+			cValor:= Alltrim(transform(QRY->E1_VALOR," @E 999,999,999.99"))
+			oPrint:Say(nLin+50,nColAux+10,cValor,oFont12,1400)	
+			QRY->(DbSkip())
+		Enddo
+	Endif
+	oPrint:Line(nLinAux,nColAux,nLinAux+100,nColAux)
+	nColAux+=nColTit
+Next nCont
+nLin:= nLinAux+nTamLinha
+Return
+
+
+static Function Transporte()
+
+Local nColAux:= nCol
+Local nLinAux:= nLin
+Local nTamLinha:= 100
+Local cNome :=""
+Local cCGC :=""
+Local cEndereco :=""
+Local cMunicipio :=""
+Local cTpFrete :=""
+if select("SA4")==0
+	DBSELECTAREA( "SA4" )
+Endif
+Sa4->(DBGOTOP(  ))
+oPrint:Box(nLin,nCol,nLin+nTamLinha,nCol+nLimite)
+nLin += 30
+nColAux+=10
+oPrint:Say(nLin,nColAux,"Transporte",oFont12n,1400)
+nColAux+=250
+
+// dados transportadora
+if !Empty(SF2->F2_TRANSP)
+	cNome := Alltrim(Posicione("SA4",1, xFilial("SA4") + SF2->F2_TRANSP ,"A4_NOME"))
+	cCGC := Alltrim(Posicione("SA4",1, xFilial("SA4") + SF2->F2_TRANSP ,"A4_CGC"))
+	cEndereco := Alltrim(Posicione("SA4",1, xFilial("SA4") + SF2->F2_TRANSP ,"A4_END"))
+	cMunicipio := Alltrim(Posicione("SA4",1, xFilial("SA4") + SF2->F2_TRANSP ,"A4_MUN"))
+Endif
+
+oPrint:Say(nLin,nColAux+10,"Razão Social",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,cNome,oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+nColAux+=900
+
+oPrint:Say(nLin,nColAux+10,"CNPJ",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,cCGC,oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+
+nColAux+=400
+oPrint:Say(nLin,nColAux+10,"Endereço",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,cEndereco,oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+
+nColAux+=750
+oPrint:Say(nLin,nColAux+10,"Município",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,cMunicipio,oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+
+nColAux+=500
+
+//oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+//nColAux+=400
+
+nLin:= nLinAux+nTamLinha
+
+Return
+
+
+
+static Function Volume()
+
+Local nColAux:= nCol
+Local nLinAux:= nLin
+Local nTamLinha:= 100
+Local cNome :=""
+Local cCGC :=""
+Local cEndereco :=""
+Local cMunicipio :=""
+Local cTpFrete :=""
+if select("SA4")==0
+	DBSELECTAREA( "SA4" )
+Endif
+Sa4->(DBGOTOP(  ))
+oPrint:Box(nLin,nCol,nLin+nTamLinha,nCol+nLimite)
+nLin += 30
+nColAux+=10
+oPrint:Say(nLin,nColAux,"",oFont12n,1400)
+nColAux+=250
+
+oPrint:Say(nLin,nColAux+10,"Frete por Conta",oFont12n,1400)
+
+do case 
+	case SF2->F2_TPFRETE =='C'
+		cTpFrete :="CIF"
+	case SF2->F2_TPFRETE =='F'
+		cTpFrete :="FOB"
+	case SF2->F2_TPFRETE =='T'
+		cTpFrete :="Terceiros"
+	case SF2->F2_TPFRETE =='R'
+		cTpFrete :="Remetente"
+	case SF2->F2_TPFRETE =='D'
+		cTpFrete :="Destinatario"
+	OTHERWISE
+		cTpFrete :="Sem Frete"
+Endcase
+oPrint:Say(nLin+40,nColAux+10,cTpFrete,oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+nColAux+=300
+
+oPrint:Say(nLin,nColAux+10,"Quantidade",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,transform(SF2->F2_VOLUME1," @E 999,999,999.99"),oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+nColAux+=300
+oPrint:Say(nLin,nColAux+10,"Especie",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,Alltrim(SF2->F2_ESPECI1),oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+
+nColAux+=400
+
+oPrint:Say(nLin,nColAux+10,"Valor Frete",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,transform(SF2->F2_FRETE," @E 999,999,999.99"),oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+
+nColAux+=450
+oPrint:Say(nLin,nColAux+10,"Peso Bruto",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,transform(SF2->F2_PBRUTO," @E 999,999,999.99"),oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+
+nColAux+=500
+oPrint:Say(nLin,nColAux+10,"Peso Liquido",oFont12n,1400)
+oPrint:Say(nLin+40,nColAux+10,transform(SF2->F2_PLIQUI," @E 999,999,999.99"),oFont12,1400)
+oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
+
+
+nLin:= nLinAux+nTamLinha
+
+Return
+
+static function AssinatDig(cArquivo)
+//oPrint:Box(2052,nCol+1500, MAXBOXV+52, nLimite)
+MSGRun("Assinando arquivo PDF de Nota de Débito","Processando...", {|| ;
+	u_Sign(cArquivo, alltrim(MV_PAR03) ,alltrim(MV_PAR04) ) })
+Return 
+
+
+Static Function AssiNBox()
+oPrint:Box(nLin,nCol+1600,MAXBOXV+50,nCol+nLimite)
+oPrint:Say(nLin +30,nCol+1650,"Assinatura Digital: ",oFont12n,1400)
 Return
