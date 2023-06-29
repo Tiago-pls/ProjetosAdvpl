@@ -21,9 +21,11 @@ Local nMarkup  := 0
 Local cClientBloq := SuperGetMV("BL_CLIENTE", .T., "000004")
 
 // criar campo ValorDig 
+/*
 if GDFIELDGET("UB_CUSTDES",N) =='1' .or. GDFIELDGET("UB_RUPEST",N)   =='1'
     Return GDFIELDGET("UB_VRUNIT",N)
 Endif
+*/
 if  SA1->A1_COD  $ cClientBloq
     RETURN GDFIELDGET("UB_VRUNIT",N)
 endif

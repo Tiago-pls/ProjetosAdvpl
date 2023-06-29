@@ -100,7 +100,7 @@ Local aArea		:= GetArea()
 							SF4->(RecNo())})          
 		SC9->(dbSkip())
 	EndDo     
-	conout("Chegou ate aqui....")
+	conout("Preparando os itens para nota ....maPvlNfs" )
 	cNota	:= maPvlNfs(aPvlNfs,cSerie,.F.,.F.,.F.,.F.,.F.,0,0,.F.,.F.)
 	aPvlNfs := {}	
 	RestArea(aArea)
@@ -168,13 +168,3 @@ If lRet
 	Endif
 Endif
 return lRet
-
-user  function testaPV()
-	aParam[01] := cSerie
-	aParam[02] := cNotaIni
-	aParam[03] := cNotaFim
-procMonitorDoc('000011', cUrl, aParam, nTpMonitor, cModelo, lCte, @cAviso)
-000011
-SpedNFe6Mnt('1','000000042','000000042', .F., .F., '55',.F., .F.,.F.,.F.,.F.,.F.)
-
-Return
