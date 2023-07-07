@@ -18,7 +18,11 @@
 */
 User Function M460FIM                        
 Local aArea:=GetArea()
-
+LOCAL aTitulos  :=  Array(8)
+Local aSE1RECNO :={}
+Local cFileErr := "/dirdoc/errows_"+procname()+"_"+dtos(date())+"_"+strtran(time(),":","")+".txt"
+local cCondPIX := SUPERGETMV("AD_COND", .T., "031")
+PRIVATE lMsErroAuto  :=  .F.
    // -> Atualiza informações da NF
    If Alltrim(FunName()) == "MATA461"                                                     
       // -> Atualiza dados da NF
@@ -61,21 +65,45 @@ Local aArea:=GetArea()
          cSql += " AND E1_PREFIXO = '"+SF2->F2_SERIE+"' AND E1_NUM = '"+SF2->F2_DOC+"' "
          cSql += " AND E1_TIPO = 'NF' "
          TcQuery ChangeQuery(cSql) New Alias "_QRY"
-            //Enquanto tiver dados na query
+         //Enquanto tiver dados na query
          While !_QRY->(eof())
             DbSelectArea("SE1")
             SE1->(DbGoTo(_QRY->REC))
                
             //Se tiver dado, altera o tipo de pagamento
             If !SE1->(EoF())
-                  RecLock("SE1",.F.)
-                     Replace E1_IDFLUIG WITH SC5->C5_IDFLUIG
-                  MsUnlock()
+               if SF2->F2_COND == cCondPIX
+                  AAdd(aSE1RECNO, _QRY->REC)
+               Endif
+               RecLock("SE1",.F.)
+                  Replace E1_IDFLUIG WITH SC5->C5_IDFLUIG
+               MsUnlock()
             EndIf
                
             _QRY->(DbSkip())
          Enddo
          _QRY->(DbCloseArea())
+
+         aTitulos[1] :=  aSE1RECNO
+         aTitulos[2] :=  'CX1'
+         aTitulos[3] :=  '00001'
+         aTitulos[4] :=  '0000000001'
+         aTitulos[5] :=  ''
+         aTitulos[6] :=  ''
+         aTitulos[7] :=  'OUTROS    '
+         aTitulos[8] := DATE()
+         MSExecAuto({|x,y| Fina110(x,y)},3,aTitulos)
+
+         IF lMsErroAuto
+            	cError := "Error: "
+					aLog  := GetAutoGRLog() 
+					aeval(aLog, {|x| cError += x+CRLF})
+					memowrite(cFileErr, ;
+								varInfo("aSE1RECNO",aSE1RECNO, , .f., .f.) + CRLF  ;
+								+ cError )  
+						ConOut(Procname()+" -> "+cError)
+         ENDIF
+
       Endif
    Endif
 RestArea(aArea)

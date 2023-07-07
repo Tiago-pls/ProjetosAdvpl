@@ -421,7 +421,8 @@ oPrint:Say(MAXBOXV -500, INIBOXH+105, "IDENTIFICAÇÃO E ASSINATURA DO RECEBEDOR",
 
 // Nfe 
 oPrint:Box(nLin+30, nCol, nLin+280,  150)
-oPrint:Say(MAXBOXV-2190, INIBOXH+60, "NF-e", oFont12n, , , 270)
+// Marcos solicitou que não aparecesse mais a informação sobre a NFE
+//oPrint:Say(MAXBOXV-2190, INIBOXH+60, "NF-e", oFont12n, , , 270)
 oPrint:Say(MAXBOXV-2160, INIBOXH+95, "Nº "+StrZero(Val(cDoc),9), oFont12n, , , 270)
 oPrint:Say(MAXBOXV-2160, INIBOXH+130, "SÉRIE "+cSerie, oFont12n, , , 270)
 

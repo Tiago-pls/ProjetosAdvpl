@@ -9,7 +9,6 @@ user function ProcPed
 Local cTmp := "TMPPED"
 PREPARE ENVIRONMENT EMPRESA '05' FILIAL '040101' TABLES 'SC5','SC6','SE4','SB1','SB2','SF4'
 
-   
  If Select( cTmp ) > 0
     (cTmp)->( dbCloseArea() )
 EndIf

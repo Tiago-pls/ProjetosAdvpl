@@ -13,7 +13,7 @@
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 user function RbPost()
-    Local cUrl          := "https://api.tabletcloud.com.br/token"
+    Local cUrl          := "https://testapi.maxipago.net/UniversalAPI/postXML"
     Local nTimeOut      := 120
     Local aHeadOut      := {}
     Local cHeadRet      := ""

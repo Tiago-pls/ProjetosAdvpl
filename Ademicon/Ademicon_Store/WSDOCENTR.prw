@@ -2180,7 +2180,6 @@ WSMETHOD ListaCadastro WSRECEIVE cTabela, cCampos, cWhere WSSEND aCadastros WSSE
 	Local nIndReg   := 0
 	Local nIndCampo := 0
 	Local aCampos   := {}
-
 	::aCadastros := WSClassNew("oCadastros")
 	::aCadastros:Itens := {}
 	aCampos := strTokArr(::cCampos, ",")
@@ -2190,28 +2189,20 @@ WSMETHOD ListaCadastro WSRECEIVE cTabela, cCampos, cWhere WSSEND aCadastros WSSE
 	cQuery += "	AND "+::cWhere
 	cQuery := ChangeQuery(cQuery)
 	memowrite("\temp\listacadastro_"+dtos(date())+"_"+strtran(time(),":","")+".txt", cQuery)
-
 	cAlias := MPSysOpenQuery(cQuery,,,,)
-
 	While (cAlias)->(!Eof())
 		nIndReg++
 		for nIndCampo := 1 to len(aCampos)
 			oCadastro := WSClassNew("oCadastro")
-
 			oCadastro:Indice 		:= nIndReg
 			oCadastro:Campo 		:= alltrim(aCampos[nIndCampo])
 			oCadastro:Valor      	:= cValToChar((cAlias)->(fieldget(fieldpos(trim(aCampos[nIndCampo])))))
-
 			aAdd(::aCadastros:Itens, oCadastro)
 		next
 		(cAlias)->(dbSkip())
 	EndDo
 	(cAlias)->(dbCloseArea())
-
 Return .T.
-
-
-
 
 /*/{Protheus.doc} GerarPV
 Inclusao Pedido de Vendas
@@ -2311,7 +2302,6 @@ WSMETHOD GerarPV WSRECEIVE oPedVenda WSSEND cCodigo WSSERVICE FluigProtheus
 					if oPedVenda:nOpc =='5'
 						// primeiro altera o pedido estornando o pedido
 						MSExecAuto({|x,y,z|mata410(x,y,z)},aCabec,aItens, 4) // primeiro altera o pedido
-
 					Endif
 
 					MSExecAuto({|x,y,z|mata410(x,y,z)},aCabec,aItens,val(oPedVenda:nOpc))
