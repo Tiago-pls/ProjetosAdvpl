@@ -60,7 +60,7 @@ PRIVATE lMsErroAuto  :=  .F.
       // Tiago Santos
    if SC5->(FieldPos( "C5_IDFLUIG" )) > 0
       if !Empty(SC5->C5_IDFLUIG)
-         cSql := "SELECT R_E_C_N_O_ AS REC FROM "+RetSqlName("SE1")
+         cSql := "SELECT E1_VENCTO, R_E_C_N_O_ AS REC FROM "+RetSqlName("SE1")
          cSql += " WHERE E1_FILIAL = '"+xFilial("SE1")+"' AND D_E_L_E_T_<>'*' "
          cSql += " AND E1_PREFIXO = '"+SF2->F2_SERIE+"' AND E1_NUM = '"+SF2->F2_DOC+"' "
          cSql += " AND E1_TIPO = 'NF' "
@@ -70,11 +70,9 @@ PRIVATE lMsErroAuto  :=  .F.
             DbSelectArea("SE1")
             SE1->(DbGoTo(_QRY->REC))
                
-            //Se tiver dado, altera o tipo de pagamento
+            //Se tiver dados, altera o tipo de pagamento
             If !SE1->(EoF())
-               if SF2->F2_COND == cCondPIX
-                  AAdd(aSE1RECNO, _QRY->REC)
-               Endif
+               AAdd(aSE1RECNO, {_QRY->REC,E1_VENCTO})
                RecLock("SE1",.F.)
                   Replace E1_IDFLUIG WITH SC5->C5_IDFLUIG
                MsUnlock()
@@ -83,27 +81,16 @@ PRIVATE lMsErroAuto  :=  .F.
             _QRY->(DbSkip())
          Enddo
          _QRY->(DbCloseArea())
-
-         aTitulos[1] :=  aSE1RECNO
-         aTitulos[2] :=  'CX1'
-         aTitulos[3] :=  '00001'
-         aTitulos[4] :=  '0000000001'
-         aTitulos[5] :=  ''
-         aTitulos[6] :=  ''
-         aTitulos[7] :=  'OUTROS    '
-         aTitulos[8] := DATE()
-         MSExecAuto({|x,y| Fina110(x,y)},3,aTitulos)
-
-         IF lMsErroAuto
-            	cError := "Error: "
-					aLog  := GetAutoGRLog() 
-					aeval(aLog, {|x| cError += x+CRLF})
-					memowrite(cFileErr, ;
-								varInfo("aSE1RECNO",aSE1RECNO, , .f., .f.) + CRLF  ;
-								+ cError )  
-						ConOut(Procname()+" -> "+cError)
-         ENDIF
-
+            For nCont :=1 to len(aSE1RECNO)
+               RECLOCK( "ZAS", .T. )
+                  ZAS->ZAS_FILIAL := xFilial("ZAS")
+                  ZAS->ZAS_RECNO  := aSE1RECNO[nCont,1] 
+                  ZAS->ZAS_DATAB  := aSE1RECNO[nCont,2] 
+                  ZAS->ZAS_STATUS := 'N'
+                  ZAS->ZAS_DATAIN := ddatabase
+                  ZAS->ZAS_HORA := Time()
+               ZAS->(MSUNLOCK())
+            Next nCont
       Endif
    Endif
 RestArea(aArea)
