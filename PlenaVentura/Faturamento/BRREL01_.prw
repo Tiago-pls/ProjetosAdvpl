@@ -41,7 +41,8 @@ Private cSerie      := MV_PAR02
 Private lAdjustToLegacy := .t.
 Private lDisableSetup 	:= .F.
 private nLimite    :=2900
-private lNormal := .F.
+private lNormal := iif(SF2->F2_TIPO =='N', .T., .F.)
+
 //Fontes do Relatório Gráfico
 oFont1  := TFont():New("Tahoma",,15,,.T.,,,,.T.,.F.)
 oFont1n := TFont():New("Tahoma",,15,,.F.,,,,.F.,.F.)
@@ -59,12 +60,11 @@ If !SF2->(dbSeek(xFilial("SF2")+cDoc+cSerie))
 	MsgStop("Documento "+Alltrim(cDoc)+"/"+Alltrim(cSerie)+" não encontrado!")
 	Return
 Endif
-lNormal := iif(SF2->F2_TIPO =='N', .T., .F.)
 SD2->(dbSetOrder(3))	
 SD2->(dbSeek(xFilial("SD2")+SF2->F2_DOC+SF2->F2_SERIE))
 //Posiciona no cliente
 SA1->(dbSeek(xFilial("SA1")+SF2->F2_CLIENTE+SF2->F2_LOJA))
-SA2->(dbSeek(xFilial("SA2")+SF2->F2_CLIENTE+SF2->F2_LOJA))
+SA2->(dbSeek(xFilial("SA1")+SF2->F2_CLIENTE+SF2->F2_LOJA))
 
 IncProc("Gerando relatório para o documento "+Alltrim(cDoc)+"/"+Alltrim(cSerie))
 
@@ -263,35 +263,16 @@ nLinAux:= nLin
 
 //Destinatário
 nLinAux += 30
-if lNormal
-	oPrint:Say(nLinAux,nColSep+10,Upper(SA1->A1_NOME),oFont12,1400)
-else
-	oPrint:Say(nLinAux,nColSep+10,Upper(SA2->A2_NOME),oFont12,1400)
-endif
+oPrint:Say(nLinAux,nColSep+10,iif(lNormal ,Upper(SA1->A1_NOME), Upper(SA2->A2_NOME)),oFont12,1400)
 nLinAux += 30   
-if lNormal
-	oPrint:Say(nLinAux,nColSep+10,"CNPJ: "+Transform(SA1->A1_CGC,"@R 99.999.999/9999-99")+" I.E.: "+SA1->A1_INSCR,oFont12,1400)
-else
-	oPrint:Say(nLinAux,nColSep+10,"CNPJ: "+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+" I.E.: "+SA2->A2_INSCR,oFont12,1400)
-endif
+oPrint:Say(nLinAux,nColSep+10,"CNPJ: "+Transform(iif(lNormal,Upper(SA1->A1_CGC), Upper(SA2->A2_CGC)),"@R 99.999.999/9999-99")+" I.E.: "+iif(lNormal,Upper(SA1->A1_INSCR), Upper(SA2->A2_INSCR)),oFont12,1400)
 nLinAux += 30 
-if lNormal
-	oPrint:Say(nLinAux,nColSep+10,Upper(Alltrim(SA1->A1_END)+" "+Alltrim(SA1->A1_COMPLEM)),oFont12,1400)
-else
-	oPrint:Say(nLinAux,nColSep+10,Upper(Alltrim(SA2->A2_END)+" "+Alltrim(SA2->A2_COMPLEM)),oFont12,1400)
-endif
+oPrint:Say(nLinAux,nColSep+10,Upper(Alltrim(SA1->A1_END)+" "+Alltrim(SA1->A1_COMPLEM)),oFont12,1400)
 nLinAux += 30 
-if lNormal
-	oPrint:Say(nLinAux,nColSep+10,Upper(Alltrim(SA1->A1_BAIRRO)+" "+Alltrim(SA1->A1_MUN)+" - "+Alltrim(SA1->A1_EST)),oFont12,1400)
-else
-	oPrint:Say(nLinAux,nColSep+10,Upper(Alltrim(SA2->A2_BAIRRO)+" "+Alltrim(SA2->A2_MUN)+" - "+Alltrim(SA2->A2_EST)),oFont12,1400)
-endif
+oPrint:Say(nLinAux,nColSep+10,Upper(Alltrim(SA1->A1_BAIRRO)+" "+Alltrim(SA1->A1_MUN)+" - "+Alltrim(SA1->A1_EST)),oFont12,1400)
 nLinAux += 30 
-if lNormal
-	oPrint:Say(nLinAux,nColSep+10,"("+Alltrim(SA1->A1_DDD)+") "+Transform(Right(Alltrim(Strtran(SA1->A1_TEL,"-","")),8),"@R 9999-9999"),oFont12,1400)
-else
-	oPrint:Say(nLinAux,nColSep+10,"("+Alltrim(SA2->A2_DDD)+") "+Transform(Right(Alltrim(Strtran(SA2->A2_TEL,"-","")),8),"@R 9999-9999"),oFont12,1400)
-endif
+oPrint:Say(nLinAux,nColSep+10,"("+Alltrim(SA1->A1_DDD)+") "+Transform(Right(Alltrim(Strtran(SA1->A1_TEL,"-","")),8),"@R 9999-9999"),oFont12,1400)
+
 nLin:= nLinAux+10
 
 Return
@@ -444,7 +425,7 @@ oPrint:Say(MAXBOXV -500, INIBOXH+105, "IDENTIFICAÇÃO E ASSINATURA DO RECEBEDOR",
 oPrint:Box(nLin+30, nCol, nLin+280,  150)
 // Marcos solicitou que não aparecesse mais a informação sobre a NFE
 //oPrint:Say(MAXBOXV-2190, INIBOXH+60, "NF-e", oFont12n, , , 270)
-//oPrint:Say(MAXBOXV-2160, INIBOXH+95, "Nº "+StrZero(Val(cDoc),9), oFont12n, , , 270)
+oPrint:Say(MAXBOXV-2160, INIBOXH+95, "Nº "+StrZero(Val(cDoc),9), oFont12n, , , 270)
 oPrint:Say(MAXBOXV-2160, INIBOXH+130, "SÉRIE "+cSerie, oFont12n, , , 270)
 
 oPrint:Say(MAXBOXV, INIBOXH+182, Replicate("- ",66), oFont12n, , , 270)

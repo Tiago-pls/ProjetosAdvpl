@@ -2429,7 +2429,7 @@ WSMETHOD ProdutosEstoque WSRECEIVE cFilBusca,cProd WSSEND aProdutosEstoque WSSER
 	cQuery += "from "+RetSqlName('SB1')+" SB1"
 	cQuery += " inner join "+RetSqlName('SB2')+" SB2 on B1_FILIAL = B2_FILIAL and B1_COD = B2_COD"
 	cQuery += " inner join "+RetSqlName('SB5')+" SB5 on B1_FILIAL = B5_FILIAL and B1_COD = B5_COD"
-	cQuery += "Where 	SB1.D_E_L_E_T_ =' ' and	SB2.D_E_L_E_T_ =' ' and	SB5.D_E_L_E_T_ =' ' "
+	cQuery += "Where 	SB1.D_E_L_E_T_ =' ' and	SB2.D_E_L_E_T_ =' ' and	SB5.D_E_L_E_T_ =' '  and B1_MSBLQL <> '1'"
 	If !Empty(::cFilBusca)
 		cQuery += " AND B1_FILIAL = '"+::cFilBusca+"' "
 	ENDIF
