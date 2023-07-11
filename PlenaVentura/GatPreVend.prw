@@ -50,6 +50,7 @@ nValor := Round(nRet  / (1- (nTot / 100)),2)
 
 281002055371
 
+
 */
 //C1/(1-(0,45+0,1325))
 nValor := nCustoProd / (1 - (nMarkup + nTot) / 100)
@@ -63,7 +64,7 @@ if nValor <> 0 .and. SUB->(FieldPos( "UB_XCALC" )) > 0
 Endif
 RestArea(aArea)
 
-Return nValor 
+Return nValor   
 
 
 /*-----------------+---------------------------------------------------------+
