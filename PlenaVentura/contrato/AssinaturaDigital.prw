@@ -37,6 +37,10 @@ user function Sign(cArquivo, cArqDig, cPassword)
 		fErase(cFileLocation + cSignedFile)
 	EndIF
 
+	if  left(cArqDig ,1)=='\'
+		cArqDig := cRemoteLocation+'cert\' + 	Alltrim(SubStr(mv_par03,  Rat('\',mv_par03)+1, len(MV_PAR03)))
+	endif	
+
 	//gera o .BAT com instrução de assinatura
 	//foi feito isso para poder capturar o resultado da assinatura
 	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+cArqDig+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 490 -lly 11 -urx 805 -ury 90 -pg 2  -d '+cFileLocation)
@@ -102,6 +106,7 @@ Static Function SyncJSignPDF()
 	MakeDir(cRemoteLocation)
 	MakeDir(cRemoteLocation+"conf")
 	MakeDir(cRemoteLocation+"lib")
+	MakeDir(cRemoteLocation+"cert")
 
 	ProcRegua(len(aFiles))
 
@@ -112,4 +117,11 @@ Static Function SyncJSignPDF()
 		EndIF
 	Next n1
 
+	// Copia do Certificado do servidor para a maquina Local
+	cCertif := Alltrim(SubStr(mv_par03,  Rat('\',mv_par03)+1, len(MV_PAR03)))
+
+	if File(cRemoteLocation+"Cert\"+cCertif)// se houver o certificado, excluir
+		fErase(cRemoteLocation+"Cert\"+cCertif)
+	endif
+	__CopyFile( mv_par03, cRemoteLocation + "cert\"+cCertif )
 Return
