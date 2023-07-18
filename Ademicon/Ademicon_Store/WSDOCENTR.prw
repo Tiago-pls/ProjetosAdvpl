@@ -2476,7 +2476,10 @@ WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 	private cFilCli  := cFilAnt
 	private lAutoErrNoFile := .T.
 	private lMsErroAuto := .F.
-		
+
+	Conout("GerarCliPV - Cadastrar Clientes..."+varInfo("oCliente",oCliente, , .f., .f.))
+
+
 	BEGIN SEQUENCE
 		if !empty(ocliente:A1_FILIAL)
 			cFilCli := ocliente:A1_FILIAL

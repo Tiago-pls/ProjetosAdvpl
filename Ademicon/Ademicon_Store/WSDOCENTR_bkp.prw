@@ -40,6 +40,7 @@ WSSERVICE FluigProtheus DESCRIPTION 'Fluig x Protheus - Workflow'
 	WSDATA oTitPr				    AS oTitPr
 	WSDATA oCliente				    AS oCliente
 	WSDATA oPedVenda			    AS oPedVenda
+	
 
 	WSDATA cCodigo					AS String
 	WSDATA cStatus					AS String
@@ -55,14 +56,14 @@ WSSERVICE FluigProtheus DESCRIPTION 'Fluig x Protheus - Workflow'
 	WSDATA cWhere					AS String
 	WSDATA cTabela					AS String
 	WSDATA cCampos					AS String							 
-	WSDATA IDFLUIG					AS String		
+	WSDATA IDFLUIG					AS String							 	
 	WSDATA cLoja					AS String
 	WSDATA cValor					AS String	
 	WSDATA cCodProduto				AS String	
 	WSDATA cRateio					AS String	
 	WSDATA cNotaFiscal				AS String
 	WSDATA cEmissao					AS String
-	WSDATA cOpc					    AS String	
+	WSDATA cOpc					    AS String
 	
 	WSMETHOD AprovWFPC					DESCRIPTION 'Aprovar Workflow de Pedido de Compras'
 	WSMETHOD LiberarPC					DESCRIPTION 'Liberar Pedido de Compras'
@@ -84,15 +85,12 @@ WSSERVICE FluigProtheus DESCRIPTION 'Fluig x Protheus - Workflow'
 	WSMETHOD GerarNF					DESCRIPTION 'Gera a Solicitação de Compras'
 	WSMETHOD GerarPg					DESCRIPTION 'Gera a Titulo a Pagar'
 	WSMETHOD GerarPr					DESCRIPTION 'Gera a Titulo a Receber'
-	WSMETHOD GerarCliPV					DESCRIPTION 'Cadastro de Cliente para Pedido de Venda'
 	WSMETHOD GerarCli					DESCRIPTION 'Cadastro de Cliente'
+	WSMETHOD GerarCliPV					DESCRIPTION 'Cadastro de Cliente para Pedido de Venda'
 	WSMETHOD ListaCadastro				DESCRIPTION 'Retorna uma lista de cadastro generico'
 	WSMETHOD GerarPV				    DESCRIPTION 'Cadastrar Pedido de Venda'
 	WSMETHOD FaturarPV				    DESCRIPTION 'Faturar Pedido de Venda'
-	WSMETHOD ProdutosEstoque    		DESCRIPTION 'Dados Produtos com Estoque'																				   
-
-	  
-
+	WSMETHOD ProdutosEstoque    		DESCRIPTION 'Dados Produtos com Estoque'																		   	  
 
 ENDWSSERVICE
 
@@ -149,6 +147,15 @@ WSSTRUCT oConsulta
 	WSDATA Filial			AS String
 	WSDATA Descricao		AS String
     WSDATA Situacao			AS String	
+    WSDATA Endereco			AS String	
+    WSDATA Complemento		AS String	
+    WSDATA Est			    AS String	
+    WSDATA Municipio        AS String	
+    WSDATA Bairro           AS String	
+    WSDATA CEP              AS String	
+    WSDATA InscricaoEst     AS String	
+    WSDATA DDD              AS String	
+    WSDATA Telefone         AS String	
 ENDWSSTRUCT
 
 // Estrutura de consultar
@@ -308,7 +315,6 @@ WSSTRUCT oTitPg
 		WSDATA E2_ITEMD   as String optional
 		WSDATA E2_CLVLDB  as String optional
 		WSDATA E2_IDFLUIG  as String
-		WSDATA E2_XPROCES  as String // codigo Processo Fluig - Tiago Santos
 
 
 ENDWSSTRUCT
@@ -332,7 +338,6 @@ WSSTRUCT oTitPr
 		WSDATA E1_CLVLDB  as String optional
 		WSDATA E1_CLVLCR  as String optional
 		WSDATA E1_IDFLUIG  as String
-		WSDATA E1_XPROCES  as String // Tiago Santos
 		
 ENDWSSTRUCT
 
@@ -340,7 +345,7 @@ ENDWSSTRUCT
 WSSTRUCT oCliente
 
         WSDATA A1_FILIAL  as String optional
-        WSDATA A1_TIPO    as String
+        WSDATA A1_TIPO    as String optional
         WSDATA A1_COD     as String optional
         WSDATA A1_NOME    as String
         WSDATA A1_NREDUZ  as String
@@ -359,9 +364,9 @@ WSSTRUCT oCliente
 		WSDATA A1_PAIS    as String optional
 		WSDATA A1_CODPAIS as String optional
 		WSDATA A1_CBAIRRE as String
+		WSDATA A1_NATUREZ as String optional
 
 ENDWSSTRUCT
-
 
 // Estrutura Cabeçalho Pedido de Vendas
 WSSTRUCT oPedVenda
@@ -384,7 +389,6 @@ WSSTRUCT oPedVenda
 		WSDATA C5_PBRUTO  as String  optional
 		WSDATA Itens	   AS Array Of oItemPV
 ENDWSSTRUCT
-
 // Estruta dos Itens da Solicitação
 WSSTRUCT oItemPV
 		WSDATA C6_FIIAL    as String
@@ -398,10 +402,12 @@ WSSTRUCT oItemPV
 		WSDATA C6_VALDESC  as String optional
 ENDWSSTRUCT
 
+// Estrutura dos Produtos 
 WSSTRUCT oProdutosEstoque
 	WSDATA Itens AS ARRAY OF oProdutoEstoque
 ENDWSSTRUCT
 
+// Estrutura do Produto
 WSSTRUCT oProdutoEstoque
 	WSDATA B1_FILIAL        AS String
     WSDATA B1_COD			AS String
@@ -414,6 +420,7 @@ WSSTRUCT oProdutoEstoque
 	WSDATA B5_COMPR     	AS String
 	WSDATA B5_LARG     	AS String
 ENDWSSTRUCT
+
 //FIM
 
 /*/{Protheus.doc} AprovWFPC
@@ -619,8 +626,7 @@ WSMETHOD Produtos WSRECEIVE NULLPARAM WSSEND aProdutos WSSERVICE FluigProtheus
 	cQuery := " SELECT B1_FILIAL, B1_COD, B1_DESC, B1_TIPO, B1_UM "
 	cQuery += " FROM "+RetSqlName('SB1')+" SB1"
 	cQuery += " WHERE SB1.B1_MSBLQL <> '1'"
-	cQuery += " 	AND SB1.D_E_L_E_T_ = ' ' "
-	cQuery += " 	AND B1_FILIAL = '010101' "
+	cQuery += " 	AND SB1.D_E_L_E_T_ = ' ' and B1_FILIAL ='010101'"
 	cQuery += " ORDER BY B1_FILIAL, B1_COD "
 
 	cQuery := ChangeQuery(cQuery)
@@ -853,9 +859,6 @@ WSMETHOD GerarSA WSRECEIVE oSolicitacaoArmazem WSSEND cCodigo WSSERVICE FluigPro
 		cLoginFluig := oSolicitacaoArmazem['LoginFluig']
 		cComissionado := oSolicitacaoArmazem['Comissionado']
 		cRazao := oSolicitacaoArmazem['Razao']
-
-		
-
 
 		conout("cLoginFluig -> "+cLoginFluig)
 
@@ -1301,7 +1304,7 @@ WSMETHOD BuscarFornecedor WSRECEIVE cCnpj WSSEND aFornecedores WSSERVICE FluigPr
 	If !Empty(::cCnpj)
 		cQuery += " AND A2_CGC = '"+::cCnpj+"' "
 	ENDIF
-	
+
 	cQuery += "		AND A2.D_E_L_E_T_ <> '*' "
 	cQuery := ChangeQuery(cQuery)
 
@@ -1703,7 +1706,7 @@ WSMETHOD BuscarClienteS WSRECEIVE cCnpj WSSEND aConsultas WSSERVICE FluigProtheu
 	::aConsultas := WSClassNew("oConsultas")
 	::aConsultas:Itens := {}
 
-	cQuery := "Select A1_COD, A1_LOJA, A1_NOME, A1_MSBLQL"
+	cQuery := "Select A1_COD, A1_LOJA, A1_NOME, A1_END, A1_EST, A1_MUN, A1_BAIRRO, A1_CEP, A1_INSCR, A1_DDD, A1_TEL,A1_COMPLEM, A1_MSBLQL"
 	cQuery += "from "+RetSqlName('SA1')+" A1 "
 	cQuery += "where A1_MSBLQL<>'1'  "
 	If !Empty(::cCnpj)
@@ -1725,10 +1728,17 @@ WSMETHOD BuscarClienteS WSRECEIVE cCnpj WSSEND aConsultas WSSERVICE FluigProtheu
 		oConsulta:Codigo 		:= (cAlias)->A1_COD
 		oConsulta:Filial 		:= (cAlias)->A1_LOJA
 		oConsulta:Descricao		:= (cAlias)->A1_NOME
-		oConsulta:Situacao	:= (cAlias)->A1_MSBLQL
+		oConsulta:Endereco		:= (cAlias)->A1_END
+		oConsulta:Complemento	:= (cAlias)->A1_COMPLEM
+		oConsulta:Est		    := (cAlias)->A1_EST
+		oConsulta:Municipio		:= (cAlias)->A1_MUN
+		oConsulta:Bairro		:= (cAlias)->A1_BAIRRO
+		oConsulta:CEP   		:= (cAlias)->A1_CEP
+		oConsulta:InscricaoEst	:= (cAlias)->A1_INSCR
+		oConsulta:Situacao	    := (cAlias)->A1_MSBLQL
+		oConsulta:DDD	        := (cAlias)->A1_DDD
+		oConsulta:Telefone	    := (cAlias)->A1_TEL
 		
-
-
 		aAdd(::aConsultas:Itens, oConsulta)
 
 		(cAlias)->(dbSkip())
@@ -1838,7 +1848,6 @@ WSMETHOD GerarPr WSRECEIVE oTitPr WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSE1, {"E1_CLVLDB" , cE1_CLVLDB       , Nil})
 				aadd(aVetSE1, {"E1_CLVLCR" , cE1_CLVLCR       , Nil})
 				aadd(aVetSE1, {"E1_IDFLUIG" , oTitPr:E1_IDFLUIG       , Nil})
-				aadd(aVetSE1, {"E1_XPROCES" , oTitPr:E1_XPROCES       , Nil})// codigo Processo Fluig - Tiago Santos
 
 				//Chama a rotina automática
 				lMsErroAuto := .F.
@@ -1988,7 +1997,6 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSE2, {"E2_ITEMD"  , cE2_ITEMD        , Nil})
 				aadd(aVetSE2, {"E2_CLVLDB" , cE2_CLVLDB       , Nil})
 				aadd(aVetSE2, {"E2_IDFLUIG" , oTitPg:E2_IDFLUIG       , Nil})
-				aadd(aVetSE2, {"E2_XPROCES" , oTitPg:E2_XPROCES       , Nil})// codigo Processo Fluig - Tiago Santos
 
 				//Chama a rotina automática
 				lMsErroAuto := .F.
@@ -2072,7 +2080,6 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 				cFilAnt := cFilCli
 			endif
 		endif
-
 		if empty(nPosFil)
 			cError:="Error: Filial "+cFilCli+" nao localizada."
 			memowrite(cFileErr, ;
@@ -2114,8 +2121,7 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 					else
 						SA1->(dbSkip(-1))
 					endif
-					aadd(aVetSA1, {"A1_COD_MUN"    , cCodMun   , Nil})
-					
+					aadd(aVetSA1, {"A1_COD_MUN"    , cCodMun   , Nil})				
 					aadd(aVetSA1, {"A1_COD"    , SOMA1(SA1->A1_COD)    , Nil})  // Campo automatico
 					aadd(aVetSA1, {"A1_LOJA"   , "01"   , Nil})
 					// aadd(aVetSA1, {"A1_PAIS"   , "105"              , Nil})  // Campo automatico
@@ -2144,14 +2150,12 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 			Endif
 		ELSE
 			cError:="Error: CPF/CNPJ nao recebido."
-			memowrite(cFileErr, ;
-					varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
+			//memowrite(cFileErr, ;
+			//		varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
 		ENDIF
-
     RECOVER
 //
     END SEQUENCE
-
 	If lError
 		::cCodigo := "NOK"
 		cMens := "Erro ao gravar o Cliente"
@@ -2160,8 +2164,8 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 	else
 		::cCodigo := "YOK"
 	EndIf
-
 Return !lError
+
 
 
 /*/{Protheus.doc} ListaCadastro
@@ -2176,7 +2180,6 @@ WSMETHOD ListaCadastro WSRECEIVE cTabela, cCampos, cWhere WSSEND aCadastros WSSE
 	Local nIndReg   := 0
 	Local nIndCampo := 0
 	Local aCampos   := {}
-
 	::aCadastros := WSClassNew("oCadastros")
 	::aCadastros:Itens := {}
 	aCampos := strTokArr(::cCampos, ",")
@@ -2186,27 +2189,20 @@ WSMETHOD ListaCadastro WSRECEIVE cTabela, cCampos, cWhere WSSEND aCadastros WSSE
 	cQuery += "	AND "+::cWhere
 	cQuery := ChangeQuery(cQuery)
 	memowrite("\temp\listacadastro_"+dtos(date())+"_"+strtran(time(),":","")+".txt", cQuery)
-
 	cAlias := MPSysOpenQuery(cQuery,,,,)
-
 	While (cAlias)->(!Eof())
 		nIndReg++
 		for nIndCampo := 1 to len(aCampos)
 			oCadastro := WSClassNew("oCadastro")
-
 			oCadastro:Indice 		:= nIndReg
 			oCadastro:Campo 		:= alltrim(aCampos[nIndCampo])
 			oCadastro:Valor      	:= cValToChar((cAlias)->(fieldget(fieldpos(trim(aCampos[nIndCampo])))))
-
 			aAdd(::aCadastros:Itens, oCadastro)
 		next
 		(cAlias)->(dbSkip())
 	EndDo
 	(cAlias)->(dbCloseArea())
-
 Return .T.
-
-
 
 /*/{Protheus.doc} GerarPV
 Inclusao Pedido de Vendas
@@ -2215,142 +2211,107 @@ Inclusao Pedido de Vendas
 /*/
 
 WSMETHOD GerarPV WSRECEIVE oPedVenda WSSEND cCodigo WSSERVICE FluigProtheus
-	Local lError 	:= .T.
-	Local aVetSE1
-	Local cMens  := ""
-	Local cError := ""
 
-	Local cFilSave := cFilAnt
+	Local lError 	:= .T.
+	Local aVetSA1
+	Local cCodMun   := ""
 	Local aLog
 	Local aEmprs
 	Local nPosFil := 1
 	Local cFileErr := "/dirdoc/errows_"+procname()+"_"+dtos(date())+"_"+strtran(time(),":","")+".txt"
-	Local cNaturez := ""
-	private cFilTit  := cFilAnt
+	private cFilCli  := cFilAnt
 	private lAutoErrNoFile := .T.
-	PRIVATE lMsErroAuto := .F.
-	
-	Conout("GerarPV - Cadastrar Pedido..."+varInfo("oPedVenda",oPedVenda, , .f., .f.))
-	
+	private lMsErroAuto := .F.
+	Conout("GerarCli - Cadastrar cliente..."+varInfo("ocliente",ocliente, , .f., .f.))
     BEGIN SEQUENCE
-		if !empty(oPedVenda:C5_FILIAL)
-			conout("Filial: "+ oPedVenda:C5_FILIAL)
-			cFilTit := oPedVenda:C5_FILIAL
+		if !empty(ocliente:A1_FILIAL)
+			cFilCli := ocliente:A1_FILIAL
 			aEmprs:= FWLoadSM0()
-			if !empty(nPosFil := ascan(aEmprs, {|it| it[1]=cEmpAnt .and. it[2]=cFilTit}))
-				cFilAnt := cFilTit
+			if !empty(nPosFil := ascan(aEmprs, {|it| it[1]=cEmpAnt .and. it[2]=cFilCli}))
+				cFilAnt := cFilCli
 			endif
 		endif
-		SC5->( DbOrderNickName('IDFLUIG'))
-		
 		if empty(nPosFil)
-			cError:="Error: Filial "+cFilTit+" nao localizado."
+			cError:="Error: Filial "+cFilCli+" nao localizada."
 			memowrite(cFileErr, ;
-					varInfo("oPedVenda",oPedVenda, , .f., .f.) + CRLF + cError )  
-		elseif !empty(oPedVenda:C5_CLIENTE )
-
+					varInfo("ocliente",ocliente, , .f., .f.) + CRLF + cError )  
+		elseif !empty(ocliente:A1_CGC )
 			DbSelectArea('SA1')
-			SA1->(dbSetOrder(1))
-			oItemPV := WSClassNew("oItemPV")
-			If SA1->(DbSeek(xFilial('SA1')+oPedVenda:C5_CLIENTE + oPedVenda:C5_LOJACLI))
-
-				aCabec := {}
-				aItens := {}
-				if oPedVenda:nOpc =='5' // exclusao
-					conout(" Exclusao Pedido de venda.....")
-					SC5->( DbOrderNickName('IDFLUIG'))
-					SC5->( DbSeek(xFilial("SC5") + oPedVenda:C5_IDFLUIG))
-					conout("Pedido a ser excluido: "+ SC5->C5_NUM)
-					ConOut("FunName()" + FunName())
-					aadd(aCabec,{"C5_NUM"    ,SC5->C5_NUM ,Nil})
-				Endif
-				if select("SE4")==0
-					DBSELECTAREA( "SE4" )
-				Endif
-				SE4->(DBOrderNickname("FLUIG"))
-				SE4->(dbGotop())
-				cCondPgt :=""
-				If SE4->( DbSeek(xFilial("SE4") + oPedVenda:C5_CONDPAG))
-					cCondPgt := SE4->E4_CODIGO
-				Endif
-				aadd(aCabec,{"C5_TIPO"   ,"N",Nil})
-				aadd(aCabec,{"C5_CLIENTE",oPedVenda:C5_CLIENTE,Nil})
-				aadd(aCabec,{"C5_LOJACLI",oPedVenda:C5_LOJACLI,Nil})
-				aadd(aCabec,{"C5_CLIENT" ,oPedVenda:C5_CLIENTE,Nil})
-				aadd(aCabec,{"C5_LOJAENT",oPedVenda:C5_LOJAENT,Nil})
-				aadd(aCabec,{"C5_CONDPAG", cCondPgt ,Nil})
-				aadd(aCabec,{"C5_TPFRETE",oPedVenda:C5_TPFRETE,Nil})
-				aadd(aCabec,{"C5_FRETE",oPedVenda:C5_FRETE,Nil})
-				aadd(aCabec,{"C5_IDFLUIG",oPedVenda:C5_IDFLUIG,Nil})
-								
-				For nI := 1 To Len(oPedVenda['Itens'])
-					oItemPV := WSClassNew("oItemPV")
-					aItemSA := {}
-					aItemSA := oPedVenda['Itens']
-					oItemSA := aItemSA[nI] 
-					nQtdLib := iif(oPedVenda:nOpc =='5',0,val(oItemSA:C6_QTDVEN))
-					Aadd(aItens, {;						
-						{"C6_ITEM",		StrZero(nI,TamSx3("C6_ITEM")[1]),NIL},;
-						{"C6_PRODUTO", oItemSA:C6_PRODUTO, 				NIL},;
-						{"C6_QTDVEN",	Val(oItemSA:C6_QTDVEN),  		NIL},;
-						{"C6_PRCVEN",	oItemSA:C6_PRCVEN,			NIL},;
-						{"C6_VALOR",	oItemSA:C6_PRCVEN * Val(oItemSA:C6_QTDVEN),			NIL},;
-						{"C6_TES",	    '502',			                NIL},;
-						{"C6_QTDLIB",	nQtdLib,			            NIL};
-						})
-				Next nI
-				BEGIN TRANSACTION
-					//****************************************************************
-					//* Teste de Inclusao              
-					//****************************************************************
-					if oPedVenda:nOpc =='5'
-						// primeiro altera o pedido estornando o pedido
-						MSExecAuto({|x,y,z|mata410(x,y,z)},aCabec,aItens, 4) // primeiro altera o pedido
-					Endif
-
-					MSExecAuto({|x,y,z|mata410(x,y,z)},aCabec,aItens,val(oPedVenda:nOpc))
-					If !lMsErroAuto
-						ConOut("Incluido com sucesso! "+C5_NUM)
-						lError := .F.
-					Else
-						ConOut("Erro no processamento!")
-						cError := "Error: "
-						aLog  := GetAutoGRLog() 
-						aeval(aLog, {|x| cError += x+CRLF})
-						ConOut(Procname()+" -> "+cError)
-						lError := .T.
-					EndIf
-
-				END TRANSACTION
-				
-
-
-			else
-				cError:="Error: Cliente + Loja " + oPedVenda:C5_CLIENTE+ oPedVenda:C5_LOJACLI + " nao localizado"
+			SA1->(dbSetOrder(3))  // A1_FILIAL+A1_CGC
+			If SA1->(DbSeek(xFilial('SA2')+ocliente:A1_CGC))
+				cError:="Error: cliente com CNPJ/CPF "+ocliente:A1_CGC+" ja cadastrado."
 				memowrite(cFileErr, ;
-					varInfo("oPedVenda",oPedVenda, , .f., .f.) + CRLF + cError )  
-			endif
+						varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
+				lError := .F.
+				cError := ""
+			else
+				cCodMun := fCEPIBGE(oCliente:A1_CEP)
+				if empty(cCodMun)
+					cError:="Error: codigo do municipio do CEP "+ocliente:A1_CEP+" nao encontrado."
+					memowrite(cFileErr, ;
+							varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
+					lError := .F.
+				else
+					aVetSA1 := {}
+					aadd(aVetSA1, {"A1_TIPO"   , oCliente:A1_TIPO   , Nil})
+					aadd(aVetSA1, {"A1_CGC"    , oCliente:A1_CGC    , Nil})
+					aadd(aVetSA1, {"A1_INSCR"  , oCliente:A1_INSCR  , Nil})
+					aadd(aVetSA1, {"A1_NOME"   , oCliente:A1_NOME   , Nil})
+					aadd(aVetSA1, {"A1_NREDUZ" , oCliente:A1_NREDUZ , Nil})
+					aadd(aVetSA1, {"A1_END"    , oCliente:A1_END    , Nil})
+					aadd(aVetSA1, {"A1_BAIRRO" , oCliente:A1_BAIRRO , Nil})
+					aadd(aVetSA1, {"A1_COMPLEM", oCliente:A1_COMPLEM, Nil})
+					aadd(aVetSA1, {"A1_MUN"    , oCliente:A1_MUN    , Nil})
+					aadd(aVetSA1, {"A1_EST"    , oCliente:A1_EST    , Nil})
+					aadd(aVetSA1, {"A1_CEP"    , oCliente:A1_CEP    , Nil})
+					aadd(aVetSA1, {"A1_DDD"    , oCliente:A1_DDD    , Nil})
+					aadd(aVetSA1, {"A1_TEL"    , oCliente:A1_TEL    , Nil})
+					SA1->(dbSetOrder(1)) // A1_FILIAL + A1_COD + A1_LOJA
+					if SA1->(dbSeek(xFilial("SA1")+"XXXXXX", .t.))
+						SA1->(dbSkip(-1))
+					else
+						SA1->(dbSkip(-1))
+					endif
+					aadd(aVetSA1, {"A1_COD_MUN"    , cCodMun   , Nil})				
+					aadd(aVetSA1, {"A1_COD"    , SOMA1(SA1->A1_COD)    , Nil})  // Campo automatico
+					aadd(aVetSA1, {"A1_LOJA"   , "01"   , Nil})
+					// aadd(aVetSA1, {"A1_PAIS"   , "105"              , Nil})  // Campo automatico
+					// aadd(aVetSA1, {"A1_CODPAIS", "01058"			   , Nil})  // Campo automatico
+					// aadd(aVetSA1, {"A1_CBAIRRE", oCliente:A1_CBAIRRE, Nil})
+
+					//Chama a rotina automática
+					lMsErroAuto := .F.
+					lAutoErrNoFile := .T.
+					MSExecAuto({|x,y| mata030(x,y)}, aVetSA1, 3)
+
+					//Se houve erro, mostra o erro ao usuário e desarma a transação
+					If lMsErroAuto
+						lError := .T.
+						cError := "Error: .T. "
+						ConOut(cError)
+					else
+						lError := .F.
+					EndIf
+				EndIf
+			Endif
 		ELSE
-			cError:="Error: Cliente + Loja nao recebido."
-			memowrite(cFileErr, ;
-				varInfo("oPedVenda",oPedVenda, , .f., .f.) + CRLF + cError )  
+			cError:="Error: CPF/CNPJ nao recebido." 
 		ENDIF
     RECOVER
 //
     END SEQUENCE
-	// Restaura a filial
-	cFilAnt := cFilSave
-
 	If lError
 		::cCodigo := "NOK"
-		cMens := "Erro ao gravar o Pedido de Venda"
-		conout('[' + DToC(Date()) + " " + Time() +  "] " + procname() + " > " + cMens+ ". " + cError)
-		SetSoapFault("Erro", cError)
+		Conout('::cCodigo := "NOK"')
+		cMens := "Erro ao gravar o Cliente"
+		//conout('[' + DToC(Date()) + " " + Time() +  "] " + procname() + " > " + cMens+ ". " + cError)
+		//SetSoapFault("Erro", cError)
 	else
 		::cCodigo := "YOK"
+		Conout('::cCodigo := "YOK"')
 	EndIf
-
 Return !lError
+
 
 
 WSMETHOD FaturarPV WSRECEIVE IDFLUIG WSSEND cCodigo WSSERVICE FluigProtheus
@@ -2391,8 +2352,12 @@ else
 Endif
 
 Return !lError
-
-
+ /*
+{Protheus.doc} Produtos
+Retorna os Produtos
+@author Anderson José Zelenski
+@since 09/12/2020
+/*/
 WSMETHOD ProdutosEstoque WSRECEIVE cFilBusca,cProd WSSEND aProdutosEstoque WSSERVICE FluigProtheus
 	Local oProdutoEstoque
 	Local cAlias	:= GetNextAlias()
@@ -2438,9 +2403,137 @@ WSMETHOD ProdutosEstoque WSRECEIVE cFilBusca,cProd WSSEND aProdutosEstoque WSSER
 
 Return .T.
 
-/*
-Local cSerieNF :="1"
-Local lError 	:= .T.
+WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
+	Local lError 	:= .T.
+	Local aVetSA1
+	Local cCodMun   := ""
+	Local aLog
+	Local aEmprs
+	Local nPosFil := 1
+	Local lContinua := .T.
+	Local nOpc := 3 // Pre - opçao de inclusao
+	Local cFileErr := "/dirdoc/errows_"+procname()+"_"+dtos(date())+"_"+strtran(time(),":","")+".txt"
+	private cFilCli  := cFilAnt
+	private lAutoErrNoFile := .T.
+	private lMsErroAuto := .F.
+		
+	BEGIN SEQUENCE
+		if !empty(ocliente:A1_FILIAL)
+			cFilCli := ocliente:A1_FILIAL
+			aEmprs:= FWLoadSM0()
+			if !empty(nPosFil := ascan(aEmprs, {|it| it[1]=cEmpAnt .and. it[2]=cFilCli}))
+				cFilAnt := cFilCli
+			endif
+		endif
+		if empty(nPosFil)
+			cError:="Error: Filial "+cFilCli+" nao localizada."
+			memowrite(cFileErr, ;
+				varInfo("ocliente",ocliente, , .f., .f.) + CRLF + cError )  
+		
+		elseif !empty(ocliente:A1_CGC )
+			Conout("A1_CGC " + ocliente:A1_CGC  )
+			DbSelectArea('SA1')
+			SA1->(dbSetOrder(3))  // A1_FILIAL+A1_CGC	
+			If SA1->(DbSeek(xFilial('SA2')+ocliente:A1_CGC))
+				if ocliente:A1_LOJA <>'EE'
+					ConOut("Error: cliente com CNPJ "+ocliente:A1_CGC+" ja cadastrado.")
+					cError:="Error: cliente com CNPJ "+ocliente:A1_CGC+" ja cadastrado."
+					memowrite(cFileErr, ;
+						varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
+					lError := .T.
+					lContinua := .F.
+				else
+					// procutar por codigo e loja 
+					//A1_FILIAL+A1_COD+A1_LOJA
+					cCod := SA1->A1_COD
+					cLoja := 'EE'
+					aAreaSA1 := SA1->(GetArea())					
+					SA1->( DbSetOrder(1))//
+					SA1->( DbGotop())
+					if !SA1->(dbSeek(xFilial("SA1") + cCod + 'EE'))
+						conout("!SA1->(dbSeek(xFilial('SA1') + cCod + 'EE'))    NAO ACHOU"  + cValtoChar(nOpc))
+						nOpc :=3 // inclusao de novo registro com código EE
+					Else
+						nOpc := 4 // Alteração do registro com os dados do Fluig
+						conout("!SA1->(dbSeek(xFilial('SA1') + cCod + 'EE'))    ACHOU"  + cValtoChar(nOpc))
+					Endif							
+					SA1->(RestArea(aAreaSA1))
+				Endif
+			else
+				cCod := GetSXENum("SA1","A1_COD")
+				cLoja   := "01" 
+			endif
+			if len(oCliente:A1_CEP) <> 8			
+				cError:="Error: tamanho do CEP "+ocliente:A1_CEP+" nao encontrado."
+				memowrite(cFileErr, ;
+					varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
+				lError := .T.			
+			elseif lContinua
+				cCodMun := fCEPIBGE(oCliente:A1_CEP)
+				aVetSA1 := {}
+				aadd(aVetSA1, {"A1_TIPO"   , 'F'   , Nil})
+				aadd(aVetSA1, {"A1_CGC"    , oCliente:A1_CGC    , Nil})
+				aadd(aVetSA1, {"A1_EST"    , oCliente:A1_EST    , Nil})
+				aadd(aVetSA1, {"A1_INSCR"  , oCliente:A1_INSCR  , Nil})
+				aadd(aVetSA1, {"A1_NOME"   , UPPER(oCliente:A1_NOME)   , Nil})
+				aadd(aVetSA1, {"A1_NREDUZ" , UPPER(oCliente:A1_NREDUZ) , Nil})
+				aadd(aVetSA1, {"A1_END"    , UPPER(oCliente:A1_END)    , Nil})
+				aadd(aVetSA1, {"A1_BAIRRO" , UPPER(oCliente:A1_BAIRRO) , Nil})
+				aadd(aVetSA1, {"A1_COMPLEM", UPPER(oCliente:A1_COMPLEM), Nil})
+				aadd(aVetSA1, {"A1_MUN"    , oCliente:A1_MUN    , Nil})					
+				aadd(aVetSA1, {"A1_CEP"    , oCliente:A1_CEP    , Nil})
+				aadd(aVetSA1, {"A1_DDD"    , oCliente:A1_DDD    , Nil})
+				aadd(aVetSA1, {"A1_TEL"    , oCliente:A1_TEL    , Nil})
+				aadd(aVetSA1, {"A1_NATUREZ",     "OUTROS"       , Nil})
+				aadd(aVetSA1, {"A1_PESSOA",   IIF(LEN(oCliente:A1_CGC)=14,'J','F')      , Nil})
+
+				SA1->(dbSetOrder(1)) // A1_FILIAL + A1_COD + A1_LOJA
+				if SA1->(dbSeek(xFilial("SA1")+"XXXXXX", .t.))
+					SA1->(dbSkip(-1))
+				else
+					SA1->(dbSkip(-1))
+				endif
+				aadd(aVetSA1, {"A1_COD_MUN"    , cCodMun   , Nil})					
+				aadd(aVetSA1, {"A1_COD"    , cCod   , Nil})  // Campo automatico				
+				aadd(aVetSA1, {"A1_LOJA"   , cLoja   , Nil})					
+				//Chama a rotina automática
+				lMsErroAuto := .F.
+				lAutoErrNoFile := .T.
+				MSExecAuto({|x,y| mata030(x,y)}, aVetSA1, nOpc)
+				//Se houve erro, mostra o erro ao usuário e desarma a transação
+				If lMsErroAuto			
+					cError := "Error: "
+					aLog  := GetAutoGRLog() 
+					aeval(aLog, {|x| cError += x+CRLF})
+					memowrite(cFileErr, ;
+							varInfo("oCliente",oCliente, , .f., .f.) + CRLF ;
+							+ varInfo("aVetSA1",aVetSA1, , .f., .f.) + CRLF ;
+                            + cError )  
+					ConOut(Procname()+" -> "+cError)
+					lError := .T.
+				else
+					ConfirmSX8()
+					lError := .F.
+				EndIf
+			EndIf
+		else	
+			cError:="Error: CPF/CNPJ nao recebido."
+			memowrite(cFileErr, ;
+			varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
+		endif
+	END SEQUENCE
+	If lError
+		//conout("Erro dentro do IF")
+	//	cMens := "Erro ao gravar o Cliente"
+		//conout('[' + DToC(Date()) + " " + Time() +  "] " + procname() + " > " + cMens+ ". " + 'cError')
+		//SetSoapFault("Erro", cError)
+		::cCodigo := "NOK"
+	else
+	//conout(cCod +',' + cLoja)
+		::cCodigo := cCod +',' + cLoja
+	EndIf
+	conout('return')
+Return lError
 
 /*
 +----------------------------------------------------------------------------------+
@@ -2469,7 +2562,7 @@ static function fCEPIBGE(cCEP)
 	oJsonCEP:= JsonObject():New()
 	cParsePJ := oJsonCEP:FromJson(cValToChar(cRetWs))
 	if ValType(cParsePJ) <> "C" .and. valtype(oJsonCEP["ibge"]) = "C"
-		cStrResul := substr(oJsonCEP["ibge"], 3)
+		cStrResul := substr(oJsonCEP["ibge"], 3)		
 	endif
 return cStrResul
 

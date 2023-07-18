@@ -13,7 +13,8 @@
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*/
 // Programa desenvolvido por SMS Consultoria
 
-User function PNM090OK()
+User function MarcImpar()
+
 Local dPerIni		:= Ctod("//")
 Local dPerFim		:= Ctod("//")
 Local aLogfile	:= {}  // Array para conter as ocorrencias a serem impressas  
@@ -22,6 +23,21 @@ Local lPerCompleto	:= .F.
 Local cLastFil  := xFilial("SRA")
 Local lPriImpar		:= .T.
 local lRet := .T.
+Local lContinua := .T.
+
+Private cPerg 	:= "" 
+dbSelectArea("SX1")  
+dbSetOrder(1)
+cPerg := "MIMPAR" +Replicate(" ",Len(X1_GRUPO)- Len("MIMPAR"))
+
+//Carrega os Parï¿½metros
+//********************************************************************************
+GeraPerg(cPerg)
+  
+If !Pergunte(cPerg,.T.)
+   Return
+Endif  
+
 
 /*/
 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -84,5 +100,25 @@ If !lContinua
 	ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ/*/
 	fMakeLog( { aLogFile, aMarcImp } , { 'Log de Ocorrencias:', OemToAnsi("Funcionário(s) com Marcacoes impares") } , NIL , .T. , FunName() )
     lRet:= .F.
+ELSE
+    fMakeLog( { aLogFile, aMarcImp } , { 'Log de Ocorrencias:', OemToAnsi("Não há marcações ímpares para o período selecionado") } , NIL , .T. , FunName() )    
 EndIf
 return lRet
+
+
+
+Static Function GeraPerg(cPerg) 
+Local aRegs:= {}
+
+aAdd(aRegs,{cPerg,"01","Filial"         ,"Filial De"        ,"Filial De"       ,"mv_ch1","C",06,0,0,"G"," ","mv_par01","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SM0","",""})
+aAdd(aRegs,{cPerg,"02","Filial Ate"     ,"Filial Ate"       ,"Filial Ate"      ,"mv_ch2","C",06,0,0,"G","naovazio()","mv_par02","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SM0","",""})
+aAdd(aRegs,{cPerg,"03","Centro Custo"   ,"Centro Custo De"  ,"Centro Custo De" ,"mv_ch3","C",09,0,0,"G"," ","mv_par03","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","CTT","",""})
+aAdd(aRegs,{cPerg,"04","Centro Ate"     ,"Centro Custo Ate" ,"Centro Custo Ate","mv_ch4","C",09,0,0,"G","naovazio()","mv_par04","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","CTT","",""})
+aAdd(aRegs,{cPerg,"05","Matricula"      ,"Matricula De"     ,"Matricula De"    ,"mv_ch5","C",06,0,0,"G"," ","mv_par05","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SRA","",""})
+aAdd(aRegs,{cPerg,"06","Matricula Ate"  ,"Matricula Ate"    ,"Matricula Ate"   ,"mv_ch6","C",06,0,0,"G","naovazio()","mv_par06","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SRA","",""})
+aAdd(aRegs,{cPerg,"07","Data de"        ,"Data de"          ,"Data de"         ,"mv_ch7","D",08,0,0,"G","naovazio()","mv_par07","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"08","Data Ate"       ,"Data ate"         ,"Data ate"        ,"mv_ch8","D",08,0,0,"G","naovazio()","mv_par08","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"09","Depto de"       ,"Depto De"         ,"Depto De"        ,"mv_ch9","C",09,0,0,"G"," ","mv_par09","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"10","Depto Ate"      ,"Depto Ate"        ,"Depto Ate"       ,"mv_ch9","C",09,0,0,"G","naovazio()","mv_par10","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","","",""})
+U_BuscaPerg(aRegs)
+Return

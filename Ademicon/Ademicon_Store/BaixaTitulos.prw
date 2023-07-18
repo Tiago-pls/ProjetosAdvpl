@@ -65,9 +65,7 @@ For nCont := 1 to Len(aSE1RECNO)
     ZAS->( DbGotop())
     if ZAS->( DbSeek( xFilial('ZAS') + cValToChar(aSE1RECNO[nCont])))
         RECLOCK( "ZAS", .F. )
-            IF lMsErroAuto
-                ZAS->ZAS_STATUS 
-            Endif
+            ZAS->ZAS_STATUS := cStatus
         ZAS->(MSUNLOCK())
     endif
 Next nCont
