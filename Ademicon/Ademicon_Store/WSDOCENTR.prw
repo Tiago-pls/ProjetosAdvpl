@@ -338,6 +338,7 @@ WSSTRUCT oTitPr
 		WSDATA E1_CLVLDB  as String optional
 		WSDATA E1_CLVLCR  as String optional
 		WSDATA E1_IDFLUIG  as String
+		WSDATA E1_XPROCES  as String
 		
 ENDWSSTRUCT
 
@@ -626,7 +627,8 @@ WSMETHOD Produtos WSRECEIVE NULLPARAM WSSEND aProdutos WSSERVICE FluigProtheus
 	cQuery := " SELECT B1_FILIAL, B1_COD, B1_DESC, B1_TIPO, B1_UM "
 	cQuery += " FROM "+RetSqlName('SB1')+" SB1"
 	cQuery += " WHERE SB1.B1_MSBLQL <> '1'"
-	cQuery += " 	AND SB1.D_E_L_E_T_ = ' ' and B1_FILIAL ='010101'"
+	cQuery += " 	AND SB1.D_E_L_E_T_ = ' ' "
+	cQuery += " 	AND B1_FILIAL = '010101' "
 	cQuery += " ORDER BY B1_FILIAL, B1_COD "
 
 	cQuery := ChangeQuery(cQuery)
@@ -1829,6 +1831,7 @@ WSMETHOD GerarPr WSRECEIVE oTitPr WSSEND cCodigo WSSERVICE FluigProtheus
 
 				//Prepara o array para o execauto
 				aVetSE1 := {}
+				cProc := Iif (Type("oTitPr:E1XPROCES")<> "U",oTitPr:E1XPROCES,"")
 				// aadd(aVetSE1, {"E1_FILIAL" , oTitPr:E1_FILIAL       , Nil})
 				aadd(aVetSE1, {"E1_NUM"    , oTitPr:E1_NUM          , Nil})
 				aadd(aVetSE1, {"E1_PREFIXO", oTitPr:E1_PREFIXO      , Nil})
@@ -1848,7 +1851,7 @@ WSMETHOD GerarPr WSRECEIVE oTitPr WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSE1, {"E1_CLVLDB" , cE1_CLVLDB       , Nil})
 				aadd(aVetSE1, {"E1_CLVLCR" , cE1_CLVLCR       , Nil})
 				aadd(aVetSE1, {"E1_IDFLUIG" , oTitPr:E1_IDFLUIG       , Nil})
-
+				aadd(aVetSE1, {"E1_XPROCES" , cProc       , Nil})
 				//Chama a rotina automática
 				lMsErroAuto := .F.
 				lAutoErrNoFile := .T.
@@ -1978,6 +1981,7 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
 
 				//Prepara o array para o execauto
 				aVetSE2 := {}
+				cProc := Iif (Type("oTitPr:E2_XPROCES")<> "U",oTitPr:E2_XPROCES,"")
 				// aadd(aVetSE2, {"E2_FILIAL" , cFilTit                , Nil})
 				aadd(aVetSE2, {"E2_NUM"    , oTitPg:E2_NUM          , Nil})
 				aadd(aVetSE2, {"E2_PREFIXO", oTitPg:E2_PREFIXO      , Nil})
@@ -1997,7 +2001,7 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSE2, {"E2_ITEMD"  , cE2_ITEMD        , Nil})
 				aadd(aVetSE2, {"E2_CLVLDB" , cE2_CLVLDB       , Nil})
 				aadd(aVetSE2, {"E2_IDFLUIG" , oTitPg:E2_IDFLUIG       , Nil})
-
+				aadd(aVetSE1, {"E2_XPROCES" , cProc       , Nil})
 				//Chama a rotina automática
 				lMsErroAuto := .F.
 				lAutoErrNoFile := .T.
@@ -2080,6 +2084,7 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 				cFilAnt := cFilCli
 			endif
 		endif
+		
 		if empty(nPosFil)
 			cError:="Error: Filial "+cFilCli+" nao localizada."
 			memowrite(cFileErr, ;
@@ -2121,7 +2126,8 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 					else
 						SA1->(dbSkip(-1))
 					endif
-					aadd(aVetSA1, {"A1_COD_MUN"    , cCodMun   , Nil})				
+					aadd(aVetSA1, {"A1_COD_MUN"    , cCodMun   , Nil})		
+					
 					aadd(aVetSA1, {"A1_COD"    , SOMA1(SA1->A1_COD)    , Nil})  // Campo automatico
 					aadd(aVetSA1, {"A1_LOJA"   , "01"   , Nil})
 					// aadd(aVetSA1, {"A1_PAIS"   , "105"              , Nil})  // Campo automatico
@@ -2153,9 +2159,11 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 			memowrite(cFileErr, ;
 					varInfo("oCliente",oCliente, , .f., .f.) + CRLF + cError )  
 		ENDIF
+		
     RECOVER
 //
     END SEQUENCE
+	
 	If lError
 		::cCodigo := "NOK"
 		cMens := "Erro ao gravar o Cliente"
@@ -2164,8 +2172,8 @@ WSMETHOD GerarCli WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 	else
 		::cCodigo := "YOK"
 	EndIf
+	
 Return !lError
-
 
 
 /*/{Protheus.doc} ListaCadastro
@@ -2180,6 +2188,7 @@ WSMETHOD ListaCadastro WSRECEIVE cTabela, cCampos, cWhere WSSEND aCadastros WSSE
 	Local nIndReg   := 0
 	Local nIndCampo := 0
 	Local aCampos   := {}
+	
 	::aCadastros := WSClassNew("oCadastros")
 	::aCadastros:Itens := {}
 	aCampos := strTokArr(::cCampos, ",")
@@ -2189,19 +2198,24 @@ WSMETHOD ListaCadastro WSRECEIVE cTabela, cCampos, cWhere WSSEND aCadastros WSSE
 	cQuery += "	AND "+::cWhere
 	cQuery := ChangeQuery(cQuery)
 	memowrite("\temp\listacadastro_"+dtos(date())+"_"+strtran(time(),":","")+".txt", cQuery)
+	
 	cAlias := MPSysOpenQuery(cQuery,,,,)
+	
 	While (cAlias)->(!Eof())
 		nIndReg++
 		for nIndCampo := 1 to len(aCampos)
 			oCadastro := WSClassNew("oCadastro")
+			
 			oCadastro:Indice 		:= nIndReg
 			oCadastro:Campo 		:= alltrim(aCampos[nIndCampo])
 			oCadastro:Valor      	:= cValToChar((cAlias)->(fieldget(fieldpos(trim(aCampos[nIndCampo])))))
+			
 			aAdd(::aCadastros:Itens, oCadastro)
 		next
 		(cAlias)->(dbSkip())
 	EndDo
 	(cAlias)->(dbCloseArea())
+	
 Return .T.
 
 /*/{Protheus.doc} GerarPV
