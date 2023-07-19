@@ -63,7 +63,7 @@ For nCont := 1 to Len(aSE1RECNO)
         cStatus :="B" // Baixado
     Endif
     ZAS->( DbGotop())
-    if ZAS->( DbSeek( xFilial('ZAS') + cValToChar(aSE1RECNO[nCont])))
+    if ZAS->( DbSeek( cValToChar(aSE1RECNO[nCont])))
         RECLOCK( "ZAS", .F. )
             ZAS->ZAS_STATUS := cStatus
         ZAS->(MSUNLOCK())
