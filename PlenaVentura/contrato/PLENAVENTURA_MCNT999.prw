@@ -237,8 +237,9 @@ Static Function GeraWord(cLayout,cSalvarEm,lPDF)
 		OLE_SaveAsFile( oWord, cSalvarEm + cNomeDoc + '.pdf',,,.F.,wdFormatPDF)		
 
 		if MSGYESNO( 'Deseja assinar documento ?', 'Atenção' )
+			cComando :='java -jar JSignPdf.jar -kst PKCS12  -ksf "'+cArqDig+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 490 -lly 11 -urx 805 -ury 90 -pg 2  -d '+cFileLocation
 			MSGRun("Assinando arquivo RESUMO","Processando...", {|| ;
-				u_Sign(cSalvarEm + cNomeDoc + '.pdf', alltrim(mv_par07),alltrim(mv_par08)) })
+				u_Sign(cSalvarEm + cNomeDoc + '.pdf', alltrim(mv_par07),alltrim(mv_par08),cComando) })
 
 		Endif
 		IF File(cSalvarEm + cNomeDoc + '.pdf')
