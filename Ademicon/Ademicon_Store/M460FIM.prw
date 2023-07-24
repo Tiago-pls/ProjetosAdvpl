@@ -69,14 +69,16 @@ PRIVATE lMsErroAuto  :=  .F.
          While !_QRY->(eof())
             DbSelectArea("SE1")
             SE1->(DbGoTo(_QRY->REC))
-
+            cNatureza :=Iif(SC5->C5_CONDPAG == cCondPIX,'PIX','CARTAO')
             //Se tiver dados, altera o tipo de pagamento
             If !SE1->(EoF())
                AAdd(aSE1RECNO, {_QRY->REC,E1_VENCTO})
                RecLock("SE1",.F.) // atualizar o campo E1_VALOR com a taxa da condição de pagamento
                   Replace E1_IDFLUIG WITH SC5->C5_IDFLUIG
                   Replace E1_VALOR   WITH SE1->E1_VALOR * ((100 - SE4->E4_XDEPBAN) /100)
-                  Replace E1_XPROCES   WITH 'ADEMICONSTORE'
+                  Replace E1_XPROCES WITH 'ADEMICONSTORE'
+                  Replace E1_NATUREZ WITH cNatureza
+                  Replace E1_XDESNAT WITH cNatureza
                MsUnlock()
             EndIf
                

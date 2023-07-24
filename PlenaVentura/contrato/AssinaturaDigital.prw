@@ -44,7 +44,7 @@ user function Sign(cArquivo, cArqDig, cPassword,cComando)
 	//gera o .BAT com instrução de assinatura
 	//foi feito isso para poder capturar o resultado da assinatura
 	//MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+cArqDig+'" -ksp '+cPassword+' -V "'+cArquivo+'" -llx 490 -lly 11 -urx 805 -ury 90 -pg 2  -d '+cFileLocation)
-	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+cArqDig+'" -ksp '+cPassword+' -V "'+cArquivo+'"+ -llx 490 -lly 11 -urx 805 -ury 90 -pg 2  -d '+cFileLocation)
+	MemoWrite(cRemoteLocation+cBatFile,'java -jar JSignPdf.jar -kst PKCS12  -ksf "'+cArqDig+'" -ksp '+cPassword+' -V "'+cArquivo+'"' +  cComando +cFileLocation)
 	
 
 	//se não encontrar o BAT, alguma coisa deu errado

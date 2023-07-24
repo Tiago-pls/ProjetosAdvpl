@@ -29,7 +29,7 @@ user Function fSelecao(l1Elem,lTipoRet)
     cQuery += "    INNER JOIN "+RetSqlName("SB1")+" SB1 ON  B1_COD = CNB_PRODUT "
     cQuery += "     WHERE  CNB_CONTRA = '"+MV_PAR04+"'  AND CNB_REVISA  ='"+MV_PAR05+"' AND"
     cQuery += "     CNB.D_E_L_E_T_ = ' ' and"
-    cQuery += "     CNB_SUBST <>'S' and       "
+    cQuery += "     CNB_SUBST <>'S' and  CNB_ITMDST=' '  and "
     cQuery += "      SB1.D_E_L_E_T_ = ' ' and "
     cFilSB1:=  cValtoChar(Len(alltrim(xFilial("SB1"))))
     cQuery += "       substr(B1_FILIAL,1,"+cFilSB1+")   = substr(CNB_FILIAL,1,"+cFilSB1+")"

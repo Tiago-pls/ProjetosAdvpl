@@ -24,9 +24,9 @@ Função para geração de borderô D-1 contas a receber
 User Function PVAUTOBOL() 
     Local ni    := 0
 
-    //RPCSetType(3)
+    RPCSetType(3)
     //Seta job para empresa filial desejada
-    //RPCSetEnv('01', '010101' )
+    RPCSetEnv('01', '010101' )
     //Trava rotina para ser executada somente por um agente
     If !LockByName("GRBORAUT",.T.,.F.)
         Conout("[GRBORAUT] - Rotina está sendo executada, execução cancelada. . ")
@@ -37,7 +37,7 @@ User Function PVAUTOBOL()
         //Executa para todas as filiais
         For nI := 1 To Len(_aFil)
             RpcSetType(3)
-            //PREPARE ENVIRONMENT EMPRESA _aFil[nI,1] FILIAL _aFil[nI,2] TABLES 'SA1','SE1','SE5','SED'
+            PREPARE ENVIRONMENT EMPRESA _aFil[nI,1] FILIAL _aFil[nI,2] TABLES 'SA1','SE1','SE5','SED'
             If LockByName("GRBORAUT",.T.,.F.)
                 Conout("[GRBORAUT] - Rotina está sendo executada, execução cancelada. . ")
                 dbSelectArea("SA1")
@@ -58,7 +58,7 @@ Return
 
 Static Function GRBORAUT(aParam)
     Local cTmp := "TMPBOR"
-    Local aTit := {}
+    Local aTit := {} 
     Local aBor := {}
 
     Local cSituaca := "1"
@@ -109,7 +109,18 @@ Static Function GRBORAUT(aParam)
     13 = Dia 13
     */
     
-    cNumBor :=  iif(cBanco=='341','I','S') + SubStr(cValToChar(year(dDataMov)),3) + chr(64+month(dDataMov)) + StrZero(Day(dDataMov),2)
+    //cNumBor :=  iif(cBanco=='341','I','S') + SubStr(cValToChar(year(dDataMov)),3) + chr(64+month(dDataMov)) + StrZero(Day(dDataMov),2)
+    //Alterado para pegar o sequencial 
+    
+    SEA->(DbSetOrder(1))
+
+    cNumBor := Soma1(GetMV("MV_NUMBORR"),6)
+    cNumBor := Replicate("0",6-Len(AllTrim(cNumBor)))+AllTrim(cNumBor)
+    //While !MayIUseCode("SE1"+xFilial("SE1")+cNumBor) .OR. !FA060Num(cNumBor, .F.)  //verifica se esta na memoria, sendo usado e se o número é válido
+    While SEA->(DbSeek(xFilial("SEA")+cNumBor))
+        // busca o proximo numero disponivel
+        cNumBor := Soma1(cNumBor)
+    EndDo
 
     dDataMov := dToS(dDataMov)
 
@@ -130,6 +141,7 @@ Static Function GRBORAUT(aParam)
         E1_TIPO = 'NF' AND
         A1_ZRECBOL = '1' AND 
         SE1.D_E_L_E_T_ = ' '
+        ORDER BY E1_FILIAL,E1_NUM, E1_PARCELA, E1_PREFIXO, E1_CLIENTE, E1_LOJA, E1_EMISSAO
     EndSQL
 
     //Adiciona os títulos no array
@@ -243,6 +255,11 @@ User Function EnvBol(aTit,cMsg)
     Local _cSenha       := '1234'
     Local _cNewArq      := ''
 
+    Local aBols         := {}
+    Local cChave        := ''
+    Local cEmailCod     := ''
+    Local cNome         := ''
+
     DEFAULT cLocal2 := "\temp\imp\"
 
     if empty(AllTRim(cMsg))
@@ -257,7 +274,21 @@ User Function EnvBol(aTit,cMsg)
         _AuxFiL   := cFiLAnt
         cFiLAnt   := aTit[n1,1,2]
         if SA1->(DbSeek(xFilial("SA1")+aTit[n1,6,2]+aTit[n1,7,2])) /*.and. SA1->A1_ZRECBOL == '1' */ .AND. !Empty(ALLTRIM(SA1->A1_ZEMCOB))
-            _cAssunto	:= "Boleto Bancário Ref. NF nº "+aTit[n1,3,2]
+            
+            if cChave != aTit[n1,3,2]+aTit[n1,6,2]+aTit[n1,7,2]
+                cChave := aTit[n1,3,2]+aTit[n1,6,2]+aTit[n1,7,2]
+                if Len(aBols) > 0 
+                    U_Mail033("BOLETO",cEmailCod,_cAssunto,cMsg,aBols,cNome)
+                   // WriteLog(" Boleto "+ cNumBol +" enviado para : " + Alltrim(cEmailCod) + " Senha: " + _cSenha)
+                    WriteLog(" Boleto "+ cNumBol +" enviado para : " + Alltrim(cEmailCod))
+                EndIf
+                cEmailCod := Lower(SA1->A1_ZEMCOB)
+                cNumBol   := aTit[n1,3,2]
+                _cAssunto	:= "Boleto Bancário Ref. NF nº "+aTit[n1,3,2]
+                cNome       := Alltrim(SA1->A1_NOME)
+                aBols := {}
+            EndIf
+
             SE1->(dBgOtO(aTit[n1,8,2]))//Posiciona na SE1 antes de chamar a impressão 
             _cSenha := substr(SA1->A1_CGC,1,4)
 
@@ -275,8 +306,7 @@ User Function EnvBol(aTit,cMsg)
             WaitRunSrv(cCamBolServ+"\pdftk\pdftk.exe "+ cCamBolServ+_cArqBol + " output " + cCamBolServ+_cNewArq + " owner_pw foo user_pw "+_cSenha +" allow printing", .T., cCamBolServ+cLocal2)
             
             IF File(_cNewArq)
-                U_Mail033("BOLETO",Lower(SA1->A1_ZEMCOB),_cAssunto,cMsg,_cNewArq,Alltrim(SA1->A1_NOME))
-                WriteLog(" Boleto "+ aTit[n1,3,2] +" enviado para : " + Alltrim(SA1->A1_ZEMCOB) + " Senha: " + _cSenha)
+                aAdd(aBols,_cNewArq)
             ELSE           
                 WriteLog(" ###ERRO Boleto " + aTit[n1,3,2] + " não foi possível gerar o borderô para o cadastro do cliente: " + SA1->A1_COD+"/"+SA1->A1_LOJA+" "+ ALLTRIM(SA1->A1_NOME))
             ENDIF
@@ -285,6 +315,13 @@ User Function EnvBol(aTit,cMsg)
         EndIF 
         cFiLAnt := _AuxFiL 
     Next n1
+
+    //Ultimo e-mail
+    if Len(aBols) > 0 
+        U_Mail033("BOLETO",cEmailCod,_cAssunto,cMsg,aBols,cNome)
+        //WriteLog(" Boleto "+ cNumBol +" enviado para : " + Alltrim(SA1->A1_ZEMCOB) + " Senha: " + _cSenha)
+        WriteLog(" Boleto "+ cNumBol +" enviado para : " + Alltrim(SA1->A1_ZEMCOB))
+    EndIf
 
 Return
 
@@ -321,8 +358,19 @@ User Function Mail033(cTipo,cDest,cAssunto,cMsg,_cAnexo,_cNome)
         oProcAprov:NewTask('WFOK',cDirWF+'MAILWF.HTM')
         oProcAprov:cTo := cDest
         oProcAprov:cCC := ""
-        oProcAprov:AttachFile(_cAnexo)
 
+        //Carrega todos os boletos 
+
+        If ValType(_cAnexo) == "C"
+            oProcAprov:AttachFile(_cAnexo)
+        Elseif ValType(_cAnexo) == "A"
+            aEval(_cAnexo, {|cFile| oProcAprov:AttachFile(cFile)})
+        Endif
+        /*For nI := 0 to Len(_cAnexo)
+            oProcAprov:AttachFile(_cAnexo[nI])
+            //oProcAprov:addatthtag(_cAnexo[nI])
+        Next nI
+*/
         oProcAprov:oHtml:ValByName('cTipo',Upper(cTipo))
         oProcAprov:oHtml:ValByName('cDest',Capital(_cNome))
         oProcAprov:oHtml:ValByName('cMsg',cMsg)
@@ -430,12 +478,19 @@ Return _cCSS
 Reenvia o boleto, posicionado no browser PE Fa740Brw
 */
 User Function PVBOLREN()
-    Local aTit      := {}
-    Local cMsg      := ''
+    Local aTit          := {}
+    Local cMsg          := ''
+    Local nAcao         := 0
+    //Local cPerg         := "PVBOLREN"
+    Local cDiretorio    := ''
+
+    Local aPergs := {}
 
     Private cFileLog 	:= ""
 
     if  SE1->E1_NUMBOR != ' ' .AND. SE1->E1_SALDO > 0 
+
+        nAcao := Aviso("2º Via de Boleto", "Selecione a opção desejada", {"Reenviar E-mail", "Salvar PDF"}, 1)
 
         aAdd(aTit,;
             {;
@@ -449,8 +504,24 @@ User Function PVBOLREN()
             {"E1_HIST" ,SE1->(Recno()) };
             })
         //Gera PDF e Envio por e-mail
+        if nAcao == 2 
+            aAdd(aPergs,{1,"Salvar na Pasta?"     ,Space(99),"@!","ExistDir(mv_par01)" ,"HSSDIR",,99,.T.})	        
+            
+            IF ParamBox(aPergs, "Informe Diretório",,,,,,,,,.T.,.T.)
+                
+                cDiretorio := alltrim(mv_par01) + IIF( Right(alltrim(mv_par01),1) == "\","","\")
+                _cArqBol	:= strtran("BOLETO_"+SE1->E1_PORTADO+"_"+SE1->E1_CLIENTE+SE1->E1_LOJA+SE1->E1_NUM+SE1->E1_PARCELA+DTOS(DATE())+strtran(time(),":","")+".PDF",' ')
+                
+                u_BolCaixa(cDiretorio,_cArqBol,.F.,'1')
+                if file(cDiretorio+_cArqBol)
+                    cMsg := "O Arquivo "+ _cArqBol + " foi gerado com sucesso! "
+                else
+                    cMsg := "Erro ao Salvar o PDF! "
+                EndIF
 
-        if SA1->A1_ZRECBOL == '1' .AND. !Empty(ALLTRIM(SA1->A1_ZEMCOB))
+            EndIf
+
+        elseif SA1->A1_ZRECBOL == '1' .AND. !Empty(ALLTRIM(SA1->A1_ZEMCOB))
             U_EnvBol(aTit,cMsg)
             cMsg    := "Boleto envido para: " + ALLTRIM(SA1->A1_ZEMCOB)
         Else
@@ -460,7 +531,7 @@ User Function PVBOLREN()
         cMsg := "Não foi encontrado borderô para o título ou o título está baixado!"
     EndIF
 
-    MsgInfo(cMsg, "Envio de boleto")
+    MsgInfo(cMsg, "2º Via de Boleto")
 
 Return
 /*/{Protheus.doc} WriteLog

@@ -2251,7 +2251,7 @@ WSMETHOD GerarPV WSRECEIVE oPedVenda WSSEND cCodigo WSSERVICE FluigProtheus
 				cFilAnt := cFilTit
 			endif
 		endif
-		SC5->( DbOrderNickName('IDFLUIG'))
+		//SC5->( DbOrderNickName('IDFLUIG'))
 		
 		if empty(nPosFil)
 			cError:="Error: Filial "+cFilTit+" nao localizado."
