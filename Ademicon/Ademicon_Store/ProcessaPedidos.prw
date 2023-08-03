@@ -31,7 +31,7 @@ While (cTmp)->(!EOF())
     if SC5->( DbSeek(xFilial("SC5") + (cTmp)->ZAL_IDFLUI))
 	    conout("Pedido a ser faturado: "+ (cTmp)->ZAL_IDFLUI)
         cNota := pedToNf((cTmp)->ZAL_FILIAL, SC5->C5_NUM, '1')
-        cChoosedState := iif (Empty(cNota), '57','60')
+        cChoosedState := iif (Empty(cNota), '57','62')
         
         if AtuFluig((cTmp)->ZAL_IDFLUI, cChoosedState)        
             ZAL->( DBGOTOP(  ))

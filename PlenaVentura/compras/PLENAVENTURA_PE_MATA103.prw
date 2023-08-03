@@ -197,11 +197,11 @@ User Function MT100GE2()
 	Local areasc7:= sc7->(getarea())
 	Local _data :=""
 
-
+	/*
 	RecLock("SE2",.F.)
 		SE2->E2_NATUREZ := SF1->F1_ZNATURE
 	SE2->( MsUnLock())
-
+	*/
 
 	IF SF1->( FieldPos("F1_OBSADL") ) != 0 .And. SE2->( FieldPos("E2_OBSADL") ) != 0
 		//se tiver mensagem
@@ -1050,3 +1050,10 @@ User Function SF1100I()
     EndIf
     RestArea(aArea)
 Return
+
+
+User Function MT103MNT()
+Local aHeadSev := PARAMIXB[1]
+Local aColsSev := PARAMIXB[2]
+///  carga do aColsSev ///
+Return aColsSev    

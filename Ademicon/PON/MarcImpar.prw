@@ -5,30 +5,19 @@
 /*__________________________________________________________________________
 ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
 ¦¦+-----------------------------------------------------------------------+¦¦
-¦¦¦Fun??o    ¦  RepMarc    ¦ Autor ¦ Tiago Santos        ¦ Data ¦11.06.23 ¦¦¦
+¦¦¦Fun??o    ¦  RepMarc    ¦ Autor ¦ Tiago Santos        ¦ Data ¦02.08.23 ¦¦¦
 ¦¦+----------+------------------------------------------------------------¦¦¦
-¦¦¦Descri??o ¦  Reprocessamento das marcações com intervalo automatico    ¦¦¦
+¦¦¦Descri??o ¦  Marcações ìmpares                                         ¦¦¦
 ¦¦+-----------------------------------------------------------------------+¦¦
 ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*/
 // Programa desenvolvido por SMS Consultoria
 
 User function MarcImpar()
-
-Local dPerIni		:= Ctod("//")
-Local dPerFim		:= Ctod("//")
-Local aLogfile	:= {}  // Array para conter as ocorrencias a serem impressas  
-Local aMarcImp	:= {}
-Local lPerCompleto	:= .F.
-Local cLastFil  := xFilial("SRA")
-Local lPriImpar		:= .T.
-local lRet := .T.
-Local lContinua := .T.
-
 Private cPerg 	:= "" 
 dbSelectArea("SX1")  
 dbSetOrder(1)
-cPerg := "MIMPAR" +Replicate(" ",Len(X1_GRUPO)- Len("MIMPAR"))
+cPerg := "EXTRATOBH" +Replicate(" ",Len(X1_GRUPO)- Len("EXTRATOBH"))
 
 //Carrega os Parï¿½metros
 //********************************************************************************
@@ -38,17 +27,25 @@ If !Pergunte(cPerg,.T.)
    Return
 Endif  
 
+MsAguarde({|| GeraRel()}, "Aguarde...", "Gerando Registros...")
+Return
+
+Static function GeraRel
+Local dPerIni		:= mv_par09
+Local dPerFim		:= mv_par10
+Local aLogfile	:= {}  // Array para conter as ocorrencias a serem impressas  
+Local aMarcImp	:= {}
+local lRet := .T.
+Local lContinua := .T.
 
 /*/
 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 ³ Carrega Log do Inicio do Processo de Fechamento			   ³
 ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ/*/
-aAdd(aLogFile, "- Inicio do Fechamento Mensal em "  + Dtoc(MsDate()) + ', as ' + Time() + '.') 
+aAdd(aLogFile, "- Análise Marcações ìmpares - Início em "  + Dtoc(MsDate()) + ', as ' + Time() + '.') 
 //Seleciona os registros
 //********************************************************************************
 // carrega dados do período
-checkPonMes( @dPerIni , @dPerFim , NIL , NIL , .T. , cLastFil , NIL , @lPerCompleto )
-
 
 If Select("QRY")>0         
 	QRY->(dbCloseArea())
@@ -57,7 +54,6 @@ Endif
 If Select("SRA")==0         
 	DBSELECTAREA( "SRA" )
 Endif
-
 
 cQry := " Select "
 cQry += "  P8_FILIAL,P8_MAT,P8_DATA, P8_DATAAPO  ,P8_TPMCREP from " + RetSqlName("SP8")
@@ -103,9 +99,7 @@ If !lContinua
 ELSE
     fMakeLog( { aLogFile, aMarcImp } , { 'Log de Ocorrencias:', OemToAnsi("Não há marcações ímpares para o período selecionado") } , NIL , .T. , FunName() )    
 EndIf
-return lRet
-
-
+return 
 
 Static Function GeraPerg(cPerg) 
 Local aRegs:= {}
