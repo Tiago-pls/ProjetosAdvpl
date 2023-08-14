@@ -9,11 +9,7 @@ User Function MCnt260()
 
 	Local cPerg := "MCNT260"
 
-	Local oModal
-	Local n1
 
-	Local oColumn
-	Local aColumns := {}
 
 	Private itens := 1
 	Private campos := 2
@@ -26,7 +22,20 @@ User Function MCnt260()
 
 	While Ask(cPerg)
 
-		//busca os contratos aptos a gerar medição
+		Procs()
+
+	EndDO
+
+Return
+
+static function Procs
+	//busca os contratos aptos a gerar medição
+		Local oModal
+	Local n1
+
+	Local oColumn
+	Local aColumns := {}
+
 		MSGRun("Buscando contratos aptos a gerar medição",,{|| aContratos := GetContratos() })
 
 		oModal	:= FWDialogModal():New()
@@ -34,7 +43,6 @@ User Function MCnt260()
 		oModal:setTitle("Selecione os contratos para geração de medição")
 		oModal:enableAllClient()
 		oModal:createDialog()
-
 
 		oMark := FWBROWSE():New()
 		oMark:SetOwner(oModal:getPanelMain())
@@ -84,15 +92,19 @@ User Function MCnt260()
 		oMark:Activate()
 
 		//adicina botoes
+		//Filtro
+
+		oModal:addButtons({{"","Filtrar",{|| Processa( {|| Filtrar("MCNT260F") })}, "Clique aqui para Sair",,.T.,.T.}})
+
 		oModal:addButtons({{"","Gerar Medição",{|| Processa( {|| MCnt260Exec() }), oModal:Deactivate() }, "Clique aqui para gerar as medições",,.T.,.T.}})
 		oModal:addButtons({{"","Sair",{|| oModal:Deactivate() }, "Clique aqui para Sair",,.T.,.T.}})
 
 		//ativa o tela
 		oModal:Activate()
+return
 
-	EndDO
 
-Return
+
 
 Static function Ask(cPergunta)
     Local lRet:= Pergunte(cPergunta,.T.)
@@ -330,14 +342,16 @@ Return aScan(aContratos[campos],{|x| x == cCampo })
 Static Function Pos(cCampo,aCampos)
 Return aScan(aCampos,{|x| x == cCampo })
 
-/*
+
 Static Function CriaSX1(cPerg)
 
-	PutSx1(cPerg,'01','Data de?' ,'','','mv_ch1','D',8,0,0,'G','','','','','mv_par01',"","","","","","","","","","","","","","","","",{"Data inicial para filtrar o cronograma","","",""})
-	PutSx1(cPerg,'02','Data até?','','','mv_ch2','D',8,0,0,'G','','','','','mv_par02',"","","","","","","","","","","","","","","","",{"Data final para filtrar o cronograma","","",""})
+	PutSx1(cPerg,'01','Data de?'     ,'','','mv_ch1','D',8,0,0,'G','','','','','mv_par01',"","","","","","","","","","","","","","","","",{"Data inicial para filtrar o cronograma","","",""})
+	PutSx1(cPerg,'02','Data até?'    ,'','','mv_ch2','D',8,0,0,'G','','','','','mv_par02',"","","","","","","","","","","","","","","","",{"Data final para filtrar o cronograma","","",""})
+	PutSx1(cPerg,'03','Contrato de?' ,'','','mv_ch3','C',15,0,0,'G','','','','','mv_par03',"","","","","","","","","","","","","","","","",{"Contrato de ","","",""})
+	PutSx1(cPerg,'04','Contrato até?','','','mv_ch4','C',15,0,0,'G','','','','','mv_par04',"","","","","","","","","","","","","","","","",{"Contrato Ate","","",""})
 
 Return
-*/
+
 
 Static Function GetContratos()
 
@@ -346,7 +360,28 @@ Static Function GetContratos()
 
 	Local aItens := {}
 	Local aCampos := {"MARK1","MARK2","MARK3"}
+	Local nCont :=1
+	Local cCont1 :=""
+	Local cCont2 :=""
+	Local aContrato1 := separa(Alltrim(MV_PAR03),',')
+	Local aContrato2 := separa(Alltrim(MV_PAR04),',')
+	For nCont := 1 to Len(aContrato1) 
+		if nCont  <> 1
+			cCont1 += "'"
+		Endif
+		cCont1 += aContrato1[nCont] +"',"
+	Next nCont
+	cCont1 := Left(cCont1, len(cCont1) -2 )
+	cCont1 += ""
 
+	For nCont := 1 to Len(aContrato2) 
+		if nCont  <> 1
+			cCont2 += "'"
+		Endif
+		cCont2 += aContrato1[nCont] +"',"
+	Next nCont
+	cCont2 := Left(cCont2, len(cCont2) -2 )
+	cCont2 += ""
 
 	BeginSQL Alias cAlias
 		%noparser%
@@ -388,6 +423,10 @@ Static Function GetContratos()
 		and CN9.CN9_SITUAC = '05'
 		and CN9.CN9_ESPCTR = '2'
 		and CN9.D_E_L_E_T_ = ' '
+		//and CNA.CNA_CONTRA >= %exp: mv_par03 %
+		and CNA.CNA_CONTRA in (%exp: cCont1 %)
+		//and CNA.CNA_CONTRA <= %exp: mv_par04 %
+		
 
 	EndSQL
 
@@ -435,3 +474,10 @@ Static Function GetMsErroAuto()
 	Next n1
 
 Return cError
+
+
+
+static function Filtrar( cPerg)
+ Pergunte(cPerg,.T.)
+ Procs()
+return

@@ -120,9 +120,14 @@ cChave := ""
 nCont := 0
 nProvento := 0
 nDesconto := 0
-
+cSitua := MV_PAR11
 If QRY->(!Eof())
 	While QRY->(!Eof()) .and. !oRel:Cancel() 
+		If  !( QRY->RA_SITFOLH $ cSitua )
+			QRY->(dbSkip())
+			Loop
+		Endif
+
   		ProcRegua(10)
   		nCont ++
 
@@ -205,6 +210,7 @@ aAdd(aRegs,{cPerg,"07","Matricula"      ,"Matricula De"     ,"Matricula De"    ,
 aAdd(aRegs,{cPerg,"08","Matricula Ate"  ,"Matricula Ate"    ,"Matricula Ate"   ,"mv_ch8","C",06,0,0,"G","naovazio()","mv_par08","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","SRA","",""})
 aAdd(aRegs,{cPerg,"09","Data Inicio"    ,"Data Inicio"      ,"Data Inicio"     ,"mv_ch9","D",08,0,0,"G","naovazio()","mv_par09","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","","",""})
 aAdd(aRegs,{cPerg,"10","Data Fim"       ,"Data Fim"         ,"Data Fim"        ,"mv_chA","D",08,0,0,"G","naovazio()","mv_par10","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"11","Situacao"       ,"Situacao"         ,"Situacao"        ,"mv_chB","C",05,0,0,"G","naovazio()","mv_par11","","","",""  ,"","","","","","","","","","","","","","","","","","","","","","","",""})
 
 U_BuscaPerg(aRegs)
 

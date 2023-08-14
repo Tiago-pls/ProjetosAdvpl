@@ -60,9 +60,21 @@ If !SF2->(dbSeek(xFilial("SF2")+cDoc+cSerie))
 	Return
 Endif
 lNormal := iif(SF2->F2_TIPO =='N', .T., .F.)
-SD2->(dbSetOrder(3))	
-SD2->(dbSeek(xFilial("SD2")+SF2->F2_DOC+SF2->F2_SERIE))
+//SD2->(dbSetOrder(3))	
+//SD2->(dbSeek(xFilial("SD2")+SF2->F2_DOC+SF2->F2_SERIE))
+
+cQuery := " Select  * from " + RetSqlName("SD2")+" SD2"
+cQuery += " Where D_E_L_E_T_ =' ' and D2_DOC ='"+SF2->F2_DOC+"' and D2_SERIE ='"+SF2->F2_SERIE+"'"
+cQuery += " order by D2_FILIAL, D2_DOC, D2_SERIE, D2_ITEM "
+
+If Select("QRYSD2")>0         
+	QRYSD2->(dbCloseArea())
+Endif
+
+TcQuery cQuery New Alias "QRYSD2"   
+
 //Posiciona no cliente
+//D2_FILIAL+D2_DOC+D2_SERIE+D2_CLIENTE+D2_LOJA+D2_COD+D2_ITEM    
 SA1->(dbSeek(xFilial("SA1")+SF2->F2_CLIENTE+SF2->F2_LOJA))
 SA2->(dbSeek(xFilial("SA2")+SF2->F2_CLIENTE+SF2->F2_LOJA))
 
@@ -92,7 +104,8 @@ EmiDest()
 nLin += 60
 oPrint:Box(nLin,nCol,nLin+50,nCol+nLimite)
 nLin += 25
-oPrint:Say(nLin,nCol+10,"Natureza da operação realizada: "+Upper(Posicione("SF4",1,xFilial("SF4")+SD2->D2_TES,"F4_FINALID")),oFont12n,1400)
+//oPrint:Say(nLin,nCol+10,"Natureza da operação realizada: "+Upper(Posicione("SF4",1,xFilial("SF4")+SD2->D2_TES,"F4_FINALID")),oFont12n,1400)
+oPrint:Say(nLin,nCol+10,"Natureza da operação realizada: "+Upper(Posicione("SF4",1,xFilial("SF4")+QRYSD2->D2_TES,"F4_FINALID")),oFont12n,1400)
 nLin += 30
 
 Fatura()
@@ -105,20 +118,22 @@ nLin += 20
 
 CabecItem()  
 
-While SD2->(!Eof()) .and. SD2->D2_FILIAL = xFilial("SD2") .and. SD2->D2_DOC = SF2->F2_DOC .and. SD2->D2_SERIE = SF2->F2_SERIE
+//While SD2->(!Eof()) .and. SD2->D2_FILIAL = xFilial("SD2") .and. SD2->D2_DOC = SF2->F2_DOC .and. SD2->D2_SERIE = SF2->F2_SERIE
+
+While QRYSD2->(!Eof()) .and. QRYSD2->D2_FILIAL = xFilial("SD2") .and. QRYSD2->D2_DOC = SF2->F2_DOC .and. QRYSD2->D2_SERIE = SF2->F2_SERIE
 	//Posiciona no produto
-	SB1->(dbSeek(xFilial("SB1")+SD2->D2_COD))
+	SB1->(dbSeek(xFilial("SB1")+QRYSD2->D2_COD))
 	
 	// tiago Santos
-	SB5->(dbSeek(xFilial("SB5")+SD2->D2_COD))
-	nTotal+= SD2->D2_TOTAL
+	SB5->(dbSeek(xFilial("SB5")+QRYSD2->D2_COD))
+	nTotal+= QRYSD2->D2_TOTAL
 
 	//Verifica a quebra de página
 	GetNewPage()
 
 	//Imprime o item	
 	ImpItem()
-	SD2->(dbSkip())
+	QRYSD2->(dbSkip())
 
 End
 
@@ -270,7 +285,12 @@ else
 endif
 nLinAux += 30   
 if lNormal
-	oPrint:Say(nLinAux,nColSep+10,"CNPJ: "+Transform(SA1->A1_CGC,"@R 99.999.999/9999-99")+" I.E.: "+SA1->A1_INSCR,oFont12,1400)
+	if SA1->A1_PESSOA =='F'
+		cTexto := "CPF: "+ Transform(SA1->A1_CGC,"@R 999.999.999-99")
+	else
+		cTexto := "CNPJ: "+ Transform(SA1->A1_CGC,"@R 99.999.999/9999-99")
+	Endif
+	oPrint:Say(nLinAux,nColSep+10, cTexto +" I.E.: "+SA1->A1_INSCR,oFont12,1400)
 else
 	oPrint:Say(nLinAux,nColSep+10,"CNPJ: "+Transform(SA2->A2_CGC,"@R 99.999.999/9999-99")+" I.E.: "+SA2->A2_INSCR,oFont12,1400)
 endif
@@ -347,9 +367,11 @@ Local nTamLinha:= 50
 oPrint:Box(nLin,nCol,nLin+50,nCol+nLimite)
 nLin += 30
 nColAux+=10
-oPrint:Say(nLin,nColAux+10,SD2->D2_ITEM,oFont12,1400)
+//oPrint:Say(nLin,nColAux+10,SD2->D2_ITEM,oFont12,1400)
+oPrint:Say(nLin,nColAux+10,QRYSD2->D2_ITEM,oFont12,1400)
 nColAux+=100
-oPrint:Say(nLin,nColAux+10,SD2->D2_COD,oFont12,1400)
+//oPrint:Say(nLin,nColAux+10,SD2->D2_COD,oFont12,1400)
+oPrint:Say(nLin,nColAux+10,QRYSD2->D2_COD,oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=300
 //oPrint:Say(nLin,nColAux+10,SB1->B1_DESC,oFont12,1400)
@@ -360,14 +382,17 @@ nColAux+=1300
 oPrint:Say(nLin,nColAux+10,SB1->B1_FABRIC,oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=400
-oPrint:Say(nLin,nColAux+10,cvaltochar(SD2->D2_QUANT),oFont12,1400)
+//oPrint:Say(nLin,nColAux+10,cvaltochar(SD2->D2_QUANT),oFont12,1400)
+oPrint:Say(nLin,nColAux+10,cvaltochar(QRYSD2->D2_QUANT),oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=130
-oPrint:Say(nLin,nColAux+10,Transform(SD2->D2_PRCVEN,PesqPict("SD2","D2_TOTAL")),oFont12,1400)
+//oPrint:Say(nLin,nColAux+10,Transform(SD2->D2_PRCVEN,PesqPict("SD2","D2_TOTAL")),oFont12,1400)
+oPrint:Say(nLin,nColAux+10,Transform(QRYSD2->D2_PRCVEN,PesqPict("SD2","D2_TOTAL")),oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 nColAux+=350
 nColtot:= nColAux
-oPrint:Say(nLin,nColAux+10,Transform(SD2->D2_TOTAL,PesqPict("SD2","D2_TOTAL")),oFont12,1400)
+//oPrint:Say(nLin,nColAux+10,Transform(SD2->D2_TOTAL,PesqPict("SD2","D2_TOTAL")),oFont12,1400)
+oPrint:Say(nLin,nColAux+10,Transform(QRYSD2->D2_TOTAL,PesqPict("SD2","D2_TOTAL")),oFont12,1400)
 oPrint:Line(nLinAux,nColAux,nLinAux+nTamLinha,nColAux)
 
 nLin:= nLinAux+nTamLinha
@@ -640,11 +665,11 @@ nLin:= nLinAux+nTamLinha
 Return
 
 static function AssinatDig(cArquivo)
-//oPrint:Box(2052,nCol+1500, MAXBOXV+52, nLimite)
-MSGRun("Assinando arquivo PDF de Nota de Débito","Processando...", {|| ;
-	u_Sign(cArquivo, alltrim(MV_PAR03) ,alltrim(MV_PAR04) ) })
-Return 
+local cComando := " -llx 490 -lly 11 -urx 805 -ury 90 -pg 2  -d "
 
+MSGRun("Assinando arquivo PDF de Nota de Débito","Processando...", {|| ;
+	u_Sign(cArquivo, alltrim(MV_PAR03) ,alltrim(MV_PAR04),cComando ) })
+Return 
 
 Static Function AssiNBox()
 oPrint:Box(nLin,nCol+1600,MAXBOXV+50,nCol+nLimite)
