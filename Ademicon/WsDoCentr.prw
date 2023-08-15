@@ -1903,7 +1903,9 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
                 endif
 
 		//		Conout(cNaturez)
-
+				conout('testando Type("oTitPg:E2_XPROCES")<> "U" ')
+				//cProces := iif(Type("oTitPg:E2_XPROCES")<> "U" ,oTitPg:E2_XPROCES , '' )
+	
 				//Prepara o array para o execauto
 				aVetSE2 := {}
 				// aadd(aVetSE2, {"E2_FILIAL" , cFilTit                , Nil})
@@ -1925,6 +1927,7 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSE2, {"E2_ITEMD"  , cE2_ITEMD        , Nil})
 				aadd(aVetSE2, {"E2_CLVLDB" , cE2_CLVLDB       , Nil})
 				aadd(aVetSE2, {"E2_IDFLUIG" , oTitPg:E2_IDFLUIG       , Nil})
+				aadd(aVetSE2, {"E2_XPROCES" , cProces       , Nil})
 
 				//Chama a rotina automática
 				lMsErroAuto := .F.
