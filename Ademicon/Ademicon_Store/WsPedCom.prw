@@ -315,7 +315,7 @@ WSSTRUCT oTitPg
 		WSDATA E2_ITEMD   as String optional
 		WSDATA E2_CLVLDB  as String optional
 		WSDATA E2_IDFLUIG  as String
-
+		WSDATA E2_XPROCES  as String optional
 
 ENDWSSTRUCT
 
@@ -338,7 +338,7 @@ WSSTRUCT oTitPr
 		WSDATA E1_CLVLDB  as String optional
 		WSDATA E1_CLVLCR  as String optional
 		WSDATA E1_IDFLUIG  as String
-		WSDATA E1_XPROCES  as String
+		WSDATA E1_XPROCES  as String optional
 		
 ENDWSSTRUCT
 
@@ -1708,7 +1708,8 @@ WSMETHOD BuscarClienteS WSRECEIVE cCnpj WSSEND aConsultas WSSERVICE FluigProtheu
 	::aConsultas := WSClassNew("oConsultas")
 	::aConsultas:Itens := {}
 
-	cQuery := "Select A1_COD, A1_LOJA, A1_NOME, A1_MSBLQL"
+	//cQuery := "Select A1_COD, A1_LOJA, A1_NOME, A1_MSBLQL"
+	cQuery := "Select * "
 	cQuery += "from "+RetSqlName('SA1')+" A1 "
 	cQuery += "where A1_MSBLQL<>'1'  "
 	If !Empty(::cCnpj)
@@ -1981,7 +1982,8 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
 
 				//Prepara o array para o execauto
 				aVetSE2 := {}
-				cProc := Iif (Type("oTitPr:E2_XPROCES")<> "U",oTitPr:E2_XPROCES,"")
+				cProc := Iif (Type("oTitPg:E2_XPROCES")<> "U",oTitPg:E2_XPROCES,"")
+				conOut(oTitPg:E2_XPROCES)
 				// aadd(aVetSE2, {"E2_FILIAL" , cFilTit                , Nil})
 				aadd(aVetSE2, {"E2_NUM"    , oTitPg:E2_NUM          , Nil})
 				aadd(aVetSE2, {"E2_PREFIXO", oTitPg:E2_PREFIXO      , Nil})
@@ -2001,7 +2003,7 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSE2, {"E2_ITEMD"  , cE2_ITEMD        , Nil})
 				aadd(aVetSE2, {"E2_CLVLDB" , cE2_CLVLDB       , Nil})
 				aadd(aVetSE2, {"E2_IDFLUIG" , oTitPg:E2_IDFLUIG       , Nil})
-
+				aadd(aVetSE2, {"E2_XPROCES" , cProc      , Nil})
 				//Chama a rotina automática
 				lMsErroAuto := .F.
 				lAutoErrNoFile := .T.
