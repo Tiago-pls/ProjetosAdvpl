@@ -1,0 +1,572 @@
+#Include 'Protheus.ch'
+#Include 'FWMVCDef.CH'
+
+
+/*/{Protheus.doc} AEST101X
+Função generica para verificar se a Empresa logada irá efetuar endereçamento automático na classificação na Pré-Nota
+@type function
+@author Mario L. B. Faria
+@since 22/08/2022
+@return logical, .T. ou .F.
+/*/
+User Function AEST101X()
+
+    Local lRet  as Logical
+    Local cEmpRes  as Character
+
+    lRet := .T.
+    cEmpRes := SuperGetMv("MV_XEMPRES",.F.,"09")
+
+    If !(cEmpAnt $ cEmpRes)
+        lRet := .F.
+    EndIf 
+
+Return lRet
+
+/*/{Protheus.doc} AEST101F
+FUnção generica para verificar se a Filial logada irá efetuar o processo customizado
+@type function
+@author Claudio Bozzi
+@since 22/12/2022
+@return logical, .T. ou .F.
+/*/
+User Function AEST101F()
+
+    Local lRet      as Logical
+    Local cFilRes   as Character
+
+    lRet := .T.
+    cFilRes := SuperGetMv("MV_XFILIAL",.F.,"090101")
+
+    If ! (cFilAnt $ cFilRes)
+        lRet := .F.
+    EndIf 
+
+Return lRet
+
+/*/{Protheus.doc} AEST101A
+Seleciona os Itens de PV para liberar conforme quantidade classificada
+@type function  
+@author Mario L. B. Faria
+@since 22/08/2022
+/*/
+User Function AEST101A(aDados)
+
+    Local cAlRes    as Character
+    Local cAlSD1    as Character
+    Local cQuery    as Character
+    Local nRecReg   as Numeric
+    Local nSaldo    as Numeric
+    Local nQtdEnd   as Numeric
+    Local nQtdProc  as Numeric
+    Local nQtdAtu   as Numeric
+    Local aIteAux   as Array
+    Local aLinha    as Array
+
+    Local nOpcPre   as Numeric
+	Local cNota 	as Character
+	Local cSerie 	as Character
+	Local cCodFor 	as Character
+	Local cLojFor 	as Character
+	Local cTipo 	as Character
+
+    Local lProcZZ1  as Logical
+    Local nRecZZ1   as Numeric
+
+    nOpcPre     := aDados[01]
+    cNota 	    := aDados[02]
+    cSerie 	    := aDados[03]
+    cCodFor  	:= aDados[04]
+    cLojFor 	:= aDados[05]
+    cTipo 	    := aDados[06]
+
+    aIteAux := {}
+
+    If (nOpcPre == 3 .Or. nOpcPre == 4) .And. SF1->F1_TIPO == "N"
+
+        SF1->(DbsetOrder(1))
+        SF1->(DbGoTop())
+        SF1->(DbSeek(xFilial("SF1") + cNota + cSerie + cCodFor + cLojFor + cTipo))
+
+        nRecReg := 0
+
+        nSaldo  := 0
+        nQtdEnd := 0
+
+        cQuery := " SELECT  " + CRLF
+        cQuery += "     D1_COD, D1_ITEM, SUM(D1_QUANT) QTD, D1_ORDEM, " + CRLF
+        cQuery += "     B1_LOCPAD, ZZE_ENDERE " + CRLF
+        cQuery += " FROM  " + RetSqlName("SD1") + " SD1 " + CRLF
+        cQuery += " INNER JOIN " + RetSqlName("SB1") + " SB1 ON " + CRLF
+        cQuery += "         B1_FILIAL  = '" + xFilial("SB1") + "' " + CRLF
+        cQuery += "     AND B1_COD     = D1_COD " + CRLF
+        cQuery += "     AND B1_LOCALIZ = 'S' " + CRLF
+        cQuery += "     AND SB1.D_E_L_E_T_ = ' ' " + CRLF
+        cQuery += " INNER JOIN " + RetSqlName("ZZE") + " ZZE ON " + CRLF
+        cQuery += "         ZZE_FILIAL  = '" + xFilial("ZZE") + "' " + CRLF
+        cQuery += "     AND ZZE_PRODUT  = D1_COD " + CRLF
+        cQuery += "     AND ZZE.D_E_L_E_T_ = ' ' " + CRLF
+        cQuery += " WHERE " + CRLF
+        cQuery += "         D1_FILIAL  = '" + xFilial("SD1") + "' " + CRLF
+        cQuery += "     AND D1_DOC     = '" + SF1->F1_DOC + "' " + CRLF
+        cQuery += "     AND D1_SERIE   = '" + SF1->F1_SERIE + "' " + CRLF
+        cQuery += "     AND D1_FORNECE = '" + SF1->F1_FORNECE + "' " + CRLF
+        cQuery += "     AND D1_LOJA    = '" + SF1->F1_LOJA + "' " + CRLF
+        cQuery += "     AND SD1.D_E_L_E_T_ = ' ' " + CRLF
+        cQuery += " GROUP BY D1_DOC, D1_COD, D1_ITEM, D1_ORDEM, B1_LOCPAD, ZZE_ENDERE " + CRLF
+
+        cQuery := ChangeQuery(cQuery)
+        cAlSD1 := MPSysOpenQuery(cQuery)
+
+        While !(cAlSD1)->(Eof()) 
+
+            nSaldo := (cAlSD1)->QTD
+
+            If Empty((cAlSD1)->D1_ORDEM)
+
+                cQuery := " SELECT " + CRLF
+                cQuery += "     C6_XDATA XDATA, C6_XHORA XHORA, SC6.R_E_C_N_O_ REC_REG, " + CRLF 
+                cQuery += "     C9_QTDLIB QTD_PROC, SC9.R_E_C_N_O_ REC_LIB, 'SC6' TIPO " + CRLF
+                cQuery += " FROM " + RetSqlName("SC6") + " SC6 " + CRLF
+                cQuery += " INNER JOIN " + RetSqlName("SC9") + " SC9 ON " + CRLF 
+                cQuery += "         C9_FILIAL = C6_FILIAL " + CRLF 
+                cQuery += "     AND C9_PEDIDO = C6_NUM " + CRLF 
+                cQuery += "     AND C9_ITEM   = C6_ITEM " + CRLF 
+                cQuery += "     AND C9_BLEST  = '02' " + CRLF 
+                cQuery += "     AND SC9.D_E_L_E_T_ = ' ' " + CRLF 
+                cQuery += " WHERE " + CRLF 
+                cQuery += "         C6_FILIAL  = '" + xFilial("SC6") + "' " + CRLF
+                cQuery += "     AND C6_PRODUTO = '" + (cAlSD1)->D1_COD + "' " + CRLF
+                cQuery += "     AND C6_XDATA  != ' ' " + CRLF 
+                cQuery += "     AND C6_XHORA  != ' ' " + CRLF 
+                cQuery += "     AND SC6.D_E_L_E_T_ = ' ' " + CRLF 
+                cQuery += " ORDER BY XDATA, XHORA " + CRLF
+
+                cQuery := ChangeQuery(cQuery)
+                cAlRes := MPSysOpenQuery(cQuery)
+
+                While !(cAlRes)->(Eof())
+
+                    If nSaldo > 0
+
+                        // Veridica se já foi processada por em outra nota
+                        nQtdAte := BsQtdProc((cAlRes)->TIPO, (cAlRes)->REC_REG)
+
+                        If nQtdAte < (cAlRes)->QTD_PROC
+                            
+                            nRecReg := (cAlRes)->REC_REG
+                            nQtdAtu := (cAlRes)->QTD_PROC - nQtdAte
+
+                            nQtdProc := nQtdAtu
+
+                            If nQtdProc > 0
+
+                                If nSaldo >= nQtdProc
+                                    nQtdEnd := nQtdProc
+                                    nSaldo -= nQtdEnd
+                                Else
+                                    nQtdEnd := nSaldo
+                                    nSaldo  := 0
+                                EndIf
+
+                                aLinha := {}
+
+                                //Dados para o Processamento
+                                aAdd(aLinha,(cAlSD1)->ZZE_ENDERE)   //[01] - Endereço
+                                aAdd(aLinha,(cAlSD1)->B1_LOCPAD)    //[02] - Armazem
+                                aAdd(aLinha,nQtdEnd)                //[03] - Quantidade
+
+                                //Dados para posicionamento
+                                aAdd(aLinha, (cAlRes)->REC_REG)     //[04] - Recno Do registro pode ser na SC6
+                                aAdd(aLinha, (cAlRes)->REC_LIB)     //[05] - Recno SC9
+                                aAdd(aLinha, (cAlRes)->TIPO)        //[06] - Tipo do registro - SC6
+                                aAdd(aLinha, (cAlSD1)->D1_COD)      //[07] - Produto
+                                aAdd(aLinha, (cAlSD1)->D1_ITEM)     //[08] - Item
+
+                                aAdd(aIteAux, aLinha)
+
+                            EndIf
+                        EndIf
+
+                    EndIf
+
+                    (cAlRes)->(DbSkip())
+
+                EndDo
+            
+                (cAlRes)->(DbCloseArea())
+            
+            EndIf
+
+            (cAlSD1)->(DbSkip())
+
+        EndDo
+        (cAlSD1)->(DbCloseArea())
+
+    EndIf
+
+    lProcZZ1 := Len(aIteAux) > 0
+    nRecZZ1  := ExistZZ1(cNota, cSerie, cCodFor , cLojFor, cTipo)
+
+    If nOpcPre == 3 .Or. nOpcPre == 4
+        If lProcZZ1
+            GravaZZ1(nOpcPre, aIteAux, nRecZZ1)
+        EndIf
+    ElseIf nOpcPre == 5
+        If nRecZZ1 > 0
+            GravaZZ1(nOpcPre, aIteAux, nRecZZ1)
+        EndIf
+        lProcZZ1 := .F.
+    EndIf
+
+    If nOpcPre == 3
+        //Impressão das etiquetas de entrada
+        u_xcom900a(3)
+    EndIf
+    
+Return
+
+
+/*/{Protheus.doc} BsQtdProc
+Busca a quantidade ja proessada para o registro SC6
+@type function 
+@author Mario L. B. Faria
+@since 14/10/2022
+@param cTipo, character, Tipo do Registro
+@param nRecReg, numeric, Numero do Recno
+@return numeric, quantidade ja processada
+/*/
+Static Function BsQtdProc(cTipo, nRecReg)
+
+    Local cAlQry    as Character
+    Local cQuery    as Character
+    Local nRet      as Numeric
+
+    cQuery := " SELECT SUM(ZZ2_QUANT) QTD_ATEN " + CRLF
+    cQuery += " FROM " + RetSqlName("ZZ2") + " ZZ2 " + CRLF
+    cQuery += " INNER JOIN " + RetSqlName("ZZ1") + " ZZ1 ON " + CRLF
+	cQuery += " 	    ZZ1_FILIAL = ZZ2_FILIAL " + CRLF
+	cQuery += "     AND ZZ1_CODIGO = ZZ2_CODIGO " + CRLF
+	cQuery += "     AND ZZ1_DOC || ZZ1_SERIE || ZZ1_FORNEC || ZZ1_LOJA || ZZ1_TIPO != '" + SF1->F1_DOC + SF1->F1_SERIE + SF1->F1_FORNECE + SF1->F1_LOJA + SF1->F1_TIPO + "' " + CRLF
+	cQuery += "     AND ZZ1.D_E_L_E_T_ = ' ' " + CRLF
+    cQuery += " WHERE " + CRLF
+    cQuery += "         ZZ2_FILIAL = '" + xFilial("ZZ2") + "' " + CRLF
+    cQuery += "     AND ZZ2_TPREG  = '" + cTipo + "' " + CRLF
+    cQuery += "     AND ZZ2_RECREG =  " + cValToChar(nRecReg) + " " + CRLF
+    cQuery += "     AND ZZ2.D_E_L_E_T_ = ' ' " + CRLF
+
+    cQuery := ChangeQuery(cQuery)
+    cAlQry := MPSysOpenQuery(cQuery)
+
+    If !(cAlQry)->(Eof())
+        nRet := (cAlQry)->QTD_ATEN
+    EndIf
+
+    (cAlQry)->(DbCloseArea())
+
+Return nRet
+
+
+/*/{Protheus.doc} AEST101B
+Função para processar aliberação de Pedidos de Venda
+@type function
+@author mario.faria
+@since 15/10/2022
+/*/
+User Function AEST101B()
+
+    Local cAlQry    as Character
+    Local cQuery    as Character
+    Local aRecnoSC9 as Array
+
+    aRecnoSC9   := {}
+
+    dbSelectArea("SC6")
+    SC6->(DbSetOrder(1))
+
+    dbSelectArea("SC9")
+    SC9->(DbSetOrder(1))
+
+    cQuery := " SELECT " + CRLF 
+    cQuery += "     ZZ2_RECREG, ZZ2_RECSC9, ZZ2_QUANT, ZZ2_ENDER " + CRLF 
+    cQuery += " FROM " + RetSqlName("ZZ1") + " ZZ1 " + CRLF 
+    cQuery += " INNER JOIN " + RetSqlName("ZZ2") + " ZZ2 ON " + CRLF 
+    cQuery += "         ZZ2_FILIAL = ZZ1_FILIAL " + CRLF 
+    cQuery += "     AND ZZ2_CODIGO = ZZ1_CODIGO " + CRLF 
+    cQuery += "     AND ZZ2_TPREG  = 'SC6' " + CRLF 
+    cQuery += "     AND ZZ2 .D_E_L_E_T_ = ' ' " + CRLF 
+    cQuery += " WHERE " + CRLF 
+    cQuery += "         ZZ1_FILIAL = '" + xFilial("ZZ1") + "' " + CRLF 
+    cQuery += "     AND ZZ1_DOC    = '" + SF1->F1_DOC + "' " + CRLF 
+    cQuery += "     AND ZZ1_SERIE  = '" + SF1->F1_SERIE + "' " + CRLF 
+    cQuery += "     AND ZZ1_FORNEC = '" + SF1->F1_FORNECE + "' " + CRLF 
+    cQuery += "     AND ZZ1_LOJA   = '" + SF1->F1_LOJA + "' " + CRLF 
+    cQuery += "     AND ZZ1_TIPO   = '" + SF1->F1_TIPO + "' " + CRLF 
+    cQuery += "     AND ZZ1.D_E_L_E_T_ = ' ' " + CRLF 
+
+    cQuery := ChangeQuery(cQuery)
+    cAlQry := MPSysOpenQuery(cQuery)
+
+    While !(cAlQry)->(Eof())
+
+        aAdd(aRecnoSC9, {;
+                            (cAlQry)->ZZ2_RECREG,;  //[01] - Recno SC6
+                            (cAlQry)->ZZ2_RECSC9,;  //[02] - Recno SC9
+                            (cAlQry)->ZZ2_QUANT,;   //[03] - Quantidade Endereçada
+                            (cAlQry)->ZZ2_ENDER;    //[04] - Endereço
+                        })
+
+        (cAlQry)->(DbSkip())
+
+    EndDo
+
+    (cAlQry)->(DbCloseArea())
+
+    If Len(aRecnoSC9) > 0
+        AEST101L(aRecnoSC9)
+    EndIf
+
+Return
+
+
+/*/{Protheus.doc} AEST101L
+Efetua a liberação do pedido de Venda
+@type function
+@author Mario L. B. Faria
+@since 22/08/2022
+@param aRecnoSC9, array, Recno da SC9 dos itens a serem liberados
+/*/
+Static Function AEST101L(aRecnoSC9)
+
+    Local aAreaSC6  as Array
+    Local aAreaSC5  as Array
+    Local aAreaSC9  as Array
+
+	Local lCredito	as Logical
+	Local lEstoque  as Logical
+	Local lAvCred   as Logical
+	Local lAvEst    as Logical
+
+    Local nX        as Numeric
+    Local nDifLib   as Numeric
+
+    aAreaSC6    := SC6->(GetArea())
+    aAreaSC5    := SC5->(GetArea())
+    aAreaSC9    := SC9->(GetArea())
+
+    lCredito	:= .F.
+    lEstoque	:= .F.
+    lAvCred	    := .T.
+    lAvEst	    := .T.
+
+    //Posições aRecnoSC9
+    //[01] - Recno SC6
+    //[02] - Recno SC9
+    //[03] - Quantidade Endereçada
+
+    For nX := 1 to Len(aRecnoSC9)
+
+        SC6->(DbGoTo(aRecnoSC9[nX,01]))
+        SC9->(DbGoTo(aRecnoSC9[nX,02]))
+        nDifLib := SC9->C9_QTDLIB - aRecnoSC9[nX,03]
+
+        //Processa a liberação do PV
+        If Empty(SC9->C9_NFISCAL)
+
+            A460Estorna()
+            SC6->(MsUnlock())
+
+            //Libera a quantidade em estoque
+            MaLibDoFat(SC6->(Recno()), aRecnoSC9[nX,03], lCredito, lEstoque, lAvCred, lAvEst, .T., Nil)
+            MaLiberOk({SC6->C6_NUM},.F.)
+
+            //Libera sem saldo de estoque para gerar o bloqueio
+            If nDifLib > 0
+                MaLibDoFat(SC6->(Recno()), nDifLib, lCredito, lEstoque, lAvCred, lAvEst, .T., Nil)
+                MaLiberOk({SC6->C6_NUM},.F.)
+            EndIf
+
+        EndIf
+
+    Next nX
+
+    RestArea(aAreaSC6)
+    RestArea(aAreaSC5)
+    RestArea(aAreaSC9)
+
+Return
+
+
+/*/{Protheus.doc} GravaZZ1
+Efetua a manutenção da ZZ1 e ZZ2
+@type function
+@author Mario L. B. Faria
+@since 14/10/2022
+@param nOpcPre, numeric, Opção de gravação da Pre Nota
+@param aIteAux, array, Dados para gerar etiqueta, ZZ1 e ZZ2
+@param nRecZZ1, numeric, Recno ZZ1
+/*/
+Static Function GravaZZ1(nOpcPre, aIteAux, nRecZZ1)
+
+	Local lRet      as Logical
+    Local nI        as Numeric
+    Local nTamGrd   as Numeric
+    Local nOpcZZ1   as Numeric
+
+	Local oModel	as Object
+	Local aCampos	as Array
+	Local nCampo    as Numeric
+
+    lRet    := .T.
+    nI      := 0
+    nTamGrd := 0
+    nOpcZZ1 := 0
+
+    aCampos := {}
+    nCampo  := 0
+
+    If nRecZZ1 == 0
+        nOpcZZ1 := MODEL_OPERATION_INSERT
+    ElseIf nRecZZ1 > 0
+        If nOpcPre == 4
+            ZZ1->(DbGoTo(nRecZZ1))
+            nOpcZZ1 := MODEL_OPERATION_UPDATE
+        ElseIf nOpcPre == 5
+            ZZ1->(DbGoTo(nRecZZ1))
+            nOpcZZ1 := MODEL_OPERATION_DELETE       
+        EndIf
+    EndIf
+
+    oModel := FWLoadModel("PLENAVENTURA_ACOM101")
+    oModel:SetOperation(nOpcZZ1)
+    oModel:Activate()
+
+    If nOpcZZ1 == MODEL_OPERATION_INSERT .Or. nOpcZZ1 == MODEL_OPERATION_UPDATE
+
+        aCampos := oModel:GetModel("MODEL_ZZ1"):GetStruct():GetFields()
+        For nCampo := 1 to Len(aCampos)
+            oModel:GetModel('MODEL_ZZ1'):GetStruct():SetProperty( aCampos[nCampo,3]	, MODEL_FIELD_WHEN	, { |oModel| .T. } )
+        Next
+
+        oModel:GetModel("MODEL_ZZ1"):SetValue('ZZ1_FILIAL'	,xFilial("ZZ1"))
+        oModel:GetModel("MODEL_ZZ1"):SetValue('ZZ1_DOC'	    ,SF1->F1_DOC)
+        oModel:GetModel("MODEL_ZZ1"):SetValue('ZZ1_SERIE'	,SF1->F1_SERIE)
+        oModel:GetModel("MODEL_ZZ1"):SetValue('ZZ1_FORNEC'	,SF1->F1_FORNECE)
+        oModel:GetModel("MODEL_ZZ1"):SetValue('ZZ1_LOJA'	,SF1->F1_LOJA)
+        oModel:GetModel("MODEL_ZZ1"):SetValue('ZZ1_TIPO'	,SF1->F1_TIPO)
+
+        aCampos := oModel:GetMOdel("MODEL_ZZ2"):GetStruct():GetFields()
+        For nCampo := 1 to Len(aCampos)
+            oModel:GetModel('MODEL_ZZ2'):GetStruct():SetProperty( aCampos[nCampo,3]	, MODEL_FIELD_WHEN	, { |oModel| .T. } )
+        Next
+
+        nTamGrd := oModel:GetModel('MODEL_ZZ2'):Length()
+
+        oModel:GetModel('MODEL_ZZ2'):SetNoInsertLine(.F.)
+        oModel:GetModel('MODEL_ZZ2'):SetNoUpdateLine(.F.)
+        oModel:GetModel('MODEL_ZZ2'):SetNoDeleteLine(.F.)
+
+        nItErro := 0
+
+        For nI := 1 To Len(aIteAux)
+
+            If (nOpcZZ1 == MODEL_OPERATION_INSERT .And. Empty(oModel:GetValue("MODEL_ZZ2","ZZ2_PRODUT"))) .Or. nI <= nTamGrd
+                oModel:GetModel('MODEL_ZZ2'):GoLine(nI)  
+            Else
+                If ( nItErro := oModel:GetModel("MODEL_ZZ2"):AddLine() ) <> nI
+                    lRet := .F.
+                    Exit
+                EndIf       
+            EndIf
+
+            If lRet
+
+                //Posições aIteAux
+                //[01] - Endereço
+                //[02] - Armazem
+                //[03] - Quantidade
+                //[04] - Recno do registro pode ser na SC6
+                //[05] - Recno SC9
+                //[06] - Tipo do registro - SC6
+                //[07] - Produto
+
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_FILIAL"	, xFIlial("ZZ1"))
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_ITEM  "	,aIteAux[nI,08])
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_PRODUT"	,aIteAux[nI,07])  
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_ENDER "	,aIteAux[nI,01])
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_ARMAZE"	,aIteAux[nI,02])
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_QUANT "	,aIteAux[nI,03])
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_RECREG"	,aIteAux[nI,04])  //recno do registro pode ser na SC6
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_RECSC9"	,aIteAux[nI,05])  //RRecno SC9    
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_TPREG "	,aIteAux[nI,06])  //Tipo do registro - SC6          
+                oModel:GetModel("MODEL_ZZ2"):LoadValue("ZZ2_RECSD1"	,0)
+
+            EndIf
+
+            If !lRet
+                Exit
+            EndIf
+
+        next
+
+    EndIf
+
+    Private lMsErroAuto		:= .F.
+    Private lMsHelpAuto		:= .T.
+    Private lAutoErrNoFile	:= .F.
+
+    If lRet 
+        lRet := oModel:VldData()
+    EndIf
+
+    If lRet
+        oModel:CommitData()
+    Else
+        aErro := oModel:GetErrorMessage()
+
+        AutoGrLog( "Id do formulário de origem:" + ' [' + AllToChar( aErro[1] ) + ']' )
+        AutoGrLog( "Id do campo de origem: " + ' [' + AllToChar( aErro[2] ) + ']' )
+        AutoGrLog( "Id do formulário de erro: " + ' [' + AllToChar( aErro[3] ) + ']' )
+        AutoGrLog( "Id do campo de erro: " + ' [' + AllToChar( aErro[4] ) + ']' )
+        AutoGrLog( "Id do erro: " + ' [' + AllToChar( aErro[5] ) + ']' )
+        AutoGrLog( "Mensagem do erro: " + ' [' + AllToChar( aErro[6] ) + ']' )
+        // AutoGrLog( "Mensagem da solução: " + ' [' + AllToChar( aErro[7] ) + ']' )
+        // AutoGrLog( "Valor atribuído: " + ' [' + AllToChar( aErro[8] ) + ']' )
+        // AutoGrLog( "Valor anterior: " + ' [' + AllToChar( aErro[9] ) + ']' )
+        DisarmTransaction()
+        MostraErro()
+
+        lRet := .F.
+    EndIf
+
+    oModel:Deactivate()
+
+Return
+
+
+/*/{Protheus.doc} ExistZZ1
+Verifica se existe a ZZ1 e qual o saldo ja processado
+@type function
+@author Mario L. B. Faria
+@since 14/10/2022
+@param cNota, character, Nota
+@param cSerie, character, Serie
+@param cCodFor, character, Fonecedor
+@param cLojFor, character, Loja
+@param cTipo, character, Tipo da Nota
+@return Numeric, Saldo ja processado
+/*/
+Static Function ExistZZ1(cNota, cSerie, cCodFor, cLojFor, cTipo)
+
+    Local nRet as Numeric
+
+    nRet := 0
+
+    ZZ1->(DbGoTop())
+    ZZ1->(DbSetOrder(2))
+    ZZ1->(DbSeek(xFilial("ZZ1") + cNota + cSerie + cCodFor + cLojFor + cTipo))
+    If ZZ1->(Found())
+        nRet := ZZ1->(Recno())
+    EndIf
+
+Return nRet

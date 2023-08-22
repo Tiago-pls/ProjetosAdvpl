@@ -38,9 +38,10 @@ PRIVATE lMsErroAuto  :=  .F.
          SD2->(DbSetOrder(8))
          If SD2->(DbSeek(SC6->C6_FILIAL+SC6->C6_NUM+SC6->C6_ITEM))
             RecLock("SD2",.F.)
-            SD2->D2_CCUSTO:=SC6->C6_XCCUSTO
-            SD2->D2_ITEMCC:=SC6->C6_XITEMCC
-            SD2->D2_CLVL  :=SC6->C6_XCLVL
+            SD2->D2_CCUSTO  :=SC6->C6_XCCUSTO
+            SD2->D2_ITEMCC  :=SC6->C6_XITEMCC
+            SD2->D2_CLVL    :=SC6->C6_XCLVL
+            SD2->D2_XPROCES :='ADEMICONSTORE'
             MsUnlock("SD2")
          EndIf
          SC6->(DbSkip())

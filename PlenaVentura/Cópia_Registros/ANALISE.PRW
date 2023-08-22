@@ -414,7 +414,8 @@ if QRX2->( !EOF())
    endif
 
    // buscar registros tabela origem
-   cQuery := "select * from " + alltrim(QRALL->TN )+ " Where "+cFilWhere +"='"+cFilBus+"' and D_E_L_E_T_ =' '"
+   //cQuery := "select * from " + alltrim(QRALL->TN )+ " Where "+cFilWhere +"='"+cFilBus+"' and D_E_L_E_T_ =' '"
+   cQuery := "select * from " + cTab+ _cEmpOri+ "0 Where "+cFilWhere +"='"+cFilBus+"' and D_E_L_E_T_ =' '"
    if select("QOR") <> 0
       QOR->( DBCLOSEAREA(  ))
    Endif

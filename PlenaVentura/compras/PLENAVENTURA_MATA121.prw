@@ -102,7 +102,7 @@ user  Function PCodInfo(nTotal,cObs)
 			if !lData
 				MsgAlert( 'Data das parcelas não podem ser menor que a data base do sistema!')
 			EndIF
-			PCodInfo()
+			u_PCodInfo()
 		EndIF
 	EndIF
 

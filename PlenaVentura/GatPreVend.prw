@@ -62,6 +62,9 @@ GdFieldPut("UB_PRCTAB",round(nValor,2) 	 ,N,aHeader,aCols)
 if nValor <> 0 .and. SUB->(FieldPos( "UB_XCALC" )) > 0
     GdFieldPut("UB_XCALC", 'S' 	 ,N,aHeader,aCols)
 Endif
+
+GdFieldPut("UB_VLRITEM"	  ,nValor * GDFIELDGET("UB_QUANT",N) 	 ,N,aHeader,aCols)
+
 RestArea(aArea)
 
 Return nValor   
