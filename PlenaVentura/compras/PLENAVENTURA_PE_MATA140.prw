@@ -343,7 +343,7 @@ Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld,nTotal, lReproce, c
 		EndiF
 	Next n1
 	aCols := {}
-	if INCLUI .or. lReproce
+	if (INCLUI  .and. cPedido =='X').or. lReproce
 		For n1 := 1 to len(aParcelas)
 			aAdd( aCols, Array(len(aHeader)+1) )
 			For n2 := 1 To Len(aHeader)
@@ -363,7 +363,7 @@ Static Function AtualizaParcelas(cCondicao, oGrid, aParcsOld,nTotal, lReproce, c
 			cParcela := MaParcela(cParcela)
 			
 		Next n1	
-	Elseif ALTERA
+	Elseif ALTERA .or. INCLUI
 		ZK1->( DbSetorder(2))
 		ZK1->( DbGotop())
 		ZK1->( DbSeek(xFilial("ZK1")+cPedido ))

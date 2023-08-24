@@ -156,6 +156,7 @@ WSSTRUCT oConsulta
     WSDATA InscricaoEst     AS String	
     WSDATA DDD              AS String	
     WSDATA Telefone         AS String	
+    WSDATA Email         AS String	
 ENDWSSTRUCT
 
 // Estrutura de consultar
@@ -1750,6 +1751,7 @@ WSMETHOD BuscarClienteS WSRECEIVE cCnpj WSSEND aConsultas WSSERVICE FluigProtheu
 		oConsulta:Situacao	:= (cAlias)->A1_MSBLQL
 		oConsulta:DDD	        := (cAlias)->A1_DDD
 		oConsulta:Telefone	    := (cAlias)->A1_TEL	
+		oConsulta:Email	    := (cAlias)->A1_EMAIL	
 
 		aAdd(::aConsultas:Itens, oConsulta)
 

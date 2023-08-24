@@ -59,6 +59,10 @@ Endif
 	trCell():New(oDados,"RATEIO"     ,"QRY",  "Valor Rateio"  ,"@E 999,999.99",20,,,"RIGHT",,"RIGHT")
 	trCell():New(oDados,"PERC"       ,"QRY",  "Percentual"  ,"@E 999,999.99",20,,,"RIGHT",,"RIGHT")
 
+
+	//TRFunction():New(oDados:Cell("RATEIO"),/* cID */,"SUM",/*oBreak*/,/*cTitle*/,/*cPicture*/,/*uFormula*/,/*lEndSection*/,.T./*lEndReport*/,/*lEndPage*/)
+	TRFunction():New(oDados:Cell("RATEIO"),,"SUM",,"Total Geral",,,.F.,.T.,.F.,oDados)
+
 	// Total de Funcionários por Filial
 
 	//oBreak := TRBreak():New(oDados,oDados:Cell("FILIAL"),"TOTAL: "  )

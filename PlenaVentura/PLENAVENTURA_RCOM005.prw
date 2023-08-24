@@ -71,6 +71,8 @@ oSection1:SetHeaderBreak()
 	TRCell():New(oSection1,"LIQUIDO"    , "SE2", "Valor Liquido")	
 	TRCell():New(oSection1,"Y1_NOME"    , "SY1", "Comprador")
 	TRCell():New(oSection1,"F1_P1VENC"  , "QRY", "Vencimento")
+	TRCell():New(oSection1,"F1_USERLGI"  , "QRY", "Usuario Inclusão")
+	TRCell():New(oSection1,"F1_USERLGA"  , "QRY", "Usuario Alteração")
 
 	//TRFunction():New(oSection1:Cell("F1_DOC"),,"COUNT",,"QUANTIDADE",,,.F.,.T.,.F.,oSection1)
 	//TRFunction():New(oSection1:Cell("LIQUIDO"),,"SUM",,"VALOR TOTAL",,,.F.,.T.,.F.,oSection1)
@@ -99,6 +101,13 @@ If Select("QRY")>0
 Endif
 cQry := MontaQry()
 TcQuery cQry New Alias "QRY"                          
+
+if select("SF1") == 0
+	DbSelectArea("SF1")
+Endif
+//F1_FILIAL+F1_FORNECE+F1_LOJA+F1_DOC
+SF1->( dbSetOrder(2))
+
 
 TCSetField("QRY","F1_DTDIGIT","D",8,0)  
 TCSetField("QRY","F1_EMISSAO","D",8,0)  
@@ -154,8 +163,10 @@ If QRY->(!Eof())
 		oSection1:Cell("Y1_NOME"):setValue( Alltrim(cComprador))
 		oSection1:Cell("F1_EMISSAO"):setValue(QRY->F1_EMISSAO)
 		oSection1:Cell("F1_DTDIGIT"):setValue(QRY->F1_DTDIGIT)
-		oSection1:Cell("F1_SERIE"):setValue(QRY->F1_SERIE)
-		
+		oSection1:Cell("F1_SERIE"):setValue(QRY->F1_SERIE)		
+		SF1->( DbSeek( QRY->(F1_FILIAL+F1_FORNECE+F1_LOJA+F1_DOC)))
+		oSection1:Cell("F1_USERLGI"):setValue(FWLeUserlg("F1_USERLGI"))
+		oSection1:Cell("F1_USERLGA"):setValue(FWLeUserlg("F1_USERLGA"))
   		oSection1:PrintLine()
 		
 		cLenSED :=cValtoChar(len(alltrim(xFilial("SED"))) )		
@@ -165,10 +176,14 @@ If QRY->(!Eof())
 		If Select("QRI")>0         
 			QRI->(dbCloseArea())
 		Endif
+		nTotal :=0
 		TcQuery cQuery New Alias "QRI" 
+		Count To nTotal
 		TCSetField("QRI","E2_VENCREA","D",8,0) 
+		QRI->(dbGotop())
+
 		nConta := 0
-		While QRI->(!Eof())		
+		While QRI->(!Eof()) .and. nTotal >1 // imprimir somente as parcelas que forem mariores que 1 lançamento
 			nConta += 1
 			oSection1:Cell("F1_FILIAL"):setValue(QRI->E2_FILIAL)
 			oSection1:Cell("F1_FORNECE"):setValue(QRI->E2_FORNECE)
@@ -209,7 +224,7 @@ If QRY->(!Eof())
 			oSection1:PrintLine()
 			QR2->( DbSkip())
 		Enddo
-		oSection1:Cell("F1_FILIAL"):SetValue(' ')
+	/*	oSection1:Cell("F1_FILIAL"):SetValue(' ')
 		oSection1:Cell("F1_FORNECE"):setValue(' ')
 		oSection1:Cell("F1_LOJA"):setValue(' ')
 		oSection1:Cell("F1_P1VENC"):setValue(' ')
@@ -219,6 +234,8 @@ If QRY->(!Eof())
 		oSection1:Cell("F1_DTDIGIT"):setValue(' ')
 		oSection1:Cell("F1_SERIE"):setValue(' ')
 		oSection1:Cell("CC"):setValue(' ')
+		oSection1:Cell("F1_USERLGI"):setValue(' ')
+		oSection1:Cell("F1_USERLGA"):setValue(' ')*/
 	
 		oSection1:Cell("NOME"):setValue('* Total Imposto')
 		oSection1:Cell("LIQUIDO"):setValue(nTotal)
@@ -266,7 +283,7 @@ Return
 static Function MontaQry ()                                   
 Local cQuery := " " 
 
-cQuery += "	SELECT F1_FILIAL, F1_EMISSAO, F1_DTDIGIT, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_VALBRUT,F1_TIPO,  F1_PREFIXO, F1_IRRF, F1_VALPIS, F1_VALCOFI, F1_VALCSLL,  F1_P1VENC"+ cLFRC
+cQuery += "	SELECT F1_FILIAL, F1_EMISSAO, F1_DTDIGIT, F1_DOC, F1_SERIE, F1_FORNECE, F1_LOJA, F1_VALBRUT,F1_TIPO,  F1_PREFIXO, F1_IRRF, F1_VALPIS, F1_VALCOFI, F1_VALCSLL,  F1_P1VENC, F1_USERLGI, F1_USERLGA"+ cLFRC
 cQuery += "	FROM " + RetSqlName('SF1') +" SF1"+ cLFRC
 cQuery += " Where F1_DOC >= '" +MV_PAR01+ "'"+ cLFRC
 cQuery += "	     AND F1_DOC <= '" + MV_PAR02 + "'"      + cLFRC

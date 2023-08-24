@@ -3,7 +3,7 @@
 #Include "TBICONN.CH"
 #INCLUDE 'TOPCONN.CH'
 
-user function Del418
+user function VB418
 aArea := GetArea()
 
 SRK->(dbSetOrder(3))//RK_FILIAL+RK_MAT+RK_PERINI+RK_NUMPAGO
