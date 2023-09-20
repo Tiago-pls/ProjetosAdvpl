@@ -61,7 +61,7 @@ While !FT_FEOF()
 	If lPrim
 		lPrim := .F.
 	Else  		  
-		nQtd += gravaBH( Separa( cLinha,";",.T.))                                                  
+		nQtd += GravaVal( Separa( cLinha,";",.T.))                                                  
 	EndIf
 		
 	FT_FSKIP()
