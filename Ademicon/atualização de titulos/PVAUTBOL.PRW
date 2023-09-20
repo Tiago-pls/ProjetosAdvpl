@@ -21,7 +21,7 @@ Função para geração de borderô D-1 contas a receber
 @return variant, return_description
 /*/
 
-User Function PVAUTOBOL(cEmpT, cFilialT) 
+User Function AUTOBOL(aTit) 
     //Trava rotina para ser executada somente por um agente
     If !LockByName("GRBORAUT",.T.,.F.)
         Conout("[GRBORAUT] - Rotina está sendo executada, execução cancelada. . ")
@@ -30,22 +30,19 @@ User Function PVAUTOBOL(cEmpT, cFilialT)
         If LockByName("GRBORAUT",.T.,.F.)
             Conout("[GRBORAUT] - Rotina está sendo executada, execução cancelada. . ")
             dbSelectArea("SA1")
-            //If Fieldpos("A1_ZRECBOL") > 0 
             IF Len(strtokarr(SuperGetMv("AD_BCOBOL",.F.),';')) > 1
                 conout("[GRBORAUT] - INICIO - "  + AllTrim(DtoS(Date())) + " | " + TIME())
-                GRBORAUT()
+                GRBORAUT(aTit)
                 conout("[GRBORAUT] - FIM - "     + AllTrim(DtoS(Date())) + " | " + TIME())
             EndIF
-            //EndIF
             UnLockByName("GRBORAUT",.T.,.F.)	    
         Endif
         RPCClearEnv()
-       // Next nI
     EndIF
 Return
 
 
-Static Function GRBORAUT(aParam)
+Static Function GRBORAUT( aTitulos)
     Local cTmp := "TMPBOR"
     Local aTit := {} 
     Local aBor := {}
@@ -84,6 +81,17 @@ Static Function GRBORAUT(aParam)
     cAgencia    := PadR(_aBCO[2] ,TamSX3("A6_AGENCIA")[1]) 
     cConta      := PadR(_aBCO[3] ,TamSX3("A6_NUMCON")[1])
     cArqConf    := _aBCO[4] // Arquivo de configuração
+    cTitulo :=""
+	For nCont := 1 to Len(aTitulos[3]) 
+		if nCont  <> 1
+			cTitulo += "'" 
+		Endif
+		cTitulo += aTitulos[3,nCont] +"',"
+	Next nCont
+	cTitulo := Left(cTitulo, len(cTitulo) -2 )
+	
+
+
 
     /*
     Gerar borderô
@@ -118,13 +126,13 @@ Static Function GRBORAUT(aParam)
         FROM %table:SE1% SE1
         INNER JOIN %TABLE:SA1% SA1 ON A1_FILIAL = %xFilial:SA1% AND A1_COD = E1_CLIENTE AND A1_LOJA = E1_LOJA AND SA1.D_E_L_E_T_ = ' '
         WHERE 
-        E1_FILIAL = %xFilial:SE1% AND 
-        E1_EMIS1 = %Exp:dDataMov% AND
+        E1_FILIAL =(%exp:  aTitulos[1]%) AND
+        E1_NUM in (%exp: cTitulo %) AND
         E1_NUMBOR = ' ' AND
         E1_SALDO > 0 AND 
         E1_BAIXA = ' ' AND 
-        E1_TIPO = 'NF' AND
-        A1_ZRECBOL = '1' AND 
+        E1_TIPO = 'DP' AND
+        SubString(E1_VENCREA,1,6) = (%exp: aTitulos[2] %) AND
         SE1.D_E_L_E_T_ = ' '
         ORDER BY E1_FILIAL,E1_NUM, E1_PARCELA, E1_PREFIXO, E1_CLIENTE, E1_LOJA, E1_EMISSAO
     EndSQL
@@ -157,17 +165,7 @@ Static Function GRBORAUT(aParam)
         WriteLog(" Data de referência : " + Dtoc(Stod(dDataMov)))
         //RETURN(.F.)
     else
-    
-        /*
-        Pegar numero do borderô
 
-        I22F31 - Banco/Ano/Mês/Dia
-        S22F31 - Banco/Ano/Mês/Dia
-
-        char(1) 
-        char(2)
-        converter
-        */
         //Informações bacárias para o borderô
         SA6->(DbSetOrder(1))
         SEA->(DbSetOrder(1))
@@ -340,6 +338,7 @@ User Function Mail033(cTipo,cDest,cAssunto,cMsg,_cAnexo,_cNome)
    
         oProcAprov := TWFProcess():New('MAILWF','Workflow SMS')
         oProcAprov:cSubject := cAssunto
+        //oProcAprov:NewTask('WFOK','\WORKFLOW\MAILWF.HTM')
         oProcAprov:NewTask('WFOK',cDirWF+'MAILWF.HTM')
         oProcAprov:cTo := cDest
         oProcAprov:cCC := ""
@@ -573,14 +572,22 @@ Static Function GeraArq(dDataMov)
     MV_PAR05    := cBanco   
     MV_PAR06    := cAgencia
     MV_PAR07    := cConta
-
+    MV_PAR08    := "000"
+    MV_PAR12    :="ZZZZZZ"
 
     cUpdate += "UPDATE "+ RetSqlName("SEA")+ " SET EA_TRANSF = ' '"
     cUpdate += " WHERE EA_NUMBOR = '"+cNumBor+"'"
     cUpdate += " AND D_E_L_E_T_ = ' '"
     cUpdate += " AND EA_FILIAL = '"+xFilial("SEA")+"'"
 
+
+    if select("SEE") ==0
+        DBSELECTAREA( "SEE" )
+    Endif
+
     TcSqlExec(cUpdate) // Atualiza borderô se o mesmo já foi gerado, foi criado para não deixar a mensagem em tela
+
+    nTecla :=nil // tratamento errorlog
 
     fa150Gera("SE1") //Gera arquivo grava nos parametros de rotina: 
 
@@ -598,3 +605,17 @@ Static Function GeraArq(dDataMov)
     endif
     
 Return 
+
+
+user function testCNAB()
+RPCSetType(3)
+RPCSetEnv('05', '050101' ) 
+PREPARE ENVIRONMENT EMPRESA '05' FILIAL '050101' TABLES 'SA1','SE1','SE5','SED','SEE'
+aTit :={}
+Aadd(aTit, '050101') // Filial
+Aadd(aTit, '202309') // Competencia
+aTitulos :={'000034593'}
+Aadd(aTit, aTitulos)
+u_AUTOBOL(aTit )
+ RPCClearEnv()
+return

@@ -14,7 +14,7 @@ Local dPerFim		:= Ctod("//")
 Local cLastFil      := xFilial("SRA")
 Local lPerCompleto	:= .F.
 checkPonMes( @dPerIni , @dPerFim , NIL , NIL , .T. , cLastFil , NIL , @lPerCompleto )
-dPerFim +=1
+
 DbSelectArea("SPB") 
 SPB->(DbSetorder(1))
 SPB->( DbGotop() ) 
@@ -43,16 +43,32 @@ SPB->( DbGotop() )
 // verificar se é o fechamento mensal ou semestral
 if lFechMensal
 	IF nSaldo < 0 // desconto
+
+		nSaldo := nSaldo * -1
+		nSaldo := round(int (nSaldo) + (nsaldo - int(nSaldo) ) /100 * 60,2)
 		RecLock("SPI",.t.)
 			SPI->PI_FILIAL := SRA->RA_FILIAL
 			SPI->PI_MAT    := SRA->RA_MAT
-			SPI->PI_DATA   := nDtSaldo
-			SPI->PI_PD     := "388"
+			SPI->PI_DATA   := dPerFim
+			SPI->PI_PD     := "302"
 			SPI->PI_CC     := SRA->RA_CC //POSICIONE("SRA",13,SRA->RA_MAT+SRA->RA_FILIAL,"RA_CC")
-			SPI->PI_QUANT  := nSaldo
+			SPI->PI_QUANT  := nSaldo 
 			SPI->PI_QUANTV := nSaldo
 			SPI->PI_FLAG   := "I"
 		MsUnLock()
+	else // ha valores positivos a serem pagos em folha
+		RecLock("SPB",.t.)
+			SPB->PB_FILIAL := SRA->RA_FILIAL
+			SPB->PB_MAT    := SRA->RA_MAT
+			SPB->PB_PD     := '119'
+			SPB->PB_TIPO1  := 'H'
+			SPB->PB_TIPO2  := "I"
+			SPB->PB_HORAS  := nSaldo
+			SPB->PB_DATA   := dPerFim -1
+			SPB->PB_CC     := SRA->RA_CC
+		SPB->(MsUnlock())
+
+		
 	endif
 else
 	IF nSaldo < 0 // desconto
@@ -87,5 +103,5 @@ endif
 Return	
 
 user function PNM080CPOS
-public lFechMensal := 	MsgYesNo("Deseja realizar o fechamento mensal", "Atencao")
+public lFechMensal := 	MsgYesNo("Deseja realizar o fechamento mensal BH", "Atencao")
 return

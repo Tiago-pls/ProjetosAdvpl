@@ -19,7 +19,7 @@ Função ANALISE
 
 Static cPict        := ""
 
-User Function ANALISE()            
+User Function CptTables()            
 Local oDlgMain    
 Local aArea          := GetArea()
 Local oNoMarked      := LoaDBitmap( GetResources(), "LBNO" )

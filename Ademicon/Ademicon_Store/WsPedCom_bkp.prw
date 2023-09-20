@@ -40,7 +40,7 @@ WSSERVICE FluigProtheus DESCRIPTION 'Fluig x Protheus - Workflow'
 	WSDATA oTitPr				    AS oTitPr
 	WSDATA oCliente				    AS oCliente
 	WSDATA oPedVenda			    AS oPedVenda
-
+	WSDATA oTitulo				    AS oTitulo
 
 	WSDATA cCodigo					AS String
 	WSDATA cStatus					AS String
@@ -91,7 +91,7 @@ WSSERVICE FluigProtheus DESCRIPTION 'Fluig x Protheus - Workflow'
    	WSMETHOD GerarPV				    DESCRIPTION 'Cadastrar Pedido de Venda'
 	WSMETHOD FaturarPV				    DESCRIPTION 'Faturar Pedido de Venda'
 	WSMETHOD ProdutosEstoque    		DESCRIPTION 'Dados Produtos com Estoque'																		   	  
-
+	WSMETHOD AtualizarTitulos			DESCRIPTION 'Atualizar Titulos'
 ENDWSSERVICE
 
 // Estrutura de Aprovação
@@ -156,6 +156,7 @@ WSSTRUCT oConsulta
     WSDATA InscricaoEst     AS String	
     WSDATA DDD              AS String	
     WSDATA Telefone         AS String	
+    WSDATA Email         AS String	
 ENDWSSTRUCT
 
 // Estrutura de consultar
@@ -291,8 +292,8 @@ ENDWSSTRUCT
 WSSTRUCT oItemNF
 	WSDATA Codigo			AS String
 	WSDATA Quantidade		AS Float
-	WSDATA Unitario			AS String
-	WSDATA Total			AS String
+	WSDATA Unitario			AS Float
+	WSDATA Total			AS Float
 	WSDATA CentroCusto		AS String
 
 ENDWSSTRUCT
@@ -315,7 +316,7 @@ WSSTRUCT oTitPg
 		WSDATA E2_ITEMD   as String optional
 		WSDATA E2_CLVLDB  as String optional
 		WSDATA E2_IDFLUIG  as String
-
+		WSDATA E2_XPROCES  as String optional
 
 ENDWSSTRUCT
 
@@ -338,7 +339,7 @@ WSSTRUCT oTitPr
 		WSDATA E1_CLVLDB  as String optional
 		WSDATA E1_CLVLCR  as String optional
 		WSDATA E1_IDFLUIG  as String
-		WSDATA E1_XPROCES  as String
+		WSDATA E1_XPROCES  as String optional
 		
 ENDWSSTRUCT
 
@@ -366,6 +367,7 @@ WSSTRUCT oCliente
 		WSDATA A1_CODPAIS as String optional
 		WSDATA A1_CBAIRRE as String
 		WSDATA A1_NATUREZ as String optional
+		WSDATA A1_EMAIL   as String optional
 
 ENDWSSTRUCT
 
@@ -420,6 +422,14 @@ WSSTRUCT oProdutoEstoque
 	WSDATA B5_ALTURA      	AS String
 	WSDATA B5_COMPR     	AS String
 	WSDATA B5_LARG     	AS String
+ENDWSSTRUCT
+
+WSSTRUCT oTitulo
+
+    WSDATA Processo   as String
+    WSDATA Taxa       as Float
+    WSDATA AnoMes     as String
+
 ENDWSSTRUCT
 
 //FIM
@@ -1506,10 +1516,6 @@ WSMETHOD GerarNF WSRECEIVE oDocEntr WSSEND cCodigo WSSERVICE FluigProtheus
 
 	PRIVATE lMsErroAuto := .F.
 	Conout("GERARNF - Gerar Nota Fiscal de Entrada...")
-
-	Conout("GERARNF - Gerar Nota Fiscal de Entrada..."+varInfo("oDocEntr",oDocEntr, , .f., .f.))
-
-
 	BEGIN TRANSACTION
 
 		cFilAnt 		:= "010101"//oDocEntr['Filial']
@@ -1565,8 +1571,6 @@ WSMETHOD GerarNF WSRECEIVE oDocEntr WSSEND cCodigo WSSERVICE FluigProtheus
 
 			oItemNF := WSClassNew("oItemNF")
 
-			Conout("GERARNF - Gerar itens ..."+varInfo("oItemNF",oItemNF, , .f., .f.))
-
 			aItemD1 := {}
 			aItemD1 := oDocEntr['Itens']
 			oItemNF := aItemD1[nI]
@@ -1579,14 +1583,14 @@ WSMETHOD GerarNF WSRECEIVE oDocEntr WSSEND cCodigo WSSERVICE FluigProtheus
 				aAdd(aLin, {"D1_ITEM"   , StrZero(nI, 4)	  , Nil})
 				aAdd(aLin, {"D1_COD"    , Alltrim(oItemNF:Codigo)     , Nil})
 				aAdd(aLin, {"D1_QUANT"  , oItemNF:Quantidade  , Nil})
-				aAdd(aLin, {"D1_VUNIT"  , val(oItemNF:Unitario)					  , Nil})//oItemNF:Unitario
-				aAdd(aLin, {"D1_TOTAL"  , val(oItemNF:Total)				       , Nil}) //oItemNF:Total
+				aAdd(aLin, {"D1_VUNIT"  , oItemNF:Unitario					  , Nil})//oItemNF:Unitario
+				aAdd(aLin, {"D1_TOTAL"  , oItemNF:Total				       , Nil}) //oItemNF:Total
 				aAdd(aLin, {"D1_TES"    , cTes    			  , Nil})
 				aAdd(aLin, {"D1_CC"		, cCentroCusto        , Nil})
 				aAdd(aLin, {"D1_ITEMCTA", "0040"        , Nil})//@Todo Validar com usuarios
 
 				aAdd(aSD1, aClone(aLin))
-				nTotal := nTotal + val(oItemNF:Total)
+				nTotal := nTotal + oItemNF:Total
 			else
 				Conout("Produto não escontrado: "+oItemNF:Codigo)
 			endif
@@ -1660,7 +1664,7 @@ Static Function BaixaPR(cForn,cLoja,nValor,cIdFlg)
 	cQuery += " AND E2.D_E_L_E_T_ = '' "
 	
 	Conout("Buscando PR no valor de "+cValtoChar(nValor))
-	Conout("Query " + cQuery)
+	
 	If SELECT("cAlias") > 0
 		cAlias->(dbCloseArea())
 	EndIf
@@ -1714,7 +1718,8 @@ WSMETHOD BuscarClienteS WSRECEIVE cCnpj WSSEND aConsultas WSSERVICE FluigProtheu
 	::aConsultas := WSClassNew("oConsultas")
 	::aConsultas:Itens := {}
 
-	cQuery := "Select A1_COD, A1_LOJA, A1_NOME, A1_MSBLQL"
+	//cQuery := "Select A1_COD, A1_LOJA, A1_NOME, A1_MSBLQL"
+	cQuery := "Select * "
 	cQuery += "from "+RetSqlName('SA1')+" A1 "
 	cQuery += "where A1_MSBLQL<>'1'  "
 	If !Empty(::cCnpj)
@@ -1746,6 +1751,7 @@ WSMETHOD BuscarClienteS WSRECEIVE cCnpj WSSEND aConsultas WSSERVICE FluigProtheu
 		oConsulta:Situacao	:= (cAlias)->A1_MSBLQL
 		oConsulta:DDD	        := (cAlias)->A1_DDD
 		oConsulta:Telefone	    := (cAlias)->A1_TEL	
+		oConsulta:Email	    := (cAlias)->A1_EMAIL	
 
 		aAdd(::aConsultas:Itens, oConsulta)
 
@@ -1987,7 +1993,8 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
 
 				//Prepara o array para o execauto
 				aVetSE2 := {}
-				cProc := Iif (Type("oTitPr:E2_XPROCES")<> "U",oTitPr:E2_XPROCES,"")
+				cProc := Iif (Type("oTitPg:E2_XPROCES")<> "U",oTitPg:E2_XPROCES,"")
+				conOut(oTitPg:E2_XPROCES)
 				// aadd(aVetSE2, {"E2_FILIAL" , cFilTit                , Nil})
 				aadd(aVetSE2, {"E2_NUM"    , oTitPg:E2_NUM          , Nil})
 				aadd(aVetSE2, {"E2_PREFIXO", oTitPg:E2_PREFIXO      , Nil})
@@ -2007,7 +2014,7 @@ WSMETHOD GerarPG WSRECEIVE oTitPg WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSE2, {"E2_ITEMD"  , cE2_ITEMD        , Nil})
 				aadd(aVetSE2, {"E2_CLVLDB" , cE2_CLVLDB       , Nil})
 				aadd(aVetSE2, {"E2_IDFLUIG" , oTitPg:E2_IDFLUIG       , Nil})
-
+				aadd(aVetSE2, {"E2_XPROCES" , cProc      , Nil})
 				//Chama a rotina automática
 				lMsErroAuto := .F.
 				lAutoErrNoFile := .T.
@@ -2567,8 +2574,9 @@ WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 				aadd(aVetSA1, {"A1_CEP"    , oCliente:A1_CEP    , Nil})
 				aadd(aVetSA1, {"A1_DDD"    , oCliente:A1_DDD    , Nil})
 				aadd(aVetSA1, {"A1_TEL"    , oCliente:A1_TEL    , Nil})
+				aadd(aVetSA1, {"A1_EMAIL"  , oCliente:A1_TEL    , Nil})
 				aadd(aVetSA1, {"A1_NATUREZ",     "OUTROS"       , Nil})
-				aadd(aVetSA1, {"A1_PESSOA",   IIF(LEN(oCliente:A1_CGC)=14,'J','F')      , Nil})
+				aadd(aVetSA1, {"A1_PESSOA" ,   IIF(LEN(oCliente:A1_CGC)=14,'J','F')      , Nil})
 
 				SA1->(dbSetOrder(1)) // A1_FILIAL + A1_COD + A1_LOJA
 				if SA1->(dbSeek(xFilial("SA1")+"XXXXXX", .t.))
@@ -2614,6 +2622,97 @@ WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 	else
 		::cCodigo := cCod +',' + cLoja
 	EndIf
+Return !lError
+
+
+WSMETHOD AtualizarTitulos WSRECEIVE oTitulo WSSEND cCodigo WSSERVICE FluigProtheus
+Local lError 	:= .T.
+Local cMens     := ""
+Local cError    := ""
+Local cFileErr  := "/dirdoc/errows_"+procname()+"_"+dtos(date())+"_"+strtran(time(),":","")+".txt"
+Local cAlias	:= GetNextAlias()
+Local cQuery	:= ''
+LOCAL aSE1      := {}
+PRIVATE lMsErroAuto := .F.
+Conout("AtualizarTitulos - "+varInfo("oTitulo",oTitulo, , .f., .f.))
+
+cQuery := " SELECT E1_FILIAL, E1_PREFIXO , E1_NUM , E1_PARCELA , E1_TIPO ,  E1_VALOR"
+cQuery += " FROM "+RetSqlName('SE1')+" SE1"
+cQuery += " WHERE SubString( E1_VENCREA, 1,6) = '" + oTitulo:AnoMes+"'"
+cQuery += " 	AND E1_SALDO <> 0 "
+cQuery += " 	AND E1_XPROCES ='"+ oTitulo:Processo+"'  "
+cQuery += " 	AND SE1.D_E_L_E_T_ = ' ' "
+cQuery += " ORDER BY E1_FILIAL, E1_NUM "
+
+conout(cQuery)
+cQuery := ChangeQuery(cQuery)
+TcQuery cQuery New Alias (cAlias)
+dbSelectArea(cAlias)
+
+While (cAlias)->(!Eof())
+
+	aArray := {(cAlias)->E1_FILIAL ,;// CAMPO POSICIONADO
+           (cAlias)->E1_PREFIXO     ,;
+           (cAlias)->E1_NUM         ,;
+           (cAlias)->E1_PARCELA     ,;
+           (cAlias)->E1_TIPO        ,;
+           (cAlias)->E1_VALOR       } // campo que vai ser alterado
+
+	AADD( aSE1, aArray )
+	(cAlias)->(dbSkip())
+EndDo
+
+if len(aSE1) <> 0
+		// Posiciona no Pedido de Compras
+	SE1->(DbSetOrder(1))
+	//E2_FILIAL+E2_PREFIXO+E2_NUM+E2_PARCELA+E2_TIPO+E2_FORNECE+E2_LOJA                                                                                               
+	SE1->(DbGotop())
+	for nCont :=1 to len (aSE1)
+		conout(varInfo("aSE2",aSE1, , .f., .f.))
+		cChave := aSE1[nCont,1]+aSE1[nCont,2]+aSE1[nCont,3] +aSE1[nCont,4]+aSE1[nCont,5]
+		if SE1->( DbSeek( cChave  ))
+			conout("Achou "+ cChave)
+			BEGIN TRANSACTION
+			nValorOri := SE1->E1_VALOR
+			RecLock("SE1", .F.)
+				SE1->E1_VALOR := SE1->E1_VALOR * oTitulo:Taxa
+			SE1->(MsUnlock())
+
+			// Gravar Histórico de Alteração de títulos
+			RecLock("ZAR", .T.)
+				ZAR_FILIAL := SE1->E1_FILIAL
+				ZAR_ANOMES := oTitulo:AnoMes
+				ZAR_TITULO := SE1->E1_NUM
+				ZAR_IDFLUI := SE1->E1_IDFLUIG
+				ZAR_CLIENT := SE1->E1_CLIENTE
+				ZAR_LOJA   := SE1->E1_LOJA
+				ZAR_NOMECL := SE1->E1_NOMCLI
+				ZAR_VLRORI := nValorOri
+				ZAR_VLRATU := SE1->E1_VALOR
+				ZAR_TAXA   :=  (oTitulo:Taxa - 1) * 100
+			ZAR->(MsUnlock())
+
+			END TRANSACTION
+			aTit :={}
+			aadd(aTit, SE1->E1_NUM)
+
+		else
+			conout("Nao Achou "+ cChave)
+		endif
+	Next nCont
+	u_PVAUTOBOL()
+
+	SE1->(DbSeek(xFilial("SC7")+AllTrim(SCR->CR_NUM)))
+Endif
+(cAlias)->(dbCloseArea())
+If lError
+	::cCodigo := "NOK"
+	cMens := "Erro ao atualizar o Titulo"
+	conout('[' + DToC(Date()) + " " + Time() + "] " + procname() + " > " + cMens + ". " + cError)
+	SetSoapFault("Erro", cError)
+else
+	::cCodigo := "YOK"
+EndIf
 Return !lError
 
 /*

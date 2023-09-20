@@ -13,9 +13,7 @@ User Function MCnt260()
 
 	Private itens := 1
 	Private campos := 2
-	Private lMsErroAuto    := .F.
-	Private lMsHelpAuto    := .T.
-	Private lAutoErrNoFile := .T.
+
 
 	Private aContratos := {}
 	Private oMark
@@ -32,7 +30,7 @@ Return
 
 static function Procs
 	//busca os contratos aptos a gerar medição
-	Local oModal
+		Local oModal
 	Local n1
 
 	Local oColumn
@@ -173,8 +171,11 @@ Return
 
 
 Static Function MCnt260Exec()
+
 	Local n1
 	Local cResult := ""
+
+	Local cMensagem := {}
 
 	//pesquisa o usuario pelo login
 	PSWOrder(2)
@@ -196,8 +197,8 @@ Static Function MCnt260Exec()
 			IncProc("Gerando medição para o contratos")
 
 			//Joga o retorno do
-			//cResult += StartJob("u_MCnt260Job",GetEnvServer(),.T.,cEmpAnt,cFilAnt,__CUSERID,aContratos[itens][n1],aContratos[campos])
-            cResult += u_MCnt260Job(cEmpAnt, cFilAnt, __CUSERID, aContratos[itens][n1],aContratos[campos])
+			cResult += StartJob("u_MCnt260Job",GetEnvServer(),.T.,cEmpAnt,cFilAnt,__CUSERID,aContratos[itens][n1],aContratos[campos])
+
 		EndIF
 
 		CNF->( dbSkip() )
@@ -206,8 +207,7 @@ Static Function MCnt260Exec()
 
 	//resultado da sincronização
 	IF !Empty(cResult)
-		/*Aviso("Medição",cResult,{"Sair"},3)	*/
-		msgalert(cresult)
+		Aviso("Medição",cResult,{"Sair"},3)
 	EndIF
 
 Return
@@ -217,12 +217,12 @@ User Function MCnt260Job(__cEmpresa, __cFilial, cCodUser, aContrato, aCampos)
 
 	Local aCnta120Cab := {}
 	Local aCnta120Itens := {}
-	Local cNumeroMedicao := {}
-	Local nSaldoQuebrado := 0
-	
-	Private cResult := ""
 
-	
+	Local cNumeroMedicao := {}
+	Local cResult := ""
+
+	Local nSaldoQuebrado := 0
+
 	//Seta job para nao consumir licensas
 	RPCSetType(3)
 
@@ -246,11 +246,15 @@ User Function MCnt260Job(__cEmpresa, __cFilial, cCodUser, aContrato, aCampos)
 	cResult := "Contrato: " + alltrim(CN9->CN9_NUMERO) + "  Planilha: " + CNA->CNA_NUMERO + CRLF
 	cResult += " - Cliente: " + SA1->(A1_COD+"/"+A1_LOJA+" "+alltrim(A1_NOME)) + CRLF
 
+
+	Private lMsErroAuto    := .F.
+	Private lMsHelpAuto    := .T.
+	Private lAutoErrNoFile := .T.
+
 	aCnta120Cab := {}
 	aCnta120Itens := {}
 
-	cNumeroMedicao := CN130NumMd() //não buscava o ultimo numero para medição no controle de licenças  - p/ renatosever 12/09/23
-	//cNumeroMedicao := GetSXENum("CND","CND_NUMMED")
+	cNumeroMedicao := CN130NumMd()
 	aAdd(aCnta120Cab,{ "CND_CONTRA", CNF->CNF_CONTRA, Nil})
 	aAdd(aCnta120Cab,{ "CND_REVISA", CNF->CNF_REVISA, Nil})
 	aAdd(aCnta120Cab,{ "CND_COMPET", CNF->CNF_COMPET, Nil})
@@ -268,23 +272,23 @@ User Function MCnt260Job(__cEmpresa, __cFilial, cCodUser, aContrato, aCampos)
 		IF CNB->CNB_SLDMED > 0
 
 			aAdd( aCnta120Itens, {})
-			aAdd( aTail(aCnta120Itens), {"CNE_ITEM"  , CNB->CNB_ITEM  , Nil})//1
-			aAdd( aTail(aCnta120Itens), {"CNE_PRODUT", CNB->CNB_PRODUT, Nil})//2
-			aAdd( aTail(aCnta120Itens), {"CNE_VLUNIT", CNB->CNB_VLUNIT, Nil})//3
+			aAdd( aTail(aCnta120Itens), {"CNE_ITEM"  , CNB->CNB_ITEM  , Nil})
+			aAdd( aTail(aCnta120Itens), {"CNE_PRODUT", CNB->CNB_PRODUT, Nil})
+			aAdd( aTail(aCnta120Itens), {"CNE_VLUNIT", CNB->CNB_VLUNIT, Nil})
 
 			//pega saldo quebrado de substituição
 			nSaldoQuebrado := CNB->CNB_SLDMED - int(CNB->CNB_SLDMED)
 			//se saldo for igual a zero. pega 1
 			IF nSaldoQuebrado  == 0
-				aAdd( aTail(aCnta120Itens), {"CNE_QUANT" , 1              , Nil})//4
-				aAdd( aTail(aCnta120Itens), {"CNE_VLTOT" , CNB->CNB_VLUNIT, Nil})//5
+				aAdd( aTail(aCnta120Itens), {"CNE_QUANT" , 1              , Nil})
+				aAdd( aTail(aCnta120Itens), {"CNE_VLTOT" , CNB->CNB_VLUNIT, Nil})
 			Else
 				//senão pega o quebrado
-				aAdd( aTail(aCnta120Itens), {"CNE_QUANT" , nSaldoQuebrado, Nil})//4
-				aAdd( aTail(aCnta120Itens), {"CNE_VLTOT" , A410Arred(nSaldoQuebrado*CNB->CNB_VLUNIT,"CNE_VLTOT"), Nil})//5
+				aAdd( aTail(aCnta120Itens), {"CNE_QUANT" , nSaldoQuebrado, Nil})
+				aAdd( aTail(aCnta120Itens), {"CNE_VLTOT" , A410Arred(nSaldoQuebrado*CNB->CNB_VLUNIT,"CNE_VLTOT"), Nil})
 			EndIF
-			aAdd( aTail(aCnta120Itens), {"CNE_TS"    , CNB->CNB_TS    , Nil})//6
-			aAdd( aTail(aCnta120Itens), {"CNE_PEDTIT", CNB->CNB_PEDTIT, Nil})//7
+			aAdd( aTail(aCnta120Itens), {"CNE_TS"    , CNB->CNB_TS    , Nil})
+			aAdd( aTail(aCnta120Itens), {"CNE_PEDTIT", CNB->CNB_PEDTIT, Nil})
 		EndIF
 		CNB->( dbSkip() )
 	EndDO
@@ -292,19 +296,14 @@ User Function MCnt260Job(__cEmpresa, __cFilial, cCodUser, aContrato, aCampos)
 	IF len(aCnta120Itens) != 0
 
 		//rotina autimatica para gerar medição
-		//Cnta120(aCnta120Cab,aCnta120Itens,3,.F.)
-	
-		//processa( {|| U_PLCNT121(aCnta120Cab,aCnta120Itens,alltrim(CN9->CN9_NUMERO),Iif(aContrato[2],.T., .F.) }, "Realizando medição do contrato: "+ alltrim(CN9->CN9_NUMERO)  , "Processando aguarde...", .f.)
-	   // processa( {|| U_PLCNT121(aCnta120Cab,aCnta120Itens,alltrim(CN9->CN9_NUMERO),Iif(aContrato[2],.T., .F.) }, "Realizando medição do contrato: "+ alltrim(CN9->CN9_NUMERO)  , "Processando aguarde...", .f.)
-
-		Processa({|| U_PLCNT121(aCnta120Cab,aCnta120Itens,alltrim(CN9->CN9_NUMERO),Iif(aContrato[2],.T., .F.)) }, "Realizando medição do contrato: "+ alltrim(CN9->CN9_NUMERO)  , "Processando aguarde...", .f.)
+		Cnta120(aCnta120Cab,aCnta120Itens,3,.F.)
 
 		IF lMsErroAuto
 			cResult += " - Erro na geração da medição:"+CRLF
-			cResult +=  ''//GetMsErroAuto()
+			cResult +=  GetMsErroAuto()
 		Else
+			cResult += " - Medição " + CND->CND_NUMMED + " gerada com sucesso."+CRLF
 
-			
 			IF aContrato[3] .And. aContrato[pos('CN9_BONUS',aCampos)] > 0
 				RecLock( "CNR", .T. )
 				CNR->CNR_FILIAL := xFilial( "CNR" )
@@ -320,15 +319,15 @@ User Function MCnt260Job(__cEmpresa, __cFilial, cCodUser, aContrato, aCampos)
 				cResult += " - Bonificação por disponibilidade " + cValToChar(aContrato[pos('CN9_BONUS',aCampos)]) + "% ("+cValToChar(CNR->CNR_VALOR)+") gerada com sucesso."+CRLF
 			EndIF
 
-			/*/IF aContrato[2]
-			//	Cnta120(aCnta120Cab,aCnta120Itens,6,.F.)
+			IF aContrato[2]
+				Cnta120(aCnta120Cab,aCnta120Itens,6,.F.)
 				IF lMsErroAuto
 					cResult += " - Erro no encerramento da medição:"+CRLF
-					cResult +=  ''//GetMsErroAuto()
+					cResult +=  GetMsErroAuto()
 				Else
 					cResult += " - Medição encerrada com sucesso com pedido " + CND->CND_PEDIDO + "."+CRLF
 				EndIF
-			EndIF/*/
+			EndIF
 		EndIF
 	EndIF
 	cResult += CRLF
@@ -482,67 +481,3 @@ static function Filtrar( cPerg)
  Pergunte(cPerg,.T.)
  Procs()
 return
-
-
-//--------------------------------------------------------------------------------------
-//Execauto CNTA121
-//Alterado devido a CNTA120 estar descontinuada. - RENATOSEVER 12/09/23
-//https://tdn.totvs.com/display/public/PROT/Utilizando+o+modelo+do+CNTA121
-//--------------------------------------------------------------------------------------
-User Function PLCNT121(aCtrCab,aCtrItens,cCodCTR,lEncerra) 
-    Local oModel    := Nil
-    Local aMsgDeErro:= {}
-    Local lRet      := .F. 
-	Local nI := 0
-    
-    Private _cNMedicao   := ""
-
-    CN9->(DbSetOrder(1))
-         
-    If CN9->(DbSeek(xFilial("CN9") + cCodCTR))//Posicionar na CN9 para realizar a inclusão
-        oModel := FWLoadModel("CNTA121")
-         
-        oModel:SetOperation(3)
-        If(oModel:CanActivate())           
-            oModel:Activate()
-            //cabeçalho
-			oModel:SetValue("CNDMASTER","CND_CONTRA"    ,CN9->CN9_NUMERO)
-			oModel:SetValue("CNDMASTER","CND_RCCOMP"    ,"1")//Selecionar competência             
-            //itens
-			oModel:SetValue("CXNDETAIL","CXN_CHECK" , .T.)//Marcar a 5planilha(nesse caso apenas uma)
-			
-			For nI := 1 to len(aCtrItens)		
-				oModel:SetValue("CXNDETAIL","CXN_CHECK" , .T.)//Marcar a planilha(nesse caso apenas uma)
-        	    oModel:GetModel('CNEDETAIL'):GoLine(nI) //Posiciona na linha desejada
-				
-				oModel:SetValue('CNEDETAIL', 'CNE_ITEM' ,  Strzero(nI,3) )
-				oModel:SetValue('CNEDETAIL', 'CNE_PRODUT' , aCtrItens[nI][2][2] )
-				oModel:SetValue('CNEDETAIL', 'CNE_QUANT'  , aCtrItens[nI][4][2])     
-            	oModel:SetValue('CNEDETAIL', 'CNE_VLUNIT' , aCtrItens[nI][3][2] )
-            	oModel:SetValue('CNEDETAIL', 'CNE_TS', aCtrItens[nI][6][2] )//Preenche TES - Este campo aceita tipo de entrada e saída.
-			Next n1
-
-            If (oModel:VldData()) /*Valida o modelo como um todo*/
-                oModel:CommitData()
-            EndIf
-        EndIf
-         
-        If(oModel:HasErrorMessage())
-			lMsErroAuto := .T.
-            aMsgDeErro := oModel:GetErrorMessage()
-			cResult += AMSGDEERRO[6]//GetMsErroAuto(aMsgDeErro)
-			_cNMedicao := ''
-        Else
-			lMsErroAuto := .F.
-            _cNMedicao := CND->CND_NUMMED       
-			cResult += " - Medição " + _cNMedicao + " gerada com sucesso."+CRLF
-
-            oModel:DeActivate()        
-			If lEncerra
- 	           lRet := CN121Encerr(.T.) //Realiza o encerramento da medição     
-			   cResult += " - Medição encerrada com sucesso com pedido " + CND->CND_PEDIDO + "."+CRLF              
-			EndIf
-		
-        EndIf
-    EndIf  
-Return lRet
