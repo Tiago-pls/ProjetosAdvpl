@@ -12,8 +12,6 @@
 ¦¦+----------+------------------------------------------------------------¦¦¦
 ¦¦¦Descriçäo ¦  Relatório de Transporte de Bens Ativo Imobilizado		  ¦¦¦
 ¦¦+-----------------------------------------------------------------------+¦¦
-¦¦¦Descriçäo ¦  Ajuste para impressao de varios vencimentos 27-09-2023	  ¦¦¦
-¦¦+-----------------------------------------------------------------------+¦¦
 ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*/
 User Function BRREL01()
@@ -522,16 +520,13 @@ If Select("QRY")>0
 	QRY->(dbCloseArea())
 Endif
 TcQuery cQuery New Alias "QRY"    
-nSE1 := nColAux
 for nCont :=1 to 8 // limite maximo de titulos NFe
 	If QRY->(!EOF())
-		
 		While QRY->(!EOF())
 			cData := SUBSTR( QRY->E1_VENCREA, 7, 2)+'/'+SUBSTR( QRY->E1_VENCREA, 5, 2)+'/'+SUBSTR( QRY->E1_VENCREA, 1, 4)
-			oPrint:Say(nLin,nSE1+10,cData,oFont12,1400)	
+			oPrint:Say(nLin,nColAux+10,cData,oFont12,1400)	
 			cValor:= Alltrim(transform(QRY->E1_VALOR," @E 999,999,999.99"))
-			oPrint:Say(nLin+50,nSE1+10,cValor,oFont12,1400)	
-			nSE1 += nColTit 
+			oPrint:Say(nLin+50,nColAux+10,cValor,oFont12,1400)	
 			QRY->(DbSkip())
 		Enddo
 	Endif

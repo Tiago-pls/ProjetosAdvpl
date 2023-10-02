@@ -10,6 +10,9 @@ EM QUE PONTO : É chamado no momento da definicao dos botoes padrao do recebiment
 @return aBotoes, array, Lista com os botoes
 @see http://tdn.totvs.com/pages/releaseview.action?pageId=6085354
 @history 12/09/2019, Rafael Ricardo Vieceli, Nova opção nos botões na enchoice para Nota em PDF
+
+27/09/2023 - Tiago Santos
+
 /*/
 User Function MA140BUT()
 

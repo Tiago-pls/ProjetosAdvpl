@@ -8,6 +8,8 @@ PE confirmação pedido de compras
 @author EMERSON
 @since 11/08/2022
 @return variant, return_description
+
+27/09/2023 - Tiago Santos
 /*/
 User Function  MT120OK()
 	Local lValido   := .T.

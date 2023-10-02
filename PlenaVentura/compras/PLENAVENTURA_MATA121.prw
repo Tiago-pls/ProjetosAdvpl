@@ -1,4 +1,5 @@
 #include 'protheus.ch'
+//27/09/2023 - Tiago Santos
 user  Function PCodInfo(nTotal,cObs)
 
 	Local cCondicaoPagamento := cCondicao

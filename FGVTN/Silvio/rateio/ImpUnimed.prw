@@ -3,6 +3,9 @@
 #include "topconn.ch"
 //#include "Directry.ch"  
 
+User function ImpUnimed() 
+u_ImpCoop() 
+RETURN
 User Function ParcCOP()
 
 If Select("QRYU") > 0         

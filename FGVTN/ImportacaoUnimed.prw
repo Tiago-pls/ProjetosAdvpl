@@ -167,7 +167,7 @@ cQuery+="	FROM ZRH010 ZRH	"
 cQuery+="	LEFT JOIN RCA010 RCA ON RCA_MNEMON = 'M_COPARTFUNC' AND RCA_CONTEU <> 0	"
 cQuery+="	LEFT JOIN ACUMULADO AC ON AC.FILIAL = ZRH_FILIAL AND AC.MATRICULA = ZRH_MAT AND ZRH_CODIGO = '  '	"
 cQuery+="	WHERE	"
-cQuery+="	ZRH.D_E_L_E_T_ = ' '	"
+cQuery+="	ZRH.D_E_L_E_T_ = ' '	and ZRH_MAT ='005354'"
 cQuery+="	GROUP BY	"
 cQuery+="	AC.SALDO,	"
 cQuery+="	RCA_CONTEU,	"
@@ -228,28 +228,40 @@ If Select("QRY") > 0
  QRY->(dbCloseArea())
 Endif
 
-cMat := SUPERGETMV( MV_MATEXC, .F., '005698' )
-
-cQuery:="	SELECT	"
+cQuery:="	WITH GERAL AS	"
+cQuery+="	(	"
+cQuery+="	SELECT	"
+cQuery+="	RA_MAT MATRICULA,	"
+cQuery+="	ISNULL(SUBSTRING(RCC.RCC_CONTEU,1,6),'') MAT2, "
+cQuery+="	RA_NOME NOME,	"
 cQuery+="	'T' TIPO,	"
 cQuery+="	SRA.R_E_C_N_O_ RECNO	"
 cQuery+="	FROM	"
 cQuery+="	SRA010 SRA	"
+cQuery+="	LEFT JOIN RCC010 RCC ON RCC.RCC_CODIGO = 'U006' AND RCC.RCC_FIL = RA_FILIAL AND SUBSTRING(RCC.RCC_CONTEU,1,6) = RA_MAT AND RCC.D_E_L_E_T_ = ' ' "
 cQuery+="	WHERE	"
 cQuery+="	RA_CIC = '"+cCPF+"' AND	"
-cQuery+="   RA_UNIMED <> ' '" // ultimos 60 dias
-cQuery+="	and SRA.D_E_L_E_T_ = ' '	"
+cQuery+="	RA_SITFOLH <> 'D' AND	"
+cQuery+="	SRA.D_E_L_E_T_ = ' '	"
 cQuery+="	UNION ALL	"
 cQuery+="	SELECT	"
+cQuery+="	RB_MAT MATRICULA,	"
+cQuery+="	ISNULL(SUBSTRING(RCC.RCC_CONTEU,1,6),'') MAT2, "
+cQuery+="	RA_NOME NOME,	"
 cQuery+="	'D' TIPO,	"
 cQuery+="	SRB.R_E_C_N_O_ RECNO	"
 cQuery+="	FROM	"
 cQuery+="	SRB010 SRB	"
-cQuery+="	INNER JOIN SRA010 SRA ON RA_FILIAL = RB_FILIAL AND RB_MAT = RA_MAT AND SRA.D_E_L_E_T_ = ' ' "
+cQuery+="	INNER JOIN SRA010 SRA ON RA_FILIAL = RB_FILIAL AND RB_MAT = RA_MAT AND RA_SITFOLH <> 'D' AND SRA.D_E_L_E_T_ = ' '	"
+cQuery+="	LEFT JOIN RCC010 RCC ON RCC.RCC_CODIGO = 'U006' AND RCC.RCC_FIL = RA_FILIAL AND SUBSTRING(RCC.RCC_CONTEU,1,6) = RA_MAT AND RCC.D_E_L_E_T_ = ' ' "
 cQuery+="	WHERE	"
 cQuery+="	RB_CIC = '"+cCPF+"' AND	"
 cQuery+="	SRB.D_E_L_E_T_ = ' '	"
-cQuery+="   RA_MAT <> '"+cMat+"'"
+cQuery+="	)	"
+cQuery+="	SELECT	"
+cQuery+="	*	"
+cQuery+="	FROM GERAL WHERE MAT2 = '' "
+
 TcQuery cQuery New Alias "QRY"
 
 nRecno := QRY->RECNO
@@ -289,6 +301,7 @@ If Select("QR1") > 0
     QR1->(dbCloseArea())
 Endif  
 
+cMatExc := SUPERGETMV( "MV_MATEXCL", .F., '005698')
 // primeiro busca na SRA
 cQuery := " SELECT	"
 cQuery += " RA_FILIAL FILIAL,	"
@@ -303,7 +316,8 @@ cQuery += " FROM SRA010 SRA	"
 cQuery += " INNER JOIN RHK010 RHK ON RHK_TPFORN = '1' AND RA_FILIAL = RHK_FILIAL AND RA_MAT = RHK_MAT AND RHK_PERFIM = ' ' AND RHK.D_E_L_E_T_ = ' '	"
 cQuery += " WHERE	"
 cQuery += " RA_UNIMED = '"+cBenefic+"' AND 	"
-cQuery += " SRA.D_E_L_E_T_ = ' ' "
+cQuery += " SRA.D_E_L_E_T_ = ' '  and RA_MAT <> '"+cMatExc+"'"
+cQuery += " and RA_ADMISSA = ( select Max(RA_ADMISSA) from " + RetSqlName("SRA") + " SRA where RA_UNIMED = '"+cBenefic+"' and D_E_L_E_T_ =' ')"
 
 TcQuery cQuery New Alias "QR1"
 
@@ -327,6 +341,9 @@ else // se não for funcionario procura por dependente
     cQuery += " RB_UNIMED  ='"+cBenefic+"' AND	"
     cQuery += " SRB.D_E_L_E_T_ = ' '	"
 	cQuery += " and RHL_CODFOR <> ' '"  
+	cQuery += " and RA_ADMISSA = ( select Max(RA_ADMISSA) from " + RetSqlName("SRA") + " B "
+	cQuery +=" where B.RA_FILIAL = SRA.RA_FILIAL and B.RA_MAT = SRA.RA_MAT  and B.D_E_L_E_T_ =' ')"
+	
     TcQuery cQuery New Alias "QR1"
 
     if QR1->(!EOF())

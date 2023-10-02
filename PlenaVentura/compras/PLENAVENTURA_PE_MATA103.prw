@@ -11,6 +11,8 @@ O Ponto de Entrada MA103BUT, chamado a partir do código-fonte MATA103.PRW, permi
 @return aBotoes, array, Lista com os botoes
 @see http://tdn.totvs.com/pages/releaseview.action?pageId=102269141
 @history 12/09/2019, Rafael Ricardo Vieceli, Nova opção nos botões na enchoice para Nota em PDF
+
+27/09/2023 - Tiago Santos
 /*/
 User Function MA103BUT()
 
@@ -44,30 +46,6 @@ User Function MA103BUT()
 	IF ! INCLUI
 		aAdd(aBotoes, {"",{|| u_PDFA050Attach() },"Nota fiscal em PDF","Nota fiscal em PDF"})
 	EndIF
-
-	//Adiciona uma nova aba no documento de entrada
-	IF SF1->( FieldPos("F1_ZNATURE") ) != 0
-
-		oFolder:AddItem("*Hist", .T.)
-		nAba := Len(oFolder:aDialogs)
-		//Se for inclusão, irá criar a variável e será editável, senão irá buscar do banco e não será editável
-		If INCLUI
-			__cCamNovo := CriaVar("F1_ZNATURE",.F.)
-			lEdit := .T.
-		Else
-			__cCamNovo := SF1->F1_ZNATURE
-			lEdit := .T.
-		EndIf
-		//Criando na janela o campo OBS
-		@ 003, 003 SAY Alltrim(RetTitle("F1_ZNATURE")) OF oFolder:aDialogs[nAba] PIXEL SIZE 050,006
-		//@ 001, 053 MSGET oCampo VAR __cCamNovo SIZE 100, 006 OF oFolder:aDialogs[nAba] COLORS 0, 16777215  PIXEL
-		@ 001, 053 MSGET oCampo VAR __cCamNovo F3 'SED' Picture "@!" SIZE 100, 006 OF oFolder:aDialogs[nAba] COLORS 0, 16777215  PIXEL Valid(!Empty(Alltrim(__cCamNovo)) .AND. Existcpo("SED",__cCamNovo))
-		oCampo:bHelp := {|| ShowHelpCpo( "F1_ZNATURE", {GetHlpSoluc("F1_ZNATURE")[1]}, 5  )}
-		//Se não houver edição, desabilita os gets
-		If ! lEdit
-			oCampo:lActive := .F.
-		EndIf
-	Endif
 Return aBotoes
 
 
@@ -212,9 +190,9 @@ User Function MT100GE2()
 			SE2->( MsUnLock())
 		EndIF
 	EndIF
-    if isincallstack("MATA103")
-        SE2->E2_NATUREZ:= __cCamNovo //SF1->F1_ZNATURE
-    endif
+    //if isincallstack("MATA103")
+   //     SE2->E2_NATUREZ:= __cCamNovo //SF1->F1_ZNATURE
+   // endif
 	// Atualizar C7_DATPRF com F1_DTDIGIT
 	SD1->(dbsetorder(1)) // D1_FILIAL+D1_DOC+D1_SERIE+D1_FORNECE+D1_LOJA+D1_COD+D1_ITEM
 	_cKeySD1:=xfilial("SD1")+sf1->(f1_doc+f1_serie+f1_fornece+f1_loja)
@@ -1057,3 +1035,26 @@ Local aHeadSev := PARAMIXB[1]
 Local aColsSev := PARAMIXB[2]
 ///  carga do aColsSev ///
 Return aColsSev    
+
+user function MT103NTZ()          
+Local ExpC1 := ParamIxb[1]     // Rotina do usuário para geração das Pré-Requisições.
+IF SF1->( FieldPos("F1_ZNATURE") ) != 0
+	ExpC1 :=  SF1->F1_ZNATURE
+Endif
+
+Return ExpC1
+
+
+user function MT103NAT()
+
+Local cNat := PARAMIXB
+
+ if SF1->( FieldPos("F1_ZNATURE") ) != 0 
+ 	RECLOCK( "SF1", .F. )
+		SF1->F1_ZNATURE := cNat
+	SF1->(MSUNLOCK())
+ Endif
+
+
+return .T. 
+

@@ -8,7 +8,7 @@
 			"program": "${command:AskForProgramName}",
 			"cwb": "${workspaceFolder}",
 			"smartclientBin": "C:/TOTVS/smartclient_33/smartclient_33/smartclient.exe",
-			"isMultiSession": true,
+			"isMultiSession": false,
 			"enableTableSync": true
 		}
 	],
