@@ -13,18 +13,32 @@ user Function GeraDados()
 	Endif
 	cQuery := Query(MV_PAR07)
 	cArq := alltrim(MV_PAR08)
-	cArq += "\" +iif(MV_PAR07 =='1', 'Titulos', 'Fornecedores')
-	cArq += "_"+strtran(DToC(Date()),"/","")+"_"+strtran(time(),":","")+".txt"
+	//cArq += "\" +iif(MV_PAR07 =='1', 'Titulos', 'Fornecedores')
+	//cArq += "_"+strtran(DToC(Date()),"/","")+"_"+strtran(time(),":","")+".txt"
 	nHandle := fCreate(cArq,0)
 
-	FWrite(nHandle, cHeader)
+	//FWrite(nHandle, cHeader)
 	nCont := 0
 	nValor := 0
+    If Select("QRY")>0         
+        QRY->(dbCloseArea())
+    Endif
+	TcQuery cQuery New Alias "QRY" 
 
 	While QRY->(! EOF())
 		nCOnt += 1
-		nValor += QRY->E2_VALOR
-		FWrite(nHandle, LoteR())
+		cLinha :=""
+		cLinha += QRY->CGC
+		cLinha += QRY->E2_TIPO
+		cLinha += QRY->E2_NUM
+		cLinha += CValToChar(QRY->E2_VALOR)
+		cData := DtoS(QRY->E2_EMISSAO)
+		cData := Str(cData,7,2) + Str(cData,5,2) +Str(cData,1,4)
+		cLinha += cData
+		cData := DtoS(QRY->E2_VENCREA)
+		cData := Str(cData,7,2) + Str(cData,5,2) +Str(cData,1,4)
+		cLinha += cData
+		FWrite(nHandle, cLinha)
 		QRY->(DbSkip())
 	enddo
 
@@ -52,11 +66,21 @@ static function Query(cTipo)
 
 	if cTipo =='1'
 		cLenSA2 :=cValtoChar(len(alltrim(xFilial("SA2"))) )
-		cQuery := " Select * from " + RetSqlName("SE2") + " SE2"
+		cQuery := " Select  "
+		
+		cQuery := "case "
+		cQuery := " when A2_TIPO ='F' then "
+        cQuery := " regexp_replace(LPAD(A2_CGC, 11),'([0-9]{3})([0-9]{3})([0-9]{3})','\1.\2.\3-') "
+		cQuery := "else "
+		cQuery := " regexp_replace(LPAD(A2_CGC, 14),'([0-9]{2})([0-9]{3})([0-9]{3})([0-9]{4})','\1.\2.\3/\4-')"
+		cQuery := " End as CGC , E2_TIPO, E2_NUM, E2_VALOR , E2_EMISSAO, E2_VENCREA"
+
+		cQuery += " from " + RetSqlName("SE2") + " SE2"
 		cQuery += " Inner join "+ RetSqlName("SA2") +" SA2 on E2_FORNECE = A2_COD and E2_LOJA = A2_LOJA"
 		cQuery += " Where E2_FILIAL >= '" + MV_PAR01+"' and E2_FILIAL <='" + MV_PAR02+"' and SE2.D_E_L_E_T_ =' '"
 		cQuery += " AND E2_FORNECE >='"+MV_PAR03+"' and E2_FORNECE <= '"+MV_PAR04+"' "
 		cQuery += " AND E2_VENCTO >= '"+ DTos(MV_PAR05)+"' and E2_VENCTO <= '"+ Dtos(MV_PAR06)+"' and SA2.D_E_L_E_T_ =' '"
 		cQuery += " AND SubString(E2_FILIAL ,1,"+cLenSA2+")   =  SubString(A2_FILIAL ,1,"+cLenSA2+") "
+		cQuery += " AND E2_TIPO  ='NF' " // diferente de Impostos
 	Endif
 return ChangeQuery(cQuery)

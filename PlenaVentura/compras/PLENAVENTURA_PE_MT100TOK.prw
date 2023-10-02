@@ -129,8 +129,9 @@ User Function MT100TOK()
 		_lRet := .F.
 	endif
 	if (SF1->F1_ZNATURE <> SC7->C7_ZNATURE) .and. _lRet
-		If ! MsgYesNo( "Natureza Fin Diferente na informada no Fornecedor, deseja prosseguir?","Natureza Financeira")
+		If ! MsgYesNo( "Natureza Fin Diferente na informada no Pedido, deseja prosseguir?","Natureza Financeira")
 			_lRet := .F.
+
 		Endif
 	Endif
 Return _lRet
@@ -144,15 +145,10 @@ static function alreadyExists()
 	if ISINCALLSTACK("MATA920")
 		private l103Class := .F.
 	Endif
-
 	exclude := IIF(l103Class, SF1->(recno()), 0)
-
-
-
 	if type('aNfeDanfe') == 'A' .and. len(aNfeDanfe) >= 13
 		key := aNFEDanfe[13]
 	endif
-
 	if empty(key)
 		return .F.
 endif

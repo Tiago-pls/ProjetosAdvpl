@@ -175,11 +175,9 @@ User Function MT100GE2()
 	Local areasc7:= sc7->(getarea())
 	Local _data :=""
 
-	/*
 	RecLock("SE2",.F.)
 		SE2->E2_NATUREZ := SF1->F1_ZNATURE
 	SE2->( MsUnLock())
-	*/
 
 	IF SF1->( FieldPos("F1_OBSADL") ) != 0 .And. SE2->( FieldPos("E2_OBSADL") ) != 0
 		//se tiver mensagem
@@ -1042,19 +1040,31 @@ IF SF1->( FieldPos("F1_ZNATURE") ) != 0
 	ExpC1 :=  SF1->F1_ZNATURE
 Endif
 
-Return ExpC1
+if Empty(ExpC1) // não encontrou, então procurar na tabela de pedidos
+	ExpC1 := SC7->C7_ZNATURE
+endif
+Return ExpC1 
 
 
 user function MT103NAT()
-
+Local lRet := .T.
 Local cNat := PARAMIXB
 
- if SF1->( FieldPos("F1_ZNATURE") ) != 0 
+if Empty(Alltrim(cNat)) .or. ! ExistCPO("SED", cNat)
+	lRet := .F.
+elseif SF1->( FieldPos("F1_ZNATURE") ) != 0 
  	RECLOCK( "SF1", .F. )
 		SF1->F1_ZNATURE := cNat
 	SF1->(MSUNLOCK())
  Endif
 
+return lRet
 
-return .T. 
 
+USER FUNCTION MT103MSD
+Local lExc:=.F.
+RECLOCK( "SF1", .F. )
+	SF1->F1_ZNATURE := SC7->C7_ZNATURE
+SF1->(MSUNLOCK())
+
+Return lExc
