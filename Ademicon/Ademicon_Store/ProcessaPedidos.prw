@@ -31,7 +31,7 @@ While (cTmp)->(!EOF())
     if SC5->( DbSeek(xFilial("SC5") + (cTmp)->ZAL_IDFLUI))
 	    conout("Pedido a ser faturado: "+ (cTmp)->ZAL_IDFLUI)
         cNota := pedToNf((cTmp)->ZAL_FILIAL, SC5->C5_NUM, '1')
-        cChoosedState := iif (Empty(cNota), '57','62')
+        cChoosedState := iif (Empty(cNota), '77','62')
         
         if AtuFluig((cTmp)->ZAL_IDFLUI, cChoosedState)        
             ZAL->( DBGOTOP(  ))
@@ -153,7 +153,7 @@ cMsg += '</soapenv:Envelope>'
 lRet := oWsdl:SetOperation("saveAndSendTaskClassic")
  
 If ! lRet 
-    MsgAlert("Erro SetOperation: " + oWsdl:cError, "Atenção")
+    conout("Erro SetOperation: " + oWsdl:cError, "Atenção")
     lRet := .F.
 EndIf
  //Se for continuar o processamento
