@@ -122,9 +122,9 @@ Return
 
 static function Query(cTipo)
 	cQuery :=""
-
+	cLenSA2 :=cValtoChar(len(alltrim(xFilial("SA2"))) )
 	if cTipo =='1'
-		cLenSA2 :=cValtoChar(len(alltrim(xFilial("SA2"))) )
+		
 		cQuery := " Select  A2_CGC as  CGC , A2_TIPO, E2_FORNECE, E2_LOJA, E2_TIPO, E2_NUM, E2_PREFIXO, E2_VALOR , E2_EMISSAO, E2_VENCREA, A2_NOME, E2_CODSERV , E2_FILIAL "
 		cQuery += " from " + RetSqlName("SE2") + " SE2"
 		cQuery += " Inner join "+ RetSqlName("SA2") +" SA2 on E2_FORNECE = A2_COD and E2_LOJA = A2_LOJA"		
@@ -137,7 +137,9 @@ static function Query(cTipo)
 	else
 		cQuery :=" Select A2_CGC as  CGC, A2_TIPO, A2_NOME,A2_END,A2_NR_END,A2_ENDCOMP,A2_CEP,A2_BAIRRO,  "
 		cQuery += " A2_MUN,A2_EST,A2_COD_MUN,A2_INSCR,A2_TEL,A2_EMAIL,A2_CONTATO  from " + RetSqlName("SA2") +" SA2"
+	//	cQuery += " Inner join "+ RetSqlName("SF1") +" SF1 on A2_COD = F1_FORNECE and A2_LOJA = F1_LOJA and SF1.D_E_L_E_T_ =' '"
 		cQuery += " Where A2_FILIAL >= '" + MV_PAR01+"' and A2_FILIAL <='" + MV_PAR02+"' and SA2.D_E_L_E_T_ =' '"
-		cQuery += " AND A2_COD >='"+MV_PAR03+"' and A2_COD <= '"+MV_PAR04+"' "
+		cQuery += " AND A2_COD >='"+MV_PAR03+"' and A2_COD <= '"+MV_PAR04+"' and A2_CGC <> ' '"
+	//	cQuery += " AND SubString(F1_FILIAL ,1,"+cLenSA2+")   =  SubString(A2_FILIAL ,1,"+cLenSA2+") "
 	Endif
 return ChangeQuery(cQuery)
