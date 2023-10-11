@@ -44,7 +44,7 @@ nVlrTot := 0
 	Endif
 
 nUltimo  := IIF(EMPTY(QRYU->ULTIMO),0,QRYU->ULTIMO)
-dPeriodo := LastDay(STOD(CPERIODO+"01"))
+dPeriodo := STOD(CPERIODO+"01")
 cNumDoc  := IIF(Empty(nUltimo),"000001",StrZero(QRYU->ULTIMO+1,6)) 
 cNumID   := "RHO509"+cValToChar(CPERIODO)
 

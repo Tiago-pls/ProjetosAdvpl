@@ -342,7 +342,7 @@ else // se não for funcionario procura por dependente
     cQuery += " SRB.D_E_L_E_T_ = ' '	"
 	cQuery += " and RHL_CODFOR <> ' '"  
 	cQuery += " and RA_ADMISSA = ( select Max(RA_ADMISSA) from " + RetSqlName("SRA") + " B "
-	cQuery +=" where B.RA_FILIAL = SRA.RA_FILIAL and B.RA_MAT = SRA.RA_MAT  and B.D_E_L_E_T_ =' ')"
+	cQuery += " where B.RA_FILIAL = SRA.RA_FILIAL and B.RA_MAT = SRA.RA_MAT  and B.D_E_L_E_T_ =' ')"
 	
     TcQuery cQuery New Alias "QR1"
 
