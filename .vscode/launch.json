@@ -8,7 +8,7 @@
 			"program": "${command:AskForProgramName}",
 			"cwb": "${workspaceFolder}",
 			"smartclientBin": "C:/TOTVS/smartclient_33/smartclient_33/smartclient.exe",
-			"isMultiSession": false,
+			"isMultiSession": true,
 			"enableTableSync": true
 		}
 	],
@@ -56,6 +56,10 @@
 		{
 			"args": [],
 			"label": "u_testCNAB"
+		},
+		{
+			"args": [],
+			"label": "u_AUTOBOL"
 		}
 	],
 	"lastProgramExecuted": "sigamdi"

@@ -29,7 +29,7 @@ user function ExpDados()
 			QRY->(dbCloseArea())
 		Endif
 		TcQuery cQuery New Alias "QRY" 
-		if MV_PAR07 =='1' // Títulos
+		if MV_PAR07 ==1 // Títulos
 			if Select("SD1") ==0
 				DBSELECTAREA( "SD1" )
 			Endif
@@ -38,8 +38,9 @@ user function ExpDados()
 		    nTotal := 0
 			Count To nTotal
 			QRY->(DbGoTop())
-	  		oprocess:SetRegua2(nTotal)		
-			
+	  		oprocess:SetRegua2(nTotal)	
+			cLinha :="CNPJ	;Especie	;Num_Docto	;Valor Doc	;Emissao	;Vencto	;Tipo	;Etapa	;Observações	;Filler"	+CHR(13)+CHR(10) 
+			FWrite(nHandle, cLinha)
 			While QRY->(! EOF())
 				oProcess:IncRegua2("Fornecedor:  " + alltrim(QRY->A2_NOME) )
 				nCont += 1
@@ -54,7 +55,7 @@ user function ExpDados()
 				if SD1->(DbSeek( QRY->(E2_FILIAL + E2_NUM + E2_PREFIXO + E2_FORNECE + E2_LOJA)))
 					cCusto := SubStr(SD1->D1_CC,1,4)
 				Endif
-				cCusto := Padr(cCusto,4)
+				/*cCusto := Padr(cCusto,4)
 				cLinha += cCGC
 				cLinha += PadR(QRY->E2_TIPO,5)
 				cLinha += StrZero(Val(QRY->E2_NUM),15)
@@ -64,7 +65,18 @@ user function ExpDados()
 				cLinha += iif( Empty(QRY->E2_CODSERV), 'M', 'S')
 				cLinha += cCusto
 				cLinha += Space(126)
-				cLinha += CHR(13)+CHR(10)
+				cLinha += CHR(13)+CHR(10) */
+				cCusto := Padr(cCusto,4) +";"
+				cLinha += cCGC+";"
+				cLinha += alltrim(QRY->E2_TIPO)+";"
+				cLinha += AllTrim(QRY->E2_NUM)+";"
+				cLinha += cValToChar(QRY->E2_VALOR *100)+";"
+				cLinha += SubStr(QRY->E2_EMISSAO,7,2) + '/' + SubStr(QRY->E2_EMISSAO,5,2) +'/' +SubStr(QRY->E2_EMISSAO,1,4)+";"
+				cLinha += SubStr(QRY->E2_VENCREA,7,2) + '/' + SubStr(QRY->E2_VENCREA,5,2) +'/' +SubStr(QRY->E2_VENCREA,1,4)+";"
+				cLinha += iif( Empty(QRY->E2_CODSERV), 'M', 'S')+";"
+				cLinha += cCusto
+				cLinha += CHR(13)+CHR(10) 
+
 				FWrite(nHandle, cLinha)
 				QRY->(DbSkip())
 			enddo
@@ -73,6 +85,8 @@ user function ExpDados()
 			Count To nTotal
 			QRY->(DbGoTop())
 	  		oprocess:SetRegua2(nTotal)
+			cLinha :="CNPJ	;Nome	;Endereço	;Num	;Complemento	;CEP	;Bairro	;Cidade	;UF	;Cmun	;Inscr.Est	;Fone	;Email	;Contato" +CHR(13)+CHR(10)
+			FWrite(nHandle, cLinha)
 			While QRY->(! EOF())
 				oProcess:IncRegua2("Fornecedor:  " + alltrim(QRY->A2_NOME) )
 				nCont += 1
@@ -82,21 +96,24 @@ user function ExpDados()
 				else
 					cCGC := Alltrim(Transform(QRY->CGC, "@R 999.999.999-99")) + Space(4)
 				endif
-				cLinha += PadR(cCGC,18)
-				cLinha += PadR(QRY->A2_NOME,50)
-				cLinha += PadR(QRY->A2_END,50)
-				cLinha += PadR(QRY->A2_NR_END,5)
-				cLinha += PadR(QRY->A2_ENDCOMP,20)
-				cLinha += PadR(QRY->A2_CEP,8)
-				cLinha += PadR(QRY->A2_BAIRRO,20)
-				cLinha += PadR(QRY->A2_MUN,20)
-				cLinha += PadR(QRY->A2_EST,2)
-				cLinha += PadR(QRY->A2_COD_MUN,7)
-				cLinha += PadR(QRY->A2_INSCR,20)
-				cLinha += PadR(QRY->A2_TEL,25)
-				cLinha += PadR(QRY->A2_EMAIL,100)
-				cLinha += PadR(QRY->A2_CONTATO,50)
-				cLinha += Space(5)
+				cLinha += Alltrim(cCGC)+";"
+				cLinha += Alltrim(QRY->A2_NOME)+";"
+				
+				if At(',',QRY->A2_END,1) > 0
+					cLinha += SUBSTR( QRY->A2_END, 1,  At(',',QRY->A2_END,1) - 1)
+				else
+					cLinha += Alltrim(QRY->A2_END)+";"
+				Endif
+				cLinha += Alltrim(QRY->A2_ENDCOMP)+";"
+				cLinha += Alltrim(QRY->A2_CEP)+";"
+				cLinha += Alltrim(QRY->A2_BAIRRO)+";"
+				cLinha += Alltrim(QRY->A2_MUN)+";"
+				cLinha += Alltrim(QRY->A2_EST)+";"
+				cLinha += Alltrim(QRY->A2_COD_MUN)+";"
+				cLinha += Alltrim(QRY->A2_INSCR)+";"
+				cLinha += Alltrim(QRY->A2_TEL)+";"
+				cLinha += Alltrim(QRY->A2_EMAIL)+";"
+				cLinha += Alltrim(QRY->A2_CONTATO)+";"
 				cLinha += CHR(13)+CHR(10)
 				FWrite(nHandle, cLinha)
 				QRY->(DbSkip())
@@ -120,10 +137,10 @@ Static Function GeraPerg(_cPerg)
 
 Return
 
-static function Query(cTipo)
+static function Query(nTipo)
 	cQuery :=""
 	cLenSA2 :=cValtoChar(len(alltrim(xFilial("SA2"))) )
-	if cTipo =='1'
+	if nTipo ==1
 		
 		cQuery := " Select  A2_CGC as  CGC , A2_TIPO, E2_FORNECE, E2_LOJA, E2_TIPO, E2_NUM, E2_PREFIXO, E2_VALOR , E2_EMISSAO, E2_VENCREA, A2_NOME, E2_CODSERV , E2_FILIAL "
 		cQuery += " from " + RetSqlName("SE2") + " SE2"

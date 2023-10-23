@@ -1068,3 +1068,23 @@ RECLOCK( "SF1", .F. )
 SF1->(MSUNLOCK())
 
 Return lExc
+
+//23/10/2023
+/*/{Protheus.doc} User Function MA103OPC
+    Ponto de Entrada utilizado para adicionar itens no menu
+    @type  Function
+    @author Claudio Bozzi
+    @since 08/08/2022
+    @version 1.0
+    @param Nil
+    @return aRet(vetor) Array contendo dados do novo item do menu.
+    @see https://tdn.engpro.totvs.com.br/pages/releaseview.action?pageId=6085341
+    /*/
+User Function MA103OPC()
+
+    Local aRet := {}
+    
+    aAdd(aRet,{'Etiqueta Entrada', 'u_xcom900a(3)', 0, 5})
+    // aAdd(aRet,{'Etiqueta Produto', 'u_xcom900b(2)', 0, 5})
+
+Return aRet

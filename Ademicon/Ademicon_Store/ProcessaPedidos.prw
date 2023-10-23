@@ -113,8 +113,8 @@ Local lRet
 Local cMsg       := ""
 //PREPARE ENVIRONMENT EMPRESA '05' FILIAL '040101' TABLES 'SC5','SC6','SE4','SB1','SB2','SF4'
 
- cFluigUsr 	:= AllTrim(GetMv("MV_FLGUSER"))
- cFluigPss		:= AllTrim(GetMv("MV_FLGPASS"))
+cFluigUsr 	:= AllTrim(GetMv("MV_FLGUSER"))
+cFluigPss	:= AllTrim(GetMv("MV_FLGPASS"))
 oWsdl := TWsdlManager():New()
 xRet := oWsdl:ParseURL("http://proseg-hml.ademicon.net.br/webdesk/ECMWorkflowEngineService?wsdl")
 if xRet == .F.

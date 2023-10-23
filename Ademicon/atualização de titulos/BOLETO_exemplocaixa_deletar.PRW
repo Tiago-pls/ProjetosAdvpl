@@ -3,9 +3,6 @@
 #INCLUDE "protheus.ch"
 #include 'topconn.ch'
 
-
-
-
 User Function BolVencido()
 
 	IF SE1->E1_SALDO <= 0
@@ -54,15 +51,9 @@ User Function BolCaixa(_pPath,_pArq,_lViewPdf, cTpBol)
 	Local oBoleto
 	Local cArquivo := ""
 	Local lPreview := .T.
-
 	Local cPerg		:= "BOLCAIXA"
-
 	Local cBcoBol	:= ""
-
 //	Local n1
-
-
-
 	if _pPath==nil
 		CriaSX1(cPerg)
 		Pergunte(cPerg,.t.)
@@ -148,11 +139,11 @@ User Function BolCaixa(_pPath,_pArq,_lViewPdf, cTpBol)
 					Return
 				EndIF
 				// Título aglutinado vencido não pode ser impresso.
-				IF (alltrim(SE1->E1_XVINCP) <> "" .and. SE1->E1_VENCREA < dDatabase) .or.;
+				/*IF (alltrim(SE1->E1_XVINCP) <> "" .and. SE1->E1_VENCREA < dDatabase) .or.;
 						(SE1->E1_XAGLUT = "1" .and. alltrim(SE1->E1_XTITAGL) = "" .and. SE1->E1_VENCREA < dDatabase)
 					Alert("O título '" + alltrim(SE1->E1_NUM) + "' está vencido o boleto não poderá ser impresso!")
 					Return
-				EndIF
+				EndIF*/
 
 				u_RBolCaixa( @oBoleto )
 			ElseIf cBcoBol = 'HSBC'
@@ -1160,25 +1151,6 @@ static Function BuscaDados()
 
 	cQuery += " SE1.D_E_L_E_T_ <> '*' "
 	cQuery += " ORDER BY SE1.E1_PREFIXO, SE1.E1_NUM, SE1.E1_PARCELA, SE1.E1_EMISSAO"
-
-		/*
-Else
-		cQuery:= " SELECT * FROM "+RetSqlName("SE1")
-		cQuery+= " WHERE E1_PREFIXO = '" + MV_PAR01 + "' "
-		cQuery+= " AND E1_NUM = '" + MV_PAR03 + "' "
-		cQuery+= " AND E1_FILIAL = '"+xFilial("SE1") + "' "
-		cQuery+= " AND D_E_L_E_T_ = ' ' "
-	If !Empty(MV_PAR09)
-			cQuery+= " AND E1_NUMBOR = '" + MV_PAR09 + "' "
-			cQuery+= " AND E1_PORTADO = '" + PADL(MV_PAR05,3,"") + "' "
-			cQuery+= " AND E1_AGEDEP = '" + PADL(MV_PAR06,5,"") + "' "
-			cQuery+= " AND E1_CONTA = '" + PADL(MV_PAR07,10,"") + "' "
-	ElseIf !Empty(MV_PAR05)
-			cQuery+= " AND E1_PORTADO = '" + MV_PAR13 + "' "
-	EndIf                                                                                                                                                     ?
-		cQuery+= " ORDER BY E1_NUM,E1_PARCELA "
-EndIf
-	*/
 
 cQuery := ChangeQuery(cQuery)
 

@@ -1,9 +1,9 @@
 #INCLUDE "PROTHEUS.CH"
-#INCLUDE "APWEBSRV.CH"
+/*#INCLUDE "APWEBSRV.CH"
 #INCLUDE "TBICONN.CH"
 #INCLUDE "TOPCONN.CH"
 #Include "TBICONN.ch"
-#include "Fileio.ch"
+#include "Fileio.ch"*/
 
 /*---------------------------------------------------------------------------+
 !                       FICHA TECNICA DO PROGRAMA                            !
@@ -40,7 +40,7 @@ WSSERVICE FluigProtheus DESCRIPTION 'Fluig x Protheus - Workflow'
 	WSDATA oTitPr				    AS oTitPr
 	WSDATA oCliente				    AS oCliente
 	WSDATA oPedVenda			    AS oPedVenda
-
+	WSDATA oTitulo				    AS oTitulo
 
 	WSDATA cCodigo					AS String
 	WSDATA cStatus					AS String
@@ -420,6 +420,14 @@ WSSTRUCT oProdutoEstoque
 	WSDATA B5_ALTURA      	AS String
 	WSDATA B5_COMPR     	AS String
 	WSDATA B5_LARG     	AS String
+ENDWSSTRUCT
+
+WSSTRUCT oTitulo
+
+    WSDATA Processo   as String
+    WSDATA Taxa       as Float
+    WSDATA AnoMes     as String
+
 ENDWSSTRUCT
 
 //FIM
@@ -2614,6 +2622,106 @@ WSMETHOD GerarCliPV WSRECEIVE oCliente WSSEND cCodigo WSSERVICE FluigProtheus
 	else
 		::cCodigo := cCod +',' + cLoja
 	EndIf
+Return !lError
+
+
+
+WSMETHOD AtualizarTitulos WSRECEIVE oTitulo WSSEND cCodigo WSSERVICE FluigProtheus
+Local lError 	:= .T.
+Local cMens     := ""
+Local cError    := ""
+Local cFileErr  := "/dirdoc/errows_"+procname()+"_"+dtos(date())+"_"+strtran(time(),":","")+".txt"
+Local cAlias	:= GetNextAlias()
+Local cQuery	:= ''
+LOCAL aSE1      := {}
+PRIVATE lMsErroAuto := .F.
+Conout("AtualizarTitulos - "+varInfo("oTitulo",oTitulo, , .f., .f.))
+
+cQuery := " SELECT E1_FILIAL, E1_PREFIXO , E1_NUM , E1_PARCELA , E1_TIPO ,  E1_VALOR"
+cQuery += " FROM "+RetSqlName('SE1')+" SE1"
+cQuery += " WHERE SubString( E1_VENCREA, 1,6) = '" + oTitulo:AnoMes+"'"
+cQuery += " 	AND E1_SALDO <> 0 "
+cQuery += " 	AND E1_XPROCES ='"+ oTitulo:Processo+"'  "
+cQuery += " 	AND SE1.D_E_L_E_T_ = ' ' "
+cQuery += " ORDER BY E1_FILIAL, E1_NUM "
+
+conout(cQuery)
+cQuery := ChangeQuery(cQuery)
+TcQuery cQuery New Alias (cAlias)
+dbSelectArea(cAlias)
+
+While (cAlias)->(!Eof())
+
+	aArray := {(cAlias)->E1_FILIAL ,;// CAMPO POSICIONADO
+           (cAlias)->E1_PREFIXO     ,;
+           (cAlias)->E1_NUM         ,;
+           (cAlias)->E1_PARCELA     ,;
+           (cAlias)->E1_TIPO        ,;
+           (cAlias)->E1_VALOR       } // campo que vai ser alterado
+
+	AADD( aSE1, aArray )
+	(cAlias)->(dbSkip())
+EndDo
+
+if len(aSE1) <> 0
+	// Posiciona no Pedido de Compras
+	SE1->(DbSetOrder(1))
+	                                                                                           
+	SE1->(DbGotop())
+	for nCont :=1 to len (aSE1)
+		conout(varInfo("aSE1",aSE1, , .f., .f.))
+		cChave := aSE1[nCont,1]+aSE1[nCont,2]+aSE1[nCont,3] +aSE1[nCont,4]+aSE1[nCont,5]
+		if SE1->( DbSeek( cChave  ))
+			conout("Achou "+ cChave)
+			BEGIN TRANSACTION
+			nValorOri := SE1->E1_VALOR
+			RecLock("SE1", .F.)
+				SE1->E1_VALOR := SE1->E1_VALOR * oTitulo:Taxa
+			SE1->(MsUnlock())
+
+			// Gravar Histórico de Alteração de títulos
+			RecLock("ZAR", .T.)
+				ZAR_FILIAL := SE1->E1_FILIAL
+				ZAR_ANOMES := oTitulo:AnoMes
+				ZAR_TITULO := SE1->E1_NUM
+				ZAR_PARCEL := SE1->E1_PARCELA
+				ZAR_IDFLUI := SE1->E1_IDFLUIG
+				ZAR_CLIENT := SE1->E1_CLIENTE
+				ZAR_LOJA   := SE1->E1_LOJA
+				ZAR_NOMECL := SE1->E1_NOMCLI
+				ZAR_VLRORI := nValorOri
+				ZAR_VLRATU := SE1->E1_VALOR
+				ZAR_TAXA   :=  (oTitulo:Taxa - 1) * 100
+			ZAR->(MsUnlock())
+			END TRANSACTION
+			aTit :={}
+			/*
+				aTitulos [1] Filial
+				aTitulos [2] Vencimento
+				aTitulos [3] Numero titulo
+				aTitulos [4] Parcela titulo
+			*/
+			aadd(aTit, SE1->E1_FILIAL)
+			aadd(aTit, SE1->E1_VENCREA)
+			aadd(aTit, SE1->E1_NUM)
+			aadd(aTit, SE1->E1_PARCELA)
+		else
+			conout("Nao Achou "+ cChave)
+		endif
+	Next nCont
+	u_PVAUTOBOL(aTit)
+
+	SE1->(DbSeek(xFilial("SC7")+AllTrim(SCR->CR_NUM)))
+Endif
+(cAlias)->(dbCloseArea())
+If lError
+	::cCodigo := "NOK"
+	cMens := "Erro ao atualizar o Titulo"
+	conout('[' + DToC(Date()) + " " + Time() + "] " + procname() + " > " + cMens + ". " + cError)
+	SetSoapFault("Erro", cError)
+else
+	::cCodigo := "YOK"
+EndIf
 Return !lError
 
 /*
