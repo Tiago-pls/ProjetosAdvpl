@@ -89,7 +89,7 @@ EndIf
 			INNER JOIN %table:SRJ% SRJ ON RA_CODFUNC = RJ_FUNCAO and RJ_FILIAL = SUBSTRING(RA_FILIAL, 1, 2) 
 			INNER JOIN %table:CTT% CTT ON RA_CC      = CTT_CUSTO
 			INNER JOIN %table:CTD% CTD ON RA_ITEM    = CTD_ITEM
-			WHERE SRA.%notDel% AND SRJ.%notDel%
+			WHERE SRA.%notDel% AND SRJ.%notDel% AND CTT.%notDel%
 			AND (RA_SITFOLH != 'D' or RA_DEMISSA >=%Exp:mv_par09%)
 			AND RA_FILIAL BETWEEN %Exp:mv_par01% AND %Exp:mv_par02%
 			AND RA_CC BETWEEN %Exp:mv_par03% AND %Exp:mv_par04%

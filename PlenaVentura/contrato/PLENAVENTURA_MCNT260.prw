@@ -489,75 +489,59 @@ return
 //https://tdn.totvs.com/display/public/PROT/Utilizando+o+modelo+do+CNTA121
 //--------------------------------------------------------------------------------------
 User Function PLCNT121(aCtrCab,aCtrItens,cCodCTR,lEncerra) 
-    Local oModel2    := Nil
+Local oModel    := Nil
+    Local cCodCTR   := "2019000048"
+    Local cNumMed   := ""
     Local aMsgDeErro:= {}
-    Local lRet      := .F. 
-	Local nI := 0
-
-    
-    Private _cNMedicao   := ""
-
+    Local lRet      := .F.
+    Local nX        := 0
+      
     CN9->(DbSetOrder(1))
-         
+          
     If CN9->(DbSeek(xFilial("CN9") + cCodCTR))//Posicionar na CN9 para realizar a inclusão
-        oModel2 := FWLoadModel("CNTA121")
-         
-        oModel2:SetOperation(3)
-        If(oModel2:CanActivate())           
-            oModel2:Activate()
-            //cabeçalho
-			oModel2:SetValue("CNDMASTER","CND_CONTRA"    ,CN9->CN9_NUMERO)
-			oModel2:SetValue("CNDMASTER","CND_RCCOMP"    ,"1")//Selecionar competência             
-            //itens
-			//oModel2:SetValue("CXNDETAIL","CXN_CHECK" , .T.)//Marcar a 5planilha(nesse caso apenas uma)
-
-			For nX := 1 To oModel2:GetModel("CXNDETAIL"):Length() //Marca todas as planilhas
-                oModel2:GetModel("CXNDETAIL"):GoLine(nX)
-                oModel2:SetValue("CXNDETAIL","CXN_CHECK" , .T.)
+        oModel := FWLoadModel("CNTA121")
+          
+        oModel:SetOperation(3)
+        If(oModel:CanActivate())          
+            oModel:Activate()
+            oModel:SetValue("CNDMASTER","CND_CONTRA"    ,CN9->CN9_NUMERO)
+            oModel:SetValue("CNDMASTER","CND_RCCOMP"    ,"1")//Selecionar competência
+             
+            For nX := 1 To oModel:GetModel("CXNDETAIL"):Length() //Marca todas as planilhas
+                oModel:GetModel("CXNDETAIL"):GoLine(nX)
+                oModel:SetValue("CXNDETAIL","CXN_CHECK" , .T.)
             Next nX
-
-
-			
-			For nI := 1 to len(aCtrItens)		
+            For nI := 1 to len(aCtrItens)		
 				//oModel2:SetValue("CXNDETAIL","CXN_CHECK" , .T.)//Marcar a planilha(nesse caso apenas uma)
-        	    oModel2:GetModel('CNEDETAIL'):GoLine(nI) //Posiciona na linha desejada
+        	    oModel:GetModel('CNEDETAIL'):GoLine(nI) //Posiciona na linha desejada
 				
-				oModel2:SetValue('CNEDETAIL', 'CNE_ITEM' ,  Strzero(nI,3))
-				oModel2:SetValue('CNEDETAIL', 'CNE_PRODUT' , aCtrItens[nI][2][2])
-				oModel2:SetValue('CNEDETAIL', 'CNE_QUANT'  , aCtrItens[nI][4][2])     
-            	oModel2:SetValue('CNEDETAIL', 'CNE_VLUNIT' , aCtrItens[nI][3][2])
-            	oModel2:SetValue('CNEDETAIL', 'CNE_TS', aCtrItens[nI][6][2] )//Preenche TES - Este campo aceita tipo de entrada e saída.
-			Next n1
-
-            If (oModel2:VldData()) /*Valida o modelo como um todo*/
-                oModel2:CommitData()
+				oModel:SetValue('CNEDETAIL', 'CNE_ITEM' ,  Strzero(nI,3))
+				oModel:SetValue('CNEDETAIL', 'CNE_PRODUT' , aCtrItens[nI][2][2])
+				oModel:SetValue('CNEDETAIL', 'CNE_QUANT'  , aCtrItens[nI][4][2])     
+            	oModel:SetValue('CNEDETAIL', 'CNE_VLUNIT' , aCtrItens[nI][3][2])
+            	oModel:SetValue('CNEDETAIL', 'CNE_TS', aCtrItens[nI][6][2] )//Preenche TES - Este campo aceita tipo de entrada e saída.
+			Next n1        
+            If (oModel:VldData()) /*Valida o modelo como um todo*/
+                oModel:CommitData()
             EndIf
         EndIf
-         
-        If(oModel2:HasErrorMessage())
+          
+        If(oModel:HasErrorMessage())
 			lMsErroAuto := .T.
-            aMsgDeErro := oModel2:GetErrorMessage()
+            aMsgDeErro := oModel:GetErrorMessage()
 			cResult += AMSGDEERRO[6]//GetMsErroAuto(aMsgDeErro)
-			_cNMedicao := ''
+			cNumMed := ''
 
 			LogCNT121(cCodCTR)
         Else
 			lMsErroAuto := .F.
-            _cNMedicao := CND->CND_NUMMED       
-			cResult += " - Medição " + _cNMedicao + " gerada com sucesso."+CRLF
-
-            //oModel2:DeActivate()        
-			If lEncerra
- 	           lRet := CN121Encerr(.T.) //Realiza o encerramento da medição     
-			   cResult += " - Medição encerrada com sucesso com pedido " + CND->CND_PEDIDO + "."+CRLF              
-			EndIf	
-			LogCNT121(cCodCTR)	
-			
-			oModel2:DeActivate()
-			oModel2:Destroy()
-			oModel2 := NIL
+            cNumMed := CND->CND_NUMMED    
+			cResult += " - Medição " + cNumMed + " gerada com sucesso."+CRLF     
+            oModel:DeActivate()       
+            lRet := CN121Encerr(.T.) //Realiza o encerramento da medição                  
         EndIf
-    EndIf  
+    EndIf 
+Return lRet
 
 Return lRet
 

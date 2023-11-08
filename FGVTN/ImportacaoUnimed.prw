@@ -70,7 +70,7 @@ While UNI->(!Eof())
 	cNome     := AllTrim(SubStr(UNI->REGISTRO,21,25) )
 	cCPF      := SubStr(UNI->REGISTRO,447,11)
 	oProcess:IncRegua2("Importando CPF " +cCPF )
-    ATUnimed (cCPF,cBenefic)
+    nPercDep  := ATUnimed (cCPF,cBenefic)
     if ! Empty(cBenefic)
     	_aDados := BuscaSRA(cMatr, cBenefic)
 		cTipo     := _aDados[5]
@@ -108,11 +108,13 @@ While UNI->(!Eof())
 				ZRH->ZRH_CODIGO := cCodigo
 				ZRH->ZRH_CODFOR := cFornec
 				ZRH->ZRH_TPPLAN := cPlano
+				ZRH->ZRH_PERCDP := nPercDep
 				nConta++
 				MsUnLock()
 			ELSE
 				RecLock("ZRH",.f.)
 				ZRH->ZRH_VALOR	:= nValEvent
+				ZRH->ZRH_PERCDP := nPercDep
 				MsUnLock()
 			ENDIF
 		ENDIF
@@ -129,7 +131,6 @@ If !Empty(_aErros)
 		MsgInfo(cValToChar(nConta)+" Registros importados com sucesso!","Importação")
 	EndIf
 
-
 IF (select("QRY2") <> 0)
 	QRY2->(dbCloseArea())
 ENDIF
@@ -140,7 +141,8 @@ cQuery+="	SELECT	"
 cQuery+="	ZRH_FILIAL FILIAL,	"
 cQuery+="	ZRH_MAT MATRICULA,	"
 cQuery+="	ISNULL(RK_VLSALDO,0) ACUMULADO,	"
-cQuery+="	ROUND(SUM(ZRH_VALOR)/100*RCA_CONTEU,2)+ISNULL(RK_VLSALDO,0) SALDO	"
+//cQuery+="	ROUND(SUM(ZRH_VALOR)/100*RCA_CONTEU,2)+ISNULL(RK_VLSALDO,0) SALDO	"
+cQuery+="	ROUND(SUM(ZRH_VALOR)/100*ZRH_PERCDP,2)+ISNULL(RK_VLSALDO,0) SALDO	"
 cQuery+="	FROM ZRH010 ZRH	"
 cQuery+="	LEFT JOIN RCA010 RCA ON RCA_MNEMON = 'M_COPARTFUNC' AND RCA_CONTEU <> 0	"
 cQuery+="	INNER JOIN SRK010 SRK ON RK_FILIAL = ZRH_FILIAL AND RK_MAT = ZRH_MAT AND RK_STATUS = '2' AND RK_PD = '509' AND SRK.D_E_L_E_T_ = ' '	"
@@ -160,8 +162,10 @@ cQuery+="	ZRH_CODIGO CODIGO,	"
 cQuery+="	ZRH_CODFOR FORNEC,	"
 cQuery+="	ZRH_TPPLAN PLANO,	"
 cQuery+="	SUM(ZRH_VALOR) TOTAL,	"
-cQuery+="	ROUND(SUM(ZRH_VALOR)/100*(100-RCA_CONTEU),2) VLREMP,	"
-cQuery+="	ROUND(SUM(ZRH_VALOR)/100*RCA_CONTEU,2) VLRFUN,	"
+//cQuery+="	ROUND(SUM(ZRH_VALOR)/100*(100-RCA_CONTEU),2) VLREMP,	"
+cQuery+="	ROUND(SUM(ZRH_VALOR)/100*(100-ZRH_PERCDP),2) VLREMP,	"
+//cQuery+="	ROUND(SUM(ZRH_VALOR)/100*RCA_CONTEU,2) VLRFUN,	"
+cQuery+="	ROUND(SUM(ZRH_VALOR)/100*ZRH_PERCDP,2) VLRFUN,	"
 cQuery+="	ISNULL(AC.SALDO,0) ACUMULADO	"
 cQuery+="	FROM ZRH010 ZRH	"
 cQuery+="	LEFT JOIN RCA010 RCA ON RCA_MNEMON = 'M_COPARTFUNC' AND RCA_CONTEU <> 0	"
@@ -235,7 +239,7 @@ cQuery+="	RA_MAT MATRICULA,	"
 cQuery+="	ISNULL(SUBSTRING(RCC.RCC_CONTEU,1,6),'') MAT2, "
 cQuery+="	RA_NOME NOME,	"
 cQuery+="	'T' TIPO,	"
-cQuery+="	SRA.R_E_C_N_O_ RECNO	"
+cQuery+="	SRA.R_E_C_N_O_ RECNO, 	0 RB_XPERCUN	"
 cQuery+="	FROM	"
 cQuery+="	SRA010 SRA	"
 cQuery+="	LEFT JOIN RCC010 RCC ON RCC.RCC_CODIGO = 'U006' AND RCC.RCC_FIL = RA_FILIAL AND SUBSTRING(RCC.RCC_CONTEU,1,6) = RA_MAT AND RCC.D_E_L_E_T_ = ' ' "
@@ -249,7 +253,7 @@ cQuery+="	RB_MAT MATRICULA,	"
 cQuery+="	ISNULL(SUBSTRING(RCC.RCC_CONTEU,1,6),'') MAT2, "
 cQuery+="	RA_NOME NOME,	"
 cQuery+="	'D' TIPO,	"
-cQuery+="	SRB.R_E_C_N_O_ RECNO	"
+cQuery+="	SRB.R_E_C_N_O_ RECNO, RB_XPERCUN	"
 cQuery+="	FROM	"
 cQuery+="	SRB010 SRB	"
 cQuery+="	INNER JOIN SRA010 SRA ON RA_FILIAL = RB_FILIAL AND RB_MAT = RA_MAT AND RA_SITFOLH <> 'D' AND SRA.D_E_L_E_T_ = ' '	"
@@ -291,7 +295,7 @@ IF !Empty(cTipo)
 
 ENDIF
 
-Return
+Return QRY->RB_XPERCUN
 
 
 Static Function BuscaSRA (cMatr , cBenefic)

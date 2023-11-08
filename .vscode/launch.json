@@ -60,7 +60,12 @@
 		{
 			"args": [],
 			"label": "u_AUTOBOL"
+		},
+		{
+			"args": [],
+			"label": "u_CNT121_001"
 		}
 	],
-	"lastProgramExecuted": "sigamdi"
+	"lastProgramExecuted": "u_CNT121_001",
+	"lastProgramArguments": []
 }

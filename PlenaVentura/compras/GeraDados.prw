@@ -39,7 +39,7 @@ user function ExpDados()
 			Count To nTotal
 			QRY->(DbGoTop())
 	  		oprocess:SetRegua2(nTotal)	
-			cLinha :="CNPJ	;Especie	;Num_Docto	;Valor Doc	;Emissao	;Vencto	;Tipo	;Etapa	;Observações	;Filler"	+CHR(13)+CHR(10) 
+			cLinha :="CNPJ;Especie;Num_Docto;Valor Doc;Emissao;Vencto;Tipo;Etapa;Observações;Filler"	+CHR(13)+CHR(10) 
 			FWrite(nHandle, cLinha)
 			While QRY->(! EOF())
 				oProcess:IncRegua2("Fornecedor:  " + alltrim(QRY->A2_NOME) )
@@ -85,7 +85,7 @@ user function ExpDados()
 			Count To nTotal
 			QRY->(DbGoTop())
 	  		oprocess:SetRegua2(nTotal)
-			cLinha :="CNPJ	;Nome	;Endereço	;Num	;Complemento	;CEP	;Bairro	;Cidade	;UF	;Cmun	;Inscr.Est	;Fone	;Email	;Contato" +CHR(13)+CHR(10)
+			cLinha :="CNPJ;Nome;Endereço;Num;Complemento;CEP;Bairro;Cidade;UF;Cmun;Inscr.Est;Fone;Email;Contato" +CHR(13)+CHR(10)
 			FWrite(nHandle, cLinha)
 			While QRY->(! EOF())
 				oProcess:IncRegua2("Fornecedor:  " + alltrim(QRY->A2_NOME) )
@@ -100,20 +100,21 @@ user function ExpDados()
 				cLinha += Alltrim(QRY->A2_NOME)+";"
 				
 				if At(',',QRY->A2_END,1) > 0
-					cLinha += SUBSTR( QRY->A2_END, 1,  At(',',QRY->A2_END,1) - 1)
+					cLinha += SUBSTR( QRY->A2_END, 1,  At(',',QRY->A2_END,1) - 1) +";"
 				else
 					cLinha += Alltrim(QRY->A2_END)+";"
 				Endif
-				cLinha += Alltrim(QRY->A2_ENDCOMP)+";"
-				cLinha += Alltrim(QRY->A2_CEP)+";"
-				cLinha += Alltrim(QRY->A2_BAIRRO)+";"
-				cLinha += Alltrim(QRY->A2_MUN)+";"
-				cLinha += Alltrim(QRY->A2_EST)+";"
-				cLinha += Alltrim(QRY->A2_COD_MUN)+";"
-				cLinha += Alltrim(QRY->A2_INSCR)+";"
-				cLinha += Alltrim(QRY->A2_TEL)+";"
-				cLinha += Alltrim(QRY->A2_EMAIL)+";"
-				cLinha += Alltrim(QRY->A2_CONTATO)+";"
+				cLinha += Alltrim(QRY->A2_NR_END)    +";"
+				cLinha += Alltrim(QRY->A2_COMPLEM)   +";"
+				cLinha += Alltrim(QRY->A2_CEP)       +";"
+				cLinha += Alltrim(QRY->A2_BAIRRO)    +";"
+				cLinha += Alltrim(QRY->A2_MUN)       +";"
+				cLinha += Alltrim(QRY->A2_EST)       +";"
+				cLinha += Alltrim(QRY->A2_COD_MUN)   +";"
+				cLinha += Alltrim(QRY->A2_INSCR)     +";"
+				cLinha += Alltrim(QRY->A2_TEL)       +";"
+				cLinha += Alltrim(QRY->A2_EMAIL)     +";"
+				cLinha += Alltrim(QRY->A2_CONTATO)
 				cLinha += CHR(13)+CHR(10)
 				FWrite(nHandle, cLinha)
 				QRY->(DbSkip())
@@ -152,7 +153,7 @@ static function Query(nTipo)
 		cQuery += " AND E2_TIPO  ='NF' "
 		cQuery += " Order by 1, 5" 
 	else
-		cQuery :=" Select A2_CGC as  CGC, A2_TIPO, A2_NOME,A2_END,A2_NR_END,A2_ENDCOMP,A2_CEP,A2_BAIRRO,  "
+		cQuery :=" Select A2_CGC as  CGC, A2_TIPO, A2_NOME,A2_END,A2_NR_END,A2_COMPLEM,A2_CEP,A2_BAIRRO,  "
 		cQuery += " A2_MUN,A2_EST,A2_COD_MUN,A2_INSCR,A2_TEL,A2_EMAIL,A2_CONTATO  from " + RetSqlName("SA2") +" SA2"
 		cQuery += " Where A2_FILIAL >= '" + MV_PAR01+"' and A2_FILIAL <='" + MV_PAR02+"' and SA2.D_E_L_E_T_ =' '"
 		cQuery += " AND A2_COD >='"+MV_PAR03+"' and A2_COD <= '"+MV_PAR04+"' and A2_CGC <> ' '"
