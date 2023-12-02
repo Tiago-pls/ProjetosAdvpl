@@ -26,13 +26,24 @@ User Function CNT121_001()
 			oModel:SetValue("CNDMASTER","CND_RCCOMP"	,"1")//Selecionar competência
 
 			oModel:SetValue("CXNDETAIL","CXN_CHECK"	, .T.)//Marcar a planilha(nesse caso apenas uma)
-// tratar o item 004,005 e 006 
-			For nI := 1 to 3 //len(aCtrItens)					
-        	    oModel:GetModel('CNEDETAIL'):GoLine(nI) //Posiciona na linha desejada				
-				oModel:GetModel('CNEDETAIL'):LoadValue('CNE_ITEM', Strzero(nI,2))//Adiciona um item a planilha
-				oModel:SetValue('CNEDETAIL', 'CNE_PRODUT' , iif(nI == 1, 'F2040',iif(nI == 2, 'F2043','F2030') ) )
-				oModel:SetValue('CNEDETAIL', 'CNE_QUANT'  , 1)     
-			Next n1 
+			// teste informando multiplos itens 
+			oModel:GetModel('CNEDETAIL'):GoLine(1)
+			
+			oModel:GetModel('CNEDETAIL'):LoadValue('CNE_ITEM', '01')//Adiciona um item a planilha
+			oModel:SetValue( 'CNEDETAIL' , 'CNE_PRODUT'	, 'F2040')
+			oModel:SetValue( 'CNEDETAIL' , 'CNE_QUANT' 	, 1)
+			
+			oModel:GetModel('CNEDETAIL'):GoLine(2)
+			oModel:GetModel('CNEDETAIL'):LoadValue('CNE_ITEM', '02')//Adiciona um item a planilha
+			oModel:SetValue( 'CNEDETAIL' , 'CNE_PRODUT'	, 'F2043')
+			oModel:SetValue( 'CNEDETAIL' , 'CNE_QUANT' 	, 1)
+			
+			oModel:GetModel('CNEDETAIL'):GoLine(3)
+			oModel:GetModel('CNEDETAIL'):LoadValue('CNE_ITEM', '03')//Adiciona um item a planilha
+			oModel:SetValue( 'CNEDETAIL' , 'CNE_PRODUT'	, 'F2030')
+			oModel:SetValue( 'CNEDETAIL' , 'CNE_QUANT' 	, 1)
+
+				//oModel:SetValue( 'CNEDETAIL' , 'CNE_VLUNIT' , 2334.60 )
 
 			If (oModel:VldData()) /*Valida o modelo como um todo*/
 				oModel:CommitData()

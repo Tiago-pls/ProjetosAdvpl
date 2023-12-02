@@ -506,20 +506,25 @@ Local oModel    := Nil
             oModel:Activate()
             oModel:SetValue("CNDMASTER","CND_CONTRA"    ,CN9->CN9_NUMERO)
             oModel:SetValue("CNDMASTER","CND_RCCOMP"    ,"1")//Selecionar competência
-             
+             /* tirar a seleção de todas as planilhas
             For nX := 1 To oModel:GetModel("CXNDETAIL"):Length() //Marca todas as planilhas
                 oModel:GetModel("CXNDETAIL"):GoLine(nX)
                 oModel:SetValue("CXNDETAIL","CXN_CHECK" , .T.)
             Next nX
+			*/
+			// deixar somente 1
+			oModel:SetValue("CXNDETAIL","CXN_CHECK"	, .T.)//Marcar a planilha(nesse caso apenas uma)
+
             For nI := 1 to len(aCtrItens)		
 				//oModel2:SetValue("CXNDETAIL","CXN_CHECK" , .T.)//Marcar a planilha(nesse caso apenas uma)
         	    oModel:GetModel('CNEDETAIL'):GoLine(nI) //Posiciona na linha desejada
 				
-				oModel:SetValue('CNEDETAIL', 'CNE_ITEM' ,  Strzero(nI,3))
+				oModel:GetModel('CNEDETAIL'):LoadValue('CNE_ITEM', Strzero(nI,2))//Adiciona um item a planilha
+
 				oModel:SetValue('CNEDETAIL', 'CNE_PRODUT' , aCtrItens[nI][2][2])
 				oModel:SetValue('CNEDETAIL', 'CNE_QUANT'  , aCtrItens[nI][4][2])     
-            	oModel:SetValue('CNEDETAIL', 'CNE_VLUNIT' , aCtrItens[nI][3][2])
-            	oModel:SetValue('CNEDETAIL', 'CNE_TS', aCtrItens[nI][6][2] )//Preenche TES - Este campo aceita tipo de entrada e saída.
+            	//oModel:SetValue('CNEDETAIL', 'CNE_VLUNIT' , aCtrItens[nI][3][2])
+            	//oModel:SetValue('CNEDETAIL', 'CNE_TS', aCtrItens[nI][6][2] )//Preenche TES - Este campo aceita tipo de entrada e saída.
 			Next n1        
             If (oModel:VldData()) /*Valida o modelo como um todo*/
                 oModel:CommitData()

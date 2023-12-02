@@ -64,8 +64,14 @@
 		{
 			"args": [],
 			"label": "u_CNT121_001"
+		},
+		{
+			"args": [
+				"002",
+				"126166"
+			],
+			"label": "u_VlrVendaLP"
 		}
 	],
-	"lastProgramExecuted": "u_CNT121_001",
-	"lastProgramArguments": []
+	"lastProgramExecuted": "sigamdi"
 }

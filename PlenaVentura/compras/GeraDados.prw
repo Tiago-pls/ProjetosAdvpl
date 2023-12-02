@@ -39,45 +39,34 @@ user function ExpDados()
 			Count To nTotal
 			QRY->(DbGoTop())
 	  		oprocess:SetRegua2(nTotal)	
+			cLinha := "[EMPRESA=15]"
+			FWrite(nHandle, cLinha)
+
 			cLinha :="CNPJ;Especie;Num_Docto;Valor Doc;Emissao;Vencto;Tipo;Etapa;Observações;Filler"	+CHR(13)+CHR(10) 
 			FWrite(nHandle, cLinha)
 			While QRY->(! EOF())
 				oProcess:IncRegua2("Fornecedor:  " + alltrim(QRY->A2_NOME) )
 				nCont += 1
 				cLinha :=""
-				if  (QRY->A2_TIPO== 'J')
-					cCGC := Alltrim(Transform(QRY->CGC, "@R 99.999.999/9999-99")) 
-				else
-					cCGC := Alltrim(Transform(QRY->CGC, "@R 999.999.999-99")) + Space(4)
-				endif
+
 				SD1->(dbGotop())
-					//D1_FILIAL+D1_DOC+D1_SERIE+D1_FORNECE+D1_LOJA+D1_COD+D1_ITEM
 				if SD1->(DbSeek( QRY->(E2_FILIAL + E2_NUM + E2_PREFIXO + E2_FORNECE + E2_LOJA)))
 					cCusto := SubStr(SD1->D1_CC,1,4)
 				Endif
-				/*cCusto := Padr(cCusto,4)
-				cLinha += cCGC
-				cLinha += PadR(QRY->E2_TIPO,5)
-				cLinha += StrZero(Val(QRY->E2_NUM),15)
-				cLinha += StrZero(QRY->E2_VALOR,15)
-				cLinha += SubStr(QRY->E2_EMISSAO,7,2) + SubStr(QRY->E2_EMISSAO,5,2) +SubStr(QRY->E2_EMISSAO,1,4)
-				cLinha += SubStr(QRY->E2_VENCREA,7,2) + SubStr(QRY->E2_VENCREA,5,2) +SubStr(QRY->E2_VENCREA,1,4)
-				cLinha += iif( Empty(QRY->E2_CODSERV), 'M', 'S')
-				cLinha += cCusto
-				cLinha += Space(126)
-				cLinha += CHR(13)+CHR(10) */
 				cCusto := Padr(cCusto,4) +";"
-				cLinha += cCGC+";"
-				cLinha += alltrim(QRY->E2_TIPO)+";"
-				cLinha += AllTrim(QRY->E2_NUM)+";"
-				cLinha += cValToChar(QRY->E2_VALOR *100)+";"
-				cLinha += SubStr(QRY->E2_EMISSAO,7,2) + '/' + SubStr(QRY->E2_EMISSAO,5,2) +'/' +SubStr(QRY->E2_EMISSAO,1,4)+";"
-				cLinha += SubStr(QRY->E2_VENCREA,7,2) + '/' + SubStr(QRY->E2_VENCREA,5,2) +'/' +SubStr(QRY->E2_VENCREA,1,4)+";"
-				cLinha += iif( Empty(QRY->E2_CODSERV), 'M', 'S')+";"
-				cLinha += cCusto
-				cLinha += CHR(13)+CHR(10) 
 
-				FWrite(nHandle, cLinha)
+				GrvLinha(QRY->CGC, QRY->E2_VALOR,'TIT')
+
+				if QRY->E2_INSS <> 0 
+					GrvLinha('00394460000141', QRY->E2_INSS,'INSS')
+				endif
+				if QRY->E2_IRRF <> 0
+					GrvLinha('00394460005887', QRY->E2_IRRF,'IRRF')
+				endif
+				if QRY->E2_ISS <> 0
+					GrvLinha('76417005000186', QRY->E2_ISS,'ISS')
+				Endif
+
 				QRY->(DbSkip())
 			enddo
 		else
@@ -102,19 +91,19 @@ user function ExpDados()
 				if At(',',QRY->A2_END,1) > 0
 					cLinha += SUBSTR( QRY->A2_END, 1,  At(',',QRY->A2_END,1) - 1) +";"
 				else
-					cLinha += Alltrim(QRY->A2_END)+";"
+					cLinha += strTran(Alltrim(QRY->A2_END),';','')+";"
 				Endif
-				cLinha += Alltrim(QRY->A2_NR_END)    +";"
-				cLinha += Alltrim(QRY->A2_COMPLEM)   +";"
-				cLinha += Alltrim(QRY->A2_CEP)       +";"
-				cLinha += Alltrim(QRY->A2_BAIRRO)    +";"
-				cLinha += Alltrim(QRY->A2_MUN)       +";"
-				cLinha += Alltrim(QRY->A2_EST)       +";"
-				cLinha += Alltrim(QRY->A2_COD_MUN)   +";"
-				cLinha += Alltrim(QRY->A2_INSCR)     +";"
-				cLinha += Alltrim(QRY->A2_TEL)       +";"
-				cLinha += Alltrim(QRY->A2_EMAIL)     +";"
-				cLinha += Alltrim(QRY->A2_CONTATO)
+				cLinha += strTran( Alltrim(QRY->A2_NR_END) ,';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_COMPLEM),';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_CEP)    ,';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_BAIRRO) ,';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_MUN)    ,';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_EST)    ,';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_COD_MUN),';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_INSCR)  ,';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_TEL)    ,';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_EMAIL)  ,';','')   +";"
+				cLinha += strTran( Alltrim(QRY->A2_CONTATO),';','')
 				cLinha += CHR(13)+CHR(10)
 				FWrite(nHandle, cLinha)
 				QRY->(DbSkip())
@@ -144,11 +133,12 @@ static function Query(nTipo)
 	if nTipo ==1
 		
 		cQuery := " Select  A2_CGC as  CGC , A2_TIPO, E2_FORNECE, E2_LOJA, E2_TIPO, E2_NUM, E2_PREFIXO, E2_VALOR , E2_EMISSAO, E2_VENCREA, A2_NOME, E2_CODSERV , E2_FILIAL "
-		cQuery += " from " + RetSqlName("SE2") + " SE2"
+		cQuery += " ,E2_ISS, E2_IRRF, E2_INSS,E2_COFINS, E2_PIS, E2_CSLL from " + RetSqlName("SE2") + " SE2"
 		cQuery += " Inner join "+ RetSqlName("SA2") +" SA2 on E2_FORNECE = A2_COD and E2_LOJA = A2_LOJA"		
 		cQuery += " Where E2_FILIAL >= '" + MV_PAR01+"' and E2_FILIAL <='" + MV_PAR02+"' and SE2.D_E_L_E_T_ =' '"
 		cQuery += " AND E2_FORNECE >='"+MV_PAR03+"' and E2_FORNECE <= '"+MV_PAR04+"' "
-		cQuery += " AND E2_VENCTO >= '"+ DTos(MV_PAR05)+"' and E2_VENCTO <= '"+ Dtos(MV_PAR06)+"' and SA2.D_E_L_E_T_ =' '"
+		//cQuery += " AND E2_VENCTO >= '"+ DTos(MV_PAR05)+"' and E2_VENCTO <= '"+ Dtos(MV_PAR06)+"' and SA2.D_E_L_E_T_ =' '"
+		cQuery += " AND E2_EMISSAO >= '"+ DTos(MV_PAR05)+"' and E2_EMISSAO <= '"+ Dtos(MV_PAR06)+"' and SA2.D_E_L_E_T_ =' '"
 		cQuery += " AND SubString(E2_FILIAL ,1,"+cLenSA2+")   =  SubString(A2_FILIAL ,1,"+cLenSA2+") "
 		cQuery += " AND E2_TIPO  ='NF' "
 		cQuery += " Order by 1, 5" 
@@ -160,3 +150,32 @@ static function Query(nTipo)
 		cQuery += " AND A2_COD in (select F1_FORNECE From "+RetSqlName("SF1")+ " SF1 where F1_EMISSAO >= '"+DTos(MV_PAR05)+"' group by F1_FORNECE"
 	Endif
 return ChangeQuery(cQuery)
+
+
+static function GrvLinha(cCGC, nValor, cTipo )
+if cTipo $'IRRF|INSS'
+	dVenct := Stod(AnoMes(Stod(QRY->E2_VENCREA))+'20')
+	dVenct := DataValida(dVenct,.F.)
+	cVenct := DtoS(dVenct)
+else
+	cVenct := QRY->E2_VENCREA
+endif
+
+if  (QRY->A2_TIPO== 'J')
+	cCGC := Alltrim(Transform(cCGC, "@R 99.999.999/9999-99")) 
+else
+	cCGC := Alltrim(Transform(cCGC, "@R 999.999.999-99")) + Space(4)
+endif
+
+cLinha := ""
+cLinha += cCGC +";"
+cLinha += alltrim(QRY->E2_TIPO)+";"
+cLinha += AllTrim(QRY->E2_NUM)+";"
+cLinha += alltrim(transform(nValor,"@E 999999999.99"))+";"
+cLinha += SubStr(QRY->E2_EMISSAO,7,2) + '/' + SubStr(QRY->E2_EMISSAO,5,2) +'/' +SubStr(QRY->E2_EMISSAO,1,4)+";"
+cLinha += SubStr(cVenct,7,2) + '/' + SubStr(cVenct,5,2) +'/' +SubStr(cVenct,1,4)+";"
+cLinha += iif( Empty(QRY->E2_CODSERV), 'M', 'S')+";"
+cLinha += iif( Empty(QRY->E2_CODSERV), '60', '61')+""
+cLinha += CHR(13)+CHR(10) 
+FWrite(nHandle, cLinha)	
+return
